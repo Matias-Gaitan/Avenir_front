@@ -1,0 +1,68 @@
+body{
+    font-family: sans-serif;
+    color: #4B5563;
+}
+*{
+    box-sizing: border-box;
+}
+h1{
+    color: #064E3B;
+}
+.form{
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    box-shadow: 0 0 15px 2px #000;
+    gap: 15px;
+    align-items: center;
+    padding: 30px 0;
+    max-width: 700px;
+    margin: auto;
+}
+.form-section, .form-nombres{
+    width: 75%;
+    display: flex;
+    gap: 5px;
+}
+.form-nombres{
+    justify-content: space-between;
+}
+.apellido, .nombre{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.form-section{
+    flex-direction: column;
+}
+.form-input{
+    width: 100%;
+    padding: 5px;
+    border: 2px solid #D1D5DB;
+    border-radius: 5px;
+}
+.form-input::placeholder{
+    color: #888d;
+}
+.form-button{
+    margin-top: 30px;
+    padding: 12px;
+    width: 75%;
+    border-style: none;
+    border-radius: 5px;
+    background-color: #22C55E;
+    color: #fff;
+    font-weight: bold;
+}
+
+.form-input:focus{
+    border: 2px solid #22C55E;
+    outline: none;
+}
+.input-email:focus:valid{
+    color: #22C55E;
+}
+.input-email:invalid{
+    color: #DC2626;
+}
