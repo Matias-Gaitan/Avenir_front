@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "./register.css";
+import "./registrer.css";
 import type { Usuario } from "../../interfaces/Usuario";
 
 const Register: React.FC = () => {
@@ -50,7 +50,7 @@ const Register: React.FC = () => {
     };
 
     try {
-        const response = await axios.post("/register", {
+        const response = await axios.post("/registrer", {
         usuario: nuevoUsuario,
         claveAcceso, // se envía aparte para verificación en backend
         });
