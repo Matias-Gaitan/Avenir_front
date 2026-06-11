@@ -61,7 +61,7 @@ h1{
     font-weight: bold;
 }
 
-.form-button:active {
+.form-button:active, .login-button:active {
     background-color: #16A34A;
 }
 
