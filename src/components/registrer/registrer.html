@@ -8,31 +8,37 @@
 </head>
 <!--Este formato es momentáneo, luego será pasado a formato .Tsx-->
 <body>
-    <form action="" class="form">
-        <h1>CREAR CUANTA NUEVA</h1>
-        <div class="form-nombres">
-            <div class="nombre">
-                <label for="nombre">Nombre</label>
-                <input type="text" class="form-input" id="nombre" placeholder="Ej.Juan">
+    <div class="form-component">
+        <form action="" class="form">
+            <h1>CREAR CUANTA NUEVA</h1>
+            <div class="form-nombres">
+                <div class="nombre">
+                    <label for="nombre">Nombre</label>
+                    <input type="text" class="form-input" id="nombre" placeholder="Ej.Juan">
+                </div>
+                <div class="apellido">
+                    <label for="apellido">Apellido</label>
+                    <input type="text" class="form-input" id="apellido" placehol    der="Ej.Perez">
+                </div>
             </div>
-            <div class="apellido">
-                <label for="apellido">Apellido</label>
-                <input type="text" class="form-input" id="apellido" placeholder="Ej.Perez">
+            <div class="form-section">
+                <label for="email">Email</label>
+                <input type="email" class="form-input input-email" id="email" placehol  der="Ej.juan@gmail.com">
             </div>
-        </div>
-        <div class="form-section">
-            <label for="email">Email</label>
-            <input type="email" class="form-input input-email" id="email" placeholder="Ej.juan@gmail.com">
-        </div>
-        <div class="form-section">
-            <label for="contrasena">Contraseña</label>
-            <input type="password" class="form-input" id="contrasena" placeholder="Crea una contraseña segura">
-        </div>
-        <div class="form-section">
-            <label for="clave-acceso">Clave de acceso</label>
-            <input type="password" class="form-input" id="clave-acceso">
-        </div>
-        <button class="form-button">REGISTRARSE</button>
-    </form>
+            <div class="form-section">
+                <label for="contrasena">Contraseña</label>
+                <input type="password" class="form-input" id="contrasena" placeholder="Crea una contraseña segura">
+            </div>
+            <div class="form-section">
+                <label for="clave-acceso">Clave de acceso</label>
+                <input type="password" class="form-input" id="clave-acceso">
+            </div>
+            <button class="form-button">REGISTRARSE</button>
+        </form>
+        <section>
+            <p>¿Ya tienes una cuenta?</p>
+            <button class="login-button">INICIAR SESIÓN</button>
+        </section>
+    </div>
 </body>
 </html>
