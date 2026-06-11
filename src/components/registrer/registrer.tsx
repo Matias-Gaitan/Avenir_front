@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "./Register.css";
+import "./register.css";
 import type { Usuario } from "../../interfaces/Usuario";
 
 const Register: React.FC = () => {
