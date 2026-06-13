@@ -27,25 +27,20 @@ const LoginComponent: React.FC = () => {
         setError("El email no es válido");
         return;
     }
-    if (!validarPassword(contrasena)) {
-        setError("La contraseña debe tener al menos 8 caracteres");
-        return;
-    }
 
     const loginData: Login = { email, contrasena };
 
     try {
-        const response = await axios.post("/login", loginData);
+        const response = await axios.post("http://localhost:8080/api/usuarios/login", loginData);
         console.log("Login exitoso:", response.data);
+        if(response.data.mensaje !== "Credenciales inválidas"){
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("email", loginData.email);
+            navigate("/home");
+        }
 
-      // 🔒 Preparado para tokens (comentado hasta que el backend lo implemente)
-        /*
-        localStorage.setItem("token", response.data.token);
-      navigate("/home"); // redirigir a pantalla principal
-      */
-
-    } catch (err) {
-        setError("Error al iniciar sesión");
+    } catch (err: any) {
+        setError("Error al iniciar sesión:" + err.response?.data);
     }
     };
 

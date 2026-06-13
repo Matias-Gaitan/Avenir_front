@@ -50,21 +50,27 @@ const Register: React.FC = () => {
     };
 
     try {
-        const response = await axios.post("/registrer", {
+        console.log("Payload enviado:", { usuario: nuevoUsuario, claveAcceso });
+        const response = await axios.post("http://localhost:8080/api/usuarios", {
         usuario: nuevoUsuario,
         claveAcceso, // se envía aparte para verificación en backend
         });
-
         console.log("Usuario registrado:", response.data);
-
+    
       // Código para tokens (comentado hasta que el backend lo implemente)
         /*
         localStorage.setItem("token", response.data.token);
       */
-
         navigate("/login");
-    } catch (err) {
-        setError("Error al registrar usuario");
+    } catch (err: any) {
+        console.error("Error recibido del backend:", err.response?.data);
+
+    const mensajeError =
+    typeof err.response?.data === "string"
+        ? err.response.data
+        : err.response?.data.message || "Error desconocido";
+
+    setError("Error al registrarse: " + mensajeError);
     }
     };
 
