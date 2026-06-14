@@ -1,0 +1,122 @@
+/* src/components/gestorUsuarios/gestorUsuarios.css */
+.gestor-container {
+    background-color: #F4FBF7; /* Fondo Verde muy claro */
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: sans-serif;
+    color: #4B5563; /* Textos secundarios */
+}
+
+.gestor-card {
+    background-color: #FFFFFF; /* Tarjeta blanca */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    max-width: 900px;
+    margin: auto;
+    padding: 30px;
+}
+
+.gestor-title {
+    color: #064E3B; /* Tipografía principal */
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.gestor-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.filter-select {
+    padding: 8px 12px;
+    border: 2px solid #D1D5DB; /* Bordes casilla */
+    border-radius: 5px;
+    color: #4B5563;
+    outline: none;
+}
+
+.filter-select:focus {
+    border-color: #22C55E;
+}
+
+.gestor-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.gestor-table th {
+    color: #064E3B;
+    border-bottom: 2px solid #D1D5DB;
+    padding: 12px;
+    text-align: left;
+}
+
+.gestor-table td {
+    color: #4B5563;
+    border-bottom: 1px solid #D1D5DB;
+    padding: 12px;
+}
+
+.badge-activo {
+    background-color: #22C55E; /* Verde chillón */
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.badge-inactivo {
+    background-color: #94A3B8; /* Textos encuadrados (Gris claro) */
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.btn-action {
+    background-color: #22C55E; /* Botón verde */
+    color: #FFFFFF;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.btn-action:hover {
+    background-color: #16A34A;
+}
+
+.btn-danger {
+    background-color: #94A3B8; /* Gris para la baja, para no usar rojo agresivo */
+}
+
+.btn-danger:hover {
+    background-color: #4B5563;
+}
+
+/* --- Formulario de Edición --- */
+.edit-container {
+    margin-top: 30px;
+    padding: 20px;
+    border: 2px dashed #22C55E;
+    border-radius: 10px;
+    background-color: #F4FBF7;
+}
+
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 400px;
+    margin-top: 15px;
+}
+
+.edit-buttons {
+    display: flex;
+    gap: 10px;
+}
