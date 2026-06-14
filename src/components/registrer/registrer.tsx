@@ -39,15 +39,17 @@ const Register: React.FC = () => {
         return;
     }
 
-    // Construimos el objeto Usuario según la interface
-    const nuevoUsuario: Usuario = {
-        nombre,
-        apellido,
-        email,
-        contrasena,
-        activo: true,          // valor por defecto
-        tipoPersona: "admin",  // valor momentáneo hasta que el backend lo defina
-    };
+    // Construimos el objeto respetando lo que espera tu Backend
+            const nuevoUsuario: Usuario = {
+                nombre,
+                apellido,
+                email,
+                contrasena,
+                activo: true,
+                tipoPersona: {
+                    idTipoPersona: 1 // Le mandamos directo el ID del rol Administrador
+                }
+            };
 
     try {
         console.log("Payload enviado:", { usuario: nuevoUsuario, claveAcceso });
