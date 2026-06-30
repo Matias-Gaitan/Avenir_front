@@ -1,11 +1,14 @@
 // src/components/home/home.tsx
 import React, { useState } from "react";
 import GestorUsuarios from "../gestorUsuarios/GestorUsuarios";
-import GestorRoles from "../gestorRoles/GestorRoles"; // <-- Importación habilitada
+import GestorRoles from "../gestorRoles/GestorRoles";
+// Importamos los nuevos componentes del Sprint 2
+import EmpresaComponent from "../empresa/EmpresaComponent";
+import RegistroHorarioComponent from "../Horarios/RegistroHorariosComponents";
 
 const Home: React.FC = () => {
-    // Estado para saber qué pestaña está viendo el usuario
-    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles">("usuarios");
+    // Ampliamos el estado para incluir las nuevas vistas
+    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios">("usuarios");
 
     return (
         <div style={{ minHeight: "100vh", backgroundColor: "#F4FBF7" }}>
@@ -16,11 +19,12 @@ const Home: React.FC = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: "30px",
-                boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+                boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                flexWrap: "wrap" // Para que no se rompa si la pantalla es chica
             }}>
                 <h2 style={{ color: "#FFFFFF", margin: 0 }}>Panel de Control</h2>
 
-                <div style={{ display: "flex", gap: "15px" }}>
+                <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
                     <button
                         onClick={() => setVistaActiva("usuarios")}
                         style={{
@@ -51,15 +55,48 @@ const Home: React.FC = () => {
                     >
                         Gestor de Roles
                     </button>
+                    {/* Nuevos botones del Sprint 2 */}
+                    <button
+                        onClick={() => setVistaActiva("empresas")}
+                        style={{
+                            backgroundColor: vistaActiva === "empresas" ? "#22C55E" : "transparent",
+                            color: "#FFFFFF",
+                            border: "none",
+                            padding: "8px 16px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                            transition: "0.3s"
+                        }}
+                    >
+                        Gestor de Empresas
+                    </button>
+                    <button
+                        onClick={() => setVistaActiva("horarios")}
+                        style={{
+                            backgroundColor: vistaActiva === "horarios" ? "#22C55E" : "transparent",
+                            color: "#FFFFFF",
+                            border: "none",
+                            padding: "8px 16px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                            transition: "0.3s"
+                        }}
+                    >
+                        Registro de Horarios
+                    </button>
                 </div>
             </nav>
 
             {/* Contenido Dinámico (Acá renderizamos el gestor que elija) */}
             <div style={{ padding: "20px" }}>
                 {vistaActiva === "usuarios" && <GestorUsuarios />}
-
-                {/* Llamamos al componente oficial del Gestor de Roles */}
                 {vistaActiva === "roles" && <GestorRoles />}
+
+                {/* Nuevas Vistas del Sprint 2 */}
+                {vistaActiva === "empresas" && <EmpresaComponent />}
+                {vistaActiva === "horarios" && <RegistroHorarioComponent />}
             </div>
         </div>
     );

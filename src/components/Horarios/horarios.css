@@ -1,0 +1,26 @@
+/* Reutiliza form-component, form, form-section, form-input, form-button y data-table del archivo anterior */
+.horario-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+.filtros-section {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.filtros-section input {
+    padding: 8px;
+    border: 2px solid #064E3B;
+    border-radius: 5px;
+}
+.filtros-section button {
+    background-color: #064E3B;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
