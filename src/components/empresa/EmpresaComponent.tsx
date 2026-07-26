@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../service/api";
 import "./empresa.css";
 import type { Empresa } from "../../interfaces/Empresa";
 
@@ -16,7 +16,7 @@ const EmpresaComponent: React.FC = () => {
 
     const cargarEmpresas = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/api/empresas", { headers });
+            const response = await api.get("/empresas", { headers });
             setEmpresas(response.data);
         } catch (err: any) {
             setError("Error al cargar empresas");
@@ -35,12 +35,12 @@ const EmpresaComponent: React.FC = () => {
         const nuevaEmpresa: Empresa = { cuit, nombre, direccion, activo: true };
 
         try {
-            await axios.post("http://localhost:8080/api/empresas", nuevaEmpresa, { headers });
+            await api.post("/empresas", nuevaEmpresa, { headers });
             setMensaje("Empresa registrada exitosamente");
             setCuit("");
             setNombre("");
             setDireccion("");
-            cargarEmpresas(); // Recargar la tabla
+            cargarEmpresas();
         } catch (err: any) {
             setError(err.response?.data || "Error al registrar la empresa");
         }
@@ -49,7 +49,7 @@ const EmpresaComponent: React.FC = () => {
     const handleBaja = async (id: number | undefined) => {
         if (!id) return;
         try {
-            await axios.patch(`http://localhost:8080/api/empresas/${id}/baja`, {}, { headers });
+            await api.patch(`/empresas/${id}/baja`, {}, { headers });
             cargarEmpresas();
         } catch (err: any) {
             setError("Error al dar de baja");

@@ -1,0 +1,10 @@
+import axios from "axios";
+
+// Apunta directo a Spring Boot en tu red local
+export const API_BASE_URL = "http://192.168.0.18:8080/api";
+
+const api = axios.create({
+    baseURL: API_BASE_URL,
+});
+
+export default api;

@@ -1,8 +1,6 @@
-// src/components/gestorRoles/GestorRoles.tsx
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../service/api";
 import type { TipoPersona } from "../../interfaces/TipoPersona";
-// ¡Magia! Importamos el CSS del gestor de usuarios para mantener el mismo diseño
 import "../gestorUsuarios/gestorUsuarios.css";
 
 const GestorRoles: React.FC = () => {
@@ -12,7 +10,7 @@ const GestorRoles: React.FC = () => {
 
     const cargarRoles = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/api/roles");
+            const response = await api.get("/roles");
             setRoles(response.data);
         } catch (error) {
             console.error("Error al cargar roles:", error);
@@ -23,29 +21,27 @@ const GestorRoles: React.FC = () => {
         cargarRoles();
     }, []);
 
-    // Crear un nuevo rol
     const handleCrear = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!nombreNuevoRol.trim()) return;
 
         try {
-            await axios.post("http://localhost:8080/api/roles", { nombre: nombreNuevoRol });
+            await api.post("/roles", { nombre: nombreNuevoRol });
             alert("Rol creado exitosamente.");
-            setNombreNuevoRol(""); // Limpiamos el input
-            cargarRoles(); // Recargamos la tabla
+            setNombreNuevoRol("");
+            cargarRoles();
         } catch (error) {
             console.error("Error al crear:", error);
             alert("Hubo un error al crear el rol.");
         }
     };
 
-    // Eliminar rol
     const handleEliminar = async (id: number | undefined) => {
         if (!id) return;
         const confirmar = window.confirm("¿Estás seguro de eliminar este rol?");
         if (confirmar) {
             try {
-                await axios.delete(`http://localhost:8080/api/roles/${id}`);
+                await api.delete(`/roles/${id}`);
                 alert("Rol eliminado exitosamente.");
                 cargarRoles();
             } catch (error) {
@@ -55,15 +51,14 @@ const GestorRoles: React.FC = () => {
         }
     };
 
-    // Guardar edición
     const handleGuardarEdicion = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!rolEditando || !rolEditando.idTipoPersona) return;
 
         try {
-            await axios.put(`http://localhost:8080/api/roles/${rolEditando.idTipoPersona}`, rolEditando);
+            await api.put(`/roles/${rolEditando.idTipoPersona}`, rolEditando);
             alert("Rol actualizado correctamente.");
-            setRolEditando(null); // Cerramos el cuadro de edición
+            setRolEditando(null);
             cargarRoles();
         } catch (error) {
             console.error("Error al editar:", error);
@@ -76,7 +71,6 @@ const GestorRoles: React.FC = () => {
             <div className="gestor-card">
                 <h1 className="gestor-title">Gestor de Roles</h1>
 
-                {/* --- FORMULARIO PARA CREAR NUEVO ROL --- */}
                 <form className="edit-form" style={{ flexDirection: 'row', marginBottom: '20px' }} onSubmit={handleCrear}>
                     <input
                         className="filter-select"
@@ -122,7 +116,6 @@ const GestorRoles: React.FC = () => {
                     </tbody>
                 </table>
 
-                {/* --- SECCIÓN DE EDICIÓN FLOTANTE --- */}
                 {rolEditando && (
                     <div className="edit-container">
                         <h2 className="gestor-title" style={{ fontSize: '1.2rem', margin: 0 }}>
@@ -150,7 +143,6 @@ const GestorRoles: React.FC = () => {
                         </form>
                     </div>
                 )}
-
             </div>
         </div>
     );

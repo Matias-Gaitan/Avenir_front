@@ -1,18 +1,14 @@
-// src/components/home/home.tsx
 import React, { useState } from "react";
-import GestorUsuarios from "../gestorUsuarios/GestorUsuarios";
-import GestorRoles from "../gestorRoles/GestorRoles";
-// Importamos los nuevos componentes del Sprint 2
+import GestorUsuarios from "../gestorUsuarios/gestorUsuarios";
+import GestorRoles from "../gestorRoles/gestorRoles";
 import EmpresaComponent from "../empresa/EmpresaComponent";
 import RegistroHorarioComponent from "../Horarios/RegistroHorariosComponents";
 
 const Home: React.FC = () => {
-    // Ampliamos el estado para incluir las nuevas vistas
     const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios">("usuarios");
 
     return (
         <div style={{ minHeight: "100vh", backgroundColor: "#F4FBF7" }}>
-            {/* Barra de Navegación del Dashboard */}
             <nav style={{
                 backgroundColor: "#064E3B",
                 padding: "15px 30px",
@@ -20,7 +16,7 @@ const Home: React.FC = () => {
                 alignItems: "center",
                 gap: "30px",
                 boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-                flexWrap: "wrap" // Para que no se rompa si la pantalla es chica
+                flexWrap: "wrap"
             }}>
                 <h2 style={{ color: "#FFFFFF", margin: 0 }}>Panel de Control</h2>
 
@@ -55,7 +51,6 @@ const Home: React.FC = () => {
                     >
                         Gestor de Roles
                     </button>
-                    {/* Nuevos botones del Sprint 2 */}
                     <button
                         onClick={() => setVistaActiva("empresas")}
                         style={{
@@ -89,12 +84,9 @@ const Home: React.FC = () => {
                 </div>
             </nav>
 
-            {/* Contenido Dinámico (Acá renderizamos el gestor que elija) */}
             <div style={{ padding: "20px" }}>
                 {vistaActiva === "usuarios" && <GestorUsuarios />}
                 {vistaActiva === "roles" && <GestorRoles />}
-
-                {/* Nuevas Vistas del Sprint 2 */}
                 {vistaActiva === "empresas" && <EmpresaComponent />}
                 {vistaActiva === "horarios" && <RegistroHorarioComponent />}
             </div>

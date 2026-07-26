@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../service/api";
 import "./horarios.css";
-import "../empresa/empresa.css"; // Reutilizamos estilos base
+import "../empresa/empresa.css";
 import type { Empresa } from "../../interfaces/Empresa";
-import type { RegistroHora, RegistroHoraPayload } from "../../interfaces/RegistroHora";
+import type { RegistroHora } from "../../interfaces/RegistroHora";
 
 const RegistroHorarioComponent: React.FC = () => {
-    // Estados para el Formulario (POST)
     const [empresas, setEmpresas] = useState<Empresa[]>([]);
     const [idEmpresa, setIdEmpresa] = useState<number | "">("");
     const [fechaRegistro, setFechaRegistro] = useState(new Date().toISOString().split('T')[0]);
     const [horasDedicadas, setHorasDedicadas] = useState<number | "">("");
     const [tareasRealizadas, setTareasRealizadas] = useState("");
 
-    // Estados para el Calendario (GET)
     const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split('T')[0]);
     const [registros, setRegistros] = useState<RegistroHora[]>([]);
 
@@ -21,15 +19,12 @@ const RegistroHorarioComponent: React.FC = () => {
     const [mensaje, setMensaje] = useState("");
 
     const token = localStorage.getItem("token");
-    const idUsuarioStorage = localStorage.getItem("idUsuario"); // Asegurate de guardar el idUsuario al hacer Login
     const headers = { Authorization: `Bearer ${token}` };
 
-    // Cargar empresas activas para el select
     useEffect(() => {
         const fetchEmpresas = async () => {
             try {
-                const response = await axios.get("http://localhost:8080/api/empresas", { headers });
-                // Filtramos solo las activas para cargar horas
+                const response = await api.get("/empresas", { headers });
                 setEmpresas(response.data.filter((e: Empresa) => e.activo));
             } catch (err) {
                 console.error("Error al cargar empresas", err);
@@ -39,10 +34,9 @@ const RegistroHorarioComponent: React.FC = () => {
         buscarRegistros(fechaFiltro);
     }, []);
 
-    // Buscar registros por fecha (El molde del calendario)
     const buscarRegistros = async (fecha: string) => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/horas/calendario?fecha=${fecha}`, { headers });
+            const response = await api.get(`/horas/calendario?fecha=${fecha}`, { headers });
             setRegistros(response.data);
             setError("");
         } catch (err: any) {
@@ -55,44 +49,41 @@ const RegistroHorarioComponent: React.FC = () => {
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-            e.preventDefault();
-            setError("");
-            setMensaje("");
+        e.preventDefault();
+        setError("");
+        setMensaje("");
 
-            const emailUsuario = localStorage.getItem("email"); // Recuperamos el email
+        const emailUsuario = localStorage.getItem("email");
 
-            if (!emailUsuario) {
-                setError("Error de sesión: vuelva a iniciar sesión.");
-                return;
-            }
+        if (!emailUsuario) {
+            setError("Error de sesión: vuelva a iniciar sesión.");
+            return;
+        }
 
-            // Enviamos emailUsuario en lugar de idUsuario
-            const payload = {
-                idEmpresa: Number(idEmpresa),
-                emailUsuario: emailUsuario,
-                fecha: fechaRegistro,
-                horasDedicadas: Number(horasDedicadas),
-                tareasRealizadas: tareasRealizadas
-            };
-
-            try {
-                await axios.post("http://localhost:8080/api/horas/registrar", payload, { headers });
-                setMensaje("Horas registradas exitosamente");
-                setHorasDedicadas("");
-                setTareasRealizadas("");
-
-                if (fechaRegistro === fechaFiltro) {
-                    buscarRegistros(fechaFiltro);
-                }
-            } catch (err: any) {
-                setError("Error al guardar: " + (err.response?.data || "Verifique los datos"));
-            }
+        const payload = {
+            idEmpresa: Number(idEmpresa),
+            emailUsuario: emailUsuario,
+            fecha: fechaRegistro,
+            horasDedicadas: Number(horasDedicadas),
+            tareasRealizadas: tareasRealizadas
         };
+
+        try {
+            await api.post("/horas/registrar", payload, { headers });
+            setMensaje("Horas registradas exitosamente");
+            setHorasDedicadas("");
+            setTareasRealizadas("");
+
+            if (fechaRegistro === fechaFiltro) {
+                buscarRegistros(fechaFiltro);
+            }
+        } catch (err: any) {
+            setError("Error al guardar: " + (err.response?.data || "Verifique los datos"));
+        }
+    };
 
     return (
         <div className="horario-container">
-
-            {/* SECCIÓN 1: FORMULARIO DE REGISTRO */}
             <div className="form-component">
                 <div className="form-tittle">
                     <h1>REGISTRAR HORAS DE TRABAJO</h1>
@@ -159,7 +150,6 @@ const RegistroHorarioComponent: React.FC = () => {
                 </form>
             </div>
 
-            {/* SECCIÓN 2: CALENDARIO / VISOR DE REGISTROS DIARIOS */}
             <div className="form-component">
                 <div className="form-tittle">
                     <h1>CALENDARIO DIARIO DE HORAS</h1>
@@ -202,7 +192,6 @@ const RegistroHorarioComponent: React.FC = () => {
                     </tbody>
                 </table>
             </div>
-
         </div>
     );
 };

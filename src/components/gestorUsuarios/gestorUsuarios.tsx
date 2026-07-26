@@ -1,23 +1,20 @@
-// src/components/gestorUsuarios/GestorUsuarios.tsx
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../service/api";
 import type { Usuario } from "../../interfaces/Usuario";
 import "./gestorUsuarios.css";
 
 const GestorUsuarios: React.FC = () => {
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
     const [filtro, setFiltro] = useState<string>("todos");
-
-    // NUEVO: Estado para saber a quién estamos editando
     const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
 
     const cargarUsuarios = async () => {
         try {
-            let url = "http://localhost:8080/api/usuarios";
+            let url = "/usuarios";
             if (filtro === "activos") url += "?activo=true";
             if (filtro === "inactivos") url += "?activo=false";
 
-            const response = await axios.get(url);
+            const response = await api.get(url);
             setUsuarios(response.data);
         } catch (error) {
             console.error("Error al cargar los usuarios:", error);
@@ -28,7 +25,6 @@ const GestorUsuarios: React.FC = () => {
         cargarUsuarios();
     }, [filtro]);
 
-    // Lógica para Dar de Baja
     const handleBaja = async (id: number | undefined) => {
         if (!id) {
             alert("Error: No se encontró el ID del usuario.");
@@ -38,9 +34,9 @@ const GestorUsuarios: React.FC = () => {
         const confirmar = window.confirm("¿Estás seguro de que deseas dar de baja a este usuario?");
         if (confirmar) {
             try {
-                await axios.delete(`http://localhost:8080/api/usuarios/${id}`);
+                await api.delete(`/usuarios/${id}`);
                 alert("Usuario dado de baja exitosamente.");
-                cargarUsuarios(); // Recarga la tabla
+                cargarUsuarios();
             } catch (error) {
                 console.error("Error al dar de baja:", error);
                 alert("Hubo un error al intentar dar de baja al usuario.");
@@ -48,29 +44,24 @@ const GestorUsuarios: React.FC = () => {
         }
     };
 
-    // NUEVO: Lógica para Guardar la Edición
-        const handleGuardarEdicion = async (e: React.FormEvent) => {
-            e.preventDefault();
+    const handleGuardarEdicion = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-            // ¡ACÁ ESTABA EL DETALLE! Ahora busca idUsuario
-            if (!usuarioEditando || !usuarioEditando.idUsuario) {
-                console.error("No se encontró el ID para editar");
-                return;
-            }
+        if (!usuarioEditando || !usuarioEditando.idUsuario) {
+            console.error("No se encontró el ID para editar");
+            return;
+        }
 
-            try {
-                // Le pegamos a nuestro método PUT con el ID correcto
-                await axios.put(`http://localhost:8080/api/usuarios/${usuarioEditando.idUsuario}`, usuarioEditando);
-
-                alert("Usuario actualizado correctamente.");
-                setUsuarioEditando(null); // Cerramos el cuadrito de edición
-                cargarUsuarios(); // Recargamos la tabla para ver los cambios
-
-            } catch (error) {
-                console.error("Error al editar:", error);
-                alert("Hubo un error al guardar los cambios. Fijate en la consola.");
-            }
-        };
+        try {
+            await api.put(`/usuarios/${usuarioEditando.idUsuario}`, usuarioEditando);
+            alert("Usuario actualizado correctamente.");
+            setUsuarioEditando(null);
+            cargarUsuarios();
+        } catch (error) {
+            console.error("Error al editar:", error);
+            alert("Hubo un error al guardar los cambios. Fijate en la consola.");
+        }
+    };
 
     return (
         <div className="gestor-container">
@@ -83,7 +74,7 @@ const GestorUsuarios: React.FC = () => {
                         value={filtro}
                         onChange={(e) => {
                             setFiltro(e.target.value);
-                            setUsuarioEditando(null); // Si cambia el filtro, cerramos la edición
+                            setUsuarioEditando(null);
                         }}
                     >
                         <option value="todos">Todos los usuarios</option>
@@ -98,7 +89,7 @@ const GestorUsuarios: React.FC = () => {
                             <th>Nombre</th>
                             <th>Apellido</th>
                             <th>Email</th>
-                            <th>Rol</th> {/* COLUMNA NUEVA */}
+                            <th>Rol</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
@@ -109,7 +100,6 @@ const GestorUsuarios: React.FC = () => {
                                 <td>{usuario.nombre}</td>
                                 <td>{usuario.apellido}</td>
                                 <td>{usuario.email}</td>
-                                {/* Mostramos el Rol (Asumiendo que ID 1 es Admin y 2 es Común) */}
                                 <td>
                                     {usuario.tipoPersona?.idTipoPersona === 1 ? "Administrador" : "Usuario Base"}
                                 </td>
@@ -119,7 +109,6 @@ const GestorUsuarios: React.FC = () => {
                                     </span>
                                 </td>
                                 <td>
-                                    {/* Botón Editar que abre el formulario */}
                                     <button
                                         className="btn-action"
                                         onClick={() => setUsuarioEditando(usuario)}
@@ -145,7 +134,6 @@ const GestorUsuarios: React.FC = () => {
                     <p style={{ textAlign: "center", marginTop: "20px" }}>No se encontraron usuarios.</p>
                 )}
 
-                {/* --- SECCIÓN DE EDICIÓN FLOTANTE --- */}
                 {usuarioEditando && (
                     <div className="edit-container">
                         <h2 className="gestor-title" style={{ fontSize: '1.2rem', margin: 0 }}>
@@ -196,7 +184,6 @@ const GestorUsuarios: React.FC = () => {
                         </form>
                     </div>
                 )}
-
             </div>
         </div>
     );

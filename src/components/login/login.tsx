@@ -1,9 +1,8 @@
-// src/components/login/Login.tsx
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../../service/api";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
-import type { Login } from "../../interfaces/Login"; // interface reducida: email + contrasena
+import type { Login } from "../../interfaces/Login";
 
 const LoginComponent: React.FC = () => {
     const [email, setEmail] = useState("");
@@ -16,10 +15,6 @@ const LoginComponent: React.FC = () => {
         return regex.test(email);
     };
 
-    const validarPassword = (password: string) => {
-        return password.length >= 8;
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -30,17 +25,17 @@ const LoginComponent: React.FC = () => {
 
         const loginData: Login = { email, contrasena };
 
-       try {
-                   const response = await axios.post("http://localhost:8080/api/usuarios/login", loginData);
+        try {
+            const response = await api.post("/usuarios/login", loginData);
 
-                   if(response.data.mensaje !== "Credenciales inválidas"){
-                       localStorage.setItem("token", response.data.token);
-                       localStorage.setItem("email", loginData.email); // Esto es lo que necesitamos
-                       navigate("/home");
-                   }
-               } catch (err: any) {
-                   setError("Error al iniciar sesión:" + err.response?.data);
-               }
+            if(response.data.mensaje !== "Credenciales inválidas"){
+                localStorage.setItem("token", response.data.token);
+                localStorage.setItem("email", loginData.email);
+                navigate("/home");
+            }
+        } catch (err: any) {
+            setError("Error al iniciar sesión: " + (err.response?.data || "Verifique sus credenciales"));
+        }
     };
 
     return (
