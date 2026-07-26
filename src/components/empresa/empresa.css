@@ -1,83 +1,74 @@
-body {
-    font-family: sans-serif;
-    color: #4B5563;
-}
-* {
+.empresa-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    max-width: 100%;
+    width: 100%;
     box-sizing: border-box;
 }
-h1 {
-    color: #064E3B;
-    text-align: center;
-    font-size: 1.5rem;
+
+.empresa-card h2 {
+    color: #064e3b;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    font-weight: 700;
 }
-.form-component {
-    border-radius: 10px;
-    box-shadow: 0 0 15px 2px rgba(0,0,0,0.2);
-    max-width: 85%;
-    margin: auto;
-    margin-top: 30px;
-    padding: 20px;
-    background-color: #fff;
+
+.form-empresa {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+    background-color: #f8fafc;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
 }
-.form {
+
+.form-group {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    align-items: center;
-    padding: 15px 0;
+    gap: 6px;
 }
-.form-section {
-    width: 75%;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+
+.form-group label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #475569;
 }
-.form-input {
-    width: 100%;
-    padding: 8px;
-    border: 2px solid #D1D5DB;
-    border-radius: 5px;
-}
-.form-input:focus {
-    border: 2px solid #22C55E;
+
+.form-group input {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.88rem;
     outline: none;
 }
-.form-button {
-    margin-top: 15px;
-    padding: 12px;
-    width: 75%;
-    border-style: none;
-    border-radius: 5px;
-    background-color: #22C55E;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
+
+.form-group input:focus {
+    border-color: #22c55e;
 }
-.form-button:active {
-    background-color: #16A34A;
-}
-.btn-baja {
-    background-color: #DC2626;
-    color: #fff;
+
+.btn-registrar {
+    grid-column: 1 / -1;
+    background-color: #22c55e;
+    color: #ffffff;
     border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-.btn-baja:active {
-    background-color: #991B1B;
-}
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-.data-table th, .data-table td {
-    border: 1px solid #D1D5DB;
     padding: 10px;
-    text-align: left;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
-.data-table th {
-    background-color: #064E3B;
-    color: #fff;
+
+.btn-registrar:hover {
+    background-color: #16a34a;
+}
+
+@media (max-width: 768px) {
+    .empresa-card {
+        padding: 14px;
+    }
 }

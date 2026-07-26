@@ -1,88 +1,238 @@
 import React, { useState, useEffect } from "react";
 import api from "../../service/api";
-import type { Usuario } from "../../interfaces/Usuario";
 import "./gestorUsuarios.css";
+
+interface Rol {
+    idTipoPersona: number;
+    nombre: string;
+}
+
+interface Usuario {
+    idUsuario?: number;
+    nombre: string;
+    apellido: string;
+    email: string;
+    contrasena?: string;
+    estado?: boolean;
+    activo?: boolean;
+    tipoPersona?: Rol;
+}
 
 const GestorUsuarios: React.FC = () => {
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-    const [filtro, setFiltro] = useState<string>("todos");
-    const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
+    const [roles, setRoles] = useState<Rol[]>([]);
+    const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
 
-    const cargarUsuarios = async () => {
+    // Estados para el Formulario de Crear / Editar
+    const [modoEdicion, setModoEdicion] = useState<boolean>(false);
+    const [idEditar, setIdEditar] = useState<number | null>(null);
+    const [nombre, setNombre] = useState("");
+    const [apellido, setApellido] = useState("");
+    const [email, setEmail] = useState("");
+    const [contrasena, setContrasena] = useState("");
+    const [idRolSeleccionado, setIdRolSeleccionado] = useState<number | "">("");
+
+    // Helper para determinar si un usuario está activo (soporta 'estado', 'activo' o true por defecto)
+    const obtenerEstadoBoolean = (u: Usuario): boolean => {
+        return u.estado ?? u.activo ?? true;
+    };
+
+    // 1. Cargar Usuarios y Roles
+    const cargarDatos = async () => {
         try {
-            let url = "/usuarios";
-            if (filtro === "activos") url += "?activo=true";
-            if (filtro === "inactivos") url += "?activo=false";
+            const token = localStorage.getItem("token");
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-            const response = await api.get(url);
-            setUsuarios(response.data);
-        } catch (error) {
-            console.error("Error al cargar los usuarios:", error);
+            const [resUsers, resRoles] = await Promise.all([
+                api.get("/usuarios", { headers }),
+                api.get("/roles", { headers })
+            ]);
+
+            setUsuarios(Array.isArray(resUsers.data) ? resUsers.data : []);
+            setRoles(Array.isArray(resRoles.data) ? resRoles.data : []);
+        } catch (err) {
+            console.error("Error al cargar datos:", err);
         }
     };
 
     useEffect(() => {
-        cargarUsuarios();
-    }, [filtro]);
+        cargarDatos();
+    }, []);
 
-    const handleBaja = async (id: number | undefined) => {
-        if (!id) {
-            alert("Error: No se encontró el ID del usuario.");
-            return;
-        }
-
-        const confirmar = window.confirm("¿Estás seguro de que deseas dar de baja a este usuario?");
-        if (confirmar) {
-            try {
-                await api.delete(`/usuarios/${id}`);
-                alert("Usuario dado de baja exitosamente.");
-                cargarUsuarios();
-            } catch (error) {
-                console.error("Error al dar de baja:", error);
-                alert("Hubo un error al intentar dar de baja al usuario.");
-            }
-        }
+    // 2. Limpiar Formulario
+    const limpiarFormulario = () => {
+        setNombre("");
+        setApellido("");
+        setEmail("");
+        setContrasena("");
+        setIdRolSeleccionado("");
+        setModoEdicion(false);
+        setIdEditar(null);
     };
 
-    const handleGuardarEdicion = async (e: React.FormEvent) => {
+    // 3. CREATE / UPDATE
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!usuarioEditando || !usuarioEditando.idUsuario) {
-            console.error("No se encontró el ID para editar");
-            return;
-        }
-
         try {
-            await api.put(`/usuarios/${usuarioEditando.idUsuario}`, usuarioEditando);
-            alert("Usuario actualizado correctamente.");
-            setUsuarioEditando(null);
-            cargarUsuarios();
-        } catch (error) {
-            console.error("Error al editar:", error);
-            alert("Hubo un error al guardar los cambios. Fijate en la consola.");
+            const token = localStorage.getItem("token");
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+            if (modoEdicion && idEditar) {
+                // UPDATE: Envía el objeto Usuario directamente al PUT /usuarios/{id}
+                const payloadUpdate: Usuario = {
+                    nombre,
+                    apellido,
+                    email,
+                    ...(contrasena && { contrasena }), // Envía la contraseña solo si se escribió una nueva
+                    tipoPersona: { idTipoPersona: Number(idRolSeleccionado), nombre: "" }
+                };
+
+                await api.put(`/usuarios/${idEditar}`, payloadUpdate, { headers });
+            } else {
+                // CREATE: Envía el wrapper UsuarioRequest que espera Spring Boot
+                const payloadCreate = {
+                    claveAcceso: "000010001", // Clave requerida por tu Controller
+                    usuario: {
+                        nombre,
+                        apellido,
+                        email,
+                        contrasena,
+                        tipoPersona: { idTipoPersona: Number(idRolSeleccionado) }
+                    }
+                };
+
+                await api.post("/usuarios", payloadCreate, { headers });
+            }
+
+            limpiarFormulario();
+            cargarDatos();
+        } catch (err: any) {
+            console.error("Error al guardar usuario:", err);
+            alert(err.response?.data || "Error al procesar la solicitud.");
         }
     };
+
+    // 4. Preparar Edición
+    const handleEditarClick = (u: Usuario) => {
+        setModoEdicion(true);
+        setIdEditar(u.idUsuario || null);
+        setNombre(u.nombre);
+        setApellido(u.apellido);
+        setEmail(u.email);
+        setContrasena(""); // Dejar vacío en edición por seguridad
+        setIdRolSeleccionado(u.tipoPersona?.idTipoPersona || "");
+    };
+
+    // 5. DAR DE BAJA LÓGICA (DELETE) / REACTIVAR (PUT)
+    // ¡OJO ACÁ! Recibe el objeto entero 'u' para que Java no tire error 500 por datos nulos
+    const handleCambiarEstado = async (u: Usuario, estadoActual: boolean) => {
+        try {
+            const token = localStorage.getItem("token");
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+            if (estadoActual) {
+                // Si está activo -> Manda DELETE /{id} para dar de baja lógica
+                await api.delete(`/usuarios/${u.idUsuario}`, { headers });
+            } else {
+                // Si está inactivo -> Clona el usuario completo, lo pone activo y lo envía por PUT
+                const payloadReactivar = {
+                    ...u,
+                    estado: true,
+                    activo: true
+                };
+                await api.put(`/usuarios/${u.idUsuario}`, payloadReactivar, { headers });
+            }
+
+            cargarDatos();
+        } catch (err) {
+            console.error("Error al cambiar estado del usuario:", err);
+            alert("No se pudo cambiar el estado. Verifica la consola.");
+        }
+    };
+
+    // Filtro de usuarios en el Front
+    const usuariosFiltrados = usuarios.filter((u) => {
+        const estaActivo = obtenerEstadoBoolean(u);
+        if (filtroEstado === "ACTIVOS") return estaActivo === true;
+        if (filtroEstado === "INACTIVOS") return estaActivo === false;
+        return true;
+    });
 
     return (
-        <div className="gestor-container">
-            <div className="gestor-card">
-                <h1 className="gestor-title">Gestor de Usuarios</h1>
+        <div className="gestor-card">
+            <h2>{modoEdicion ? "EDITAR USUARIO" : "REGISTRAR NUEVO USUARIO"}</h2>
 
-                <div className="gestor-controls">
+            {/* FORMULARIO CRUD */}
+            <form onSubmit={handleSubmit} className="form-crud">
+                <div className="form-group">
+                    <label>Nombre</label>
+                    <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+                </div>
+                <div className="form-group">
+                    <label>Apellido</label>
+                    <input type="text" value={apellido} onChange={(e) => setApellido(e.target.value)} required />
+                </div>
+                <div className="form-group">
+                    <label>Email</label>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
+                <div className="form-group">
+                    <label>{modoEdicion ? "Nueva Contraseña (Opcional)" : "Contraseña (mínimo 6 chars)"}</label>
+                    <input
+                        type="password"
+                        value={contrasena}
+                        onChange={(e) => setContrasena(e.target.value)}
+                        required={!modoEdicion}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Rol de Usuario</label>
                     <select
-                        className="filter-select"
-                        value={filtro}
-                        onChange={(e) => {
-                            setFiltro(e.target.value);
-                            setUsuarioEditando(null);
-                        }}
+                        value={idRolSeleccionado}
+                        onChange={(e) => setIdRolSeleccionado(Number(e.target.value))}
+                        required
                     >
-                        <option value="todos">Todos los usuarios</option>
-                        <option value="activos">Solo Activos</option>
-                        <option value="inactivos">Solo Inactivos</option>
+                        <option value="">Seleccione un Rol</option>
+                        {roles.map((r) => (
+                            <option key={r.idTipoPersona} value={r.idTipoPersona}>
+                                {r.nombre}
+                            </option>
+                        ))}
                     </select>
                 </div>
 
+                <div className="btn-group-form">
+                    <button type="submit" className="btn-guardar">
+                        {modoEdicion ? "ACTUALIZAR" : "CREAR USUARIO"}
+                    </button>
+                    {modoEdicion && (
+                        <button type="button" onClick={limpiarFormulario} className="btn-cancelar">
+                            CANCELAR
+                        </button>
+                    )}
+                </div>
+            </form>
+
+            <hr className="divider" />
+
+            {/* LISTADO DE USUARIOS */}
+            <div className="listado-header">
+                <h3>LISTADO DE USUARIOS</h3>
+                <div className="filtro-container">
+                    <select
+                        value={filtroEstado}
+                        onChange={(e) => setFiltroEstado(e.target.value)}
+                        className="select-filtro"
+                    >
+                        <option value="TODOS">Todos los usuarios</option>
+                        <option value="ACTIVOS">Solo Activos</option>
+                        <option value="INACTIVOS">Solo Inactivos</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* TABLA RESPONSIVE */}
+            <div className="table-responsive">
                 <table className="gestor-table">
                     <thead>
                         <tr>
@@ -95,95 +245,41 @@ const GestorUsuarios: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {usuarios.map((usuario) => (
-                            <tr key={usuario.idUsuario}>
-                                <td>{usuario.nombre}</td>
-                                <td>{usuario.apellido}</td>
-                                <td>{usuario.email}</td>
-                                <td>
-                                    {usuario.tipoPersona?.idTipoPersona === 1 ? "Administrador" : "Usuario Base"}
-                                </td>
-                                <td>
-                                    <span className={usuario.activo ? "badge-activo" : "badge-inactivo"}>
-                                        {usuario.activo ? "Activo" : "Inactivo"}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button
-                                        className="btn-action"
-                                        onClick={() => setUsuarioEditando(usuario)}
-                                    >
-                                        Editar
-                                    </button>
-
-                                    {usuario.activo && (
-                                        <button
-                                            className="btn-action btn-danger"
-                                            onClick={() => handleBaja(usuario.idUsuario)}
-                                        >
-                                            Dar de baja
-                                        </button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
+                        {usuariosFiltrados.map((u) => {
+                            const esActivo = obtenerEstadoBoolean(u);
+                            return (
+                                <tr key={u.idUsuario}>
+                                    <td>{u.nombre}</td>
+                                    <td>{u.apellido}</td>
+                                    <td>{u.email}</td>
+                                    <td>{u.tipoPersona?.nombre || "Sin Rol"}</td>
+                                    <td>
+                                        <span className={`badge ${esActivo ? "badge-activo" : "badge-inactivo"}`}>
+                                            {esActivo ? "Activo" : "Inactivo"}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div className="acciones-group">
+                                            <button
+                                                onClick={() => handleEditarClick(u)}
+                                                className="btn-editar"
+                                            >
+                                                Editar
+                                            </button>
+                                            {/* AQUÍ ESTÁ LA MAGIA: Se pasa el objeto 'u' completo */}
+                                            <button
+                                                onClick={() => handleCambiarEstado(u, esActivo)}
+                                                className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"}`}
+                                            >
+                                                {esActivo ? "Dar de baja" : "Dar de alta"}
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
-
-                {usuarios.length === 0 && (
-                    <p style={{ textAlign: "center", marginTop: "20px" }}>No se encontraron usuarios.</p>
-                )}
-
-                {usuarioEditando && (
-                    <div className="edit-container">
-                        <h2 className="gestor-title" style={{ fontSize: '1.2rem', margin: 0 }}>
-                            Editando a: {usuarioEditando.nombre} {usuarioEditando.apellido}
-                        </h2>
-
-                        <form className="edit-form" onSubmit={handleGuardarEdicion}>
-                            <input
-                                className="filter-select"
-                                type="text"
-                                placeholder="Nombre"
-                                value={usuarioEditando.nombre}
-                                onChange={(e) => setUsuarioEditando({...usuarioEditando, nombre: e.target.value})}
-                                required
-                            />
-                            <input
-                                className="filter-select"
-                                type="text"
-                                placeholder="Apellido"
-                                value={usuarioEditando.apellido}
-                                onChange={(e) => setUsuarioEditando({...usuarioEditando, apellido: e.target.value})}
-                                required
-                            />
-
-                            <label style={{ fontSize: '0.9rem', color: '#4B5563' }}>Rol del usuario:</label>
-                            <select
-                                className="filter-select"
-                                value={usuarioEditando.tipoPersona?.idTipoPersona || 1}
-                                onChange={(e) => setUsuarioEditando({
-                                    ...usuarioEditando,
-                                    tipoPersona: { idTipoPersona: Number(e.target.value) }
-                                })}
-                            >
-                                <option value={1}>Administrador</option>
-                                <option value={2}>Usuario Base</option>
-                            </select>
-
-                            <div className="edit-buttons">
-                                <button className="btn-action" type="submit">Guardar Cambios</button>
-                                <button
-                                    className="btn-action btn-danger"
-                                    type="button"
-                                    onClick={() => setUsuarioEditando(null)}
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                )}
             </div>
         </div>
     );

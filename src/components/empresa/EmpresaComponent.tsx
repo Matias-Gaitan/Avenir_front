@@ -1,25 +1,40 @@
 import React, { useState, useEffect } from "react";
 import api from "../../service/api";
 import "./empresa.css";
-import type { Empresa } from "../../interfaces/Empresa";
+
+interface Empresa {
+    idEmpresa?: number;
+    cuit: string;
+    nombre: string;
+    direccion: string;
+    estado?: boolean;
+    activo?: boolean;
+}
 
 const EmpresaComponent: React.FC = () => {
     const [empresas, setEmpresas] = useState<Empresa[]>([]);
+    const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
+
+    // Estados del Formulario CRUD
+    const [modoEdicion, setModoEdicion] = useState<boolean>(false);
+    const [idEditar, setIdEditar] = useState<number | null>(null);
     const [cuit, setCuit] = useState("");
     const [nombre, setNombre] = useState("");
     const [direccion, setDireccion] = useState("");
-    const [error, setError] = useState("");
-    const [mensaje, setMensaje] = useState("");
+    const [estadoEdicion, setEstadoEdicion] = useState<boolean>(true); // Campo explícito para el estado
 
-    const token = localStorage.getItem("token");
-    const headers = { Authorization: `Bearer ${token}` };
+    const obtenerEstadoBoolean = (emp: Empresa): boolean => {
+        return emp.estado ?? emp.activo ?? true;
+    };
 
     const cargarEmpresas = async () => {
         try {
-            const response = await api.get("/empresas", { headers });
-            setEmpresas(response.data);
-        } catch (err: any) {
-            setError("Error al cargar empresas");
+            const token = localStorage.getItem("token");
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+            const res = await api.get("/empresas", { headers });
+            setEmpresas(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+            console.error("Error al cargar empresas:", err);
         }
     };
 
@@ -27,112 +42,208 @@ const EmpresaComponent: React.FC = () => {
         cargarEmpresas();
     }, []);
 
+    const limpiarFormulario = () => {
+        setCuit("");
+        setNombre("");
+        setDireccion("");
+        setEstadoEdicion(true);
+        setModoEdicion(false);
+        setIdEditar(null);
+    };
+
+    // CREATE & UPDATE
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
-        setMensaje("");
-
-        const nuevaEmpresa: Empresa = { cuit, nombre, direccion, activo: true };
-
         try {
-            await api.post("/empresas", nuevaEmpresa, { headers });
-            setMensaje("Empresa registrada exitosamente");
-            setCuit("");
-            setNombre("");
-            setDireccion("");
+            const token = localStorage.getItem("token");
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+            const payload = {
+                cuit,
+                nombre,
+                direccion,
+                estado: estadoEdicion, // Mandamos explícitamente el estado seleccionado
+                activo: estadoEdicion
+            };
+
+            if (modoEdicion && idEditar) {
+                // UPDATE
+                await api.put(`/empresas/${idEditar}`, payload, { headers });
+            } else {
+                // CREATE
+                await api.post("/empresas", payload, { headers });
+            }
+
+            limpiarFormulario();
             cargarEmpresas();
         } catch (err: any) {
-            setError(err.response?.data || "Error al registrar la empresa");
+            console.error("Error al guardar empresa:", err);
+            alert(err.response?.data || "Error al procesar la empresa.");
         }
     };
 
-    const handleBaja = async (id: number | undefined) => {
-        if (!id) return;
+    // Cargar datos al formulario para editar
+    const handleEditarClick = (emp: Empresa) => {
+        setModoEdicion(true);
+        setIdEditar(emp.idEmpresa || null);
+        setCuit(emp.cuit);
+        setNombre(emp.nombre);
+        setDireccion(emp.direccion);
+        setEstadoEdicion(obtenerEstadoBoolean(emp)); // Se carga con su estado actual
+    };
+
+    // Cambiar estado directo desde el botón de la tabla
+    const handleCambiarEstado = async (emp: Empresa, estadoActual: boolean) => {
         try {
-            await api.patch(`/empresas/${id}/baja`, {}, { headers });
+            const token = localStorage.getItem("token");
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+            if (estadoActual) {
+                await api.patch(`/empresas/${emp.idEmpresa}/baja`, {}, { headers });
+            } else {
+                const payloadReactivar = { ...emp, estado: true, activo: true };
+                await api.put(`/empresas/${emp.idEmpresa}`, payloadReactivar, { headers });
+            }
+
             cargarEmpresas();
-        } catch (err: any) {
-            setError("Error al dar de baja");
+        } catch (err) {
+            console.error("Error al cambiar estado:", err);
         }
     };
+
+    const empresasFiltradas = empresas.filter((emp) => {
+        const estaActiva = obtenerEstadoBoolean(emp);
+        if (filtroEstado === "ACTIVOS") return estaActiva === true;
+        if (filtroEstado === "INACTIVOS") return estaActiva === false;
+        return true;
+    });
 
     return (
-        <div className="form-component">
-            <div className="form-tittle">
-                <h1>GESTIÓN DE EMPRESAS</h1>
-            </div>
+        <div className="empresa-card">
+            <h2>{modoEdicion ? "EDITAR EMPRESA" : "GESTIÓN DE EMPRESAS"}</h2>
 
-            <form className="form" onSubmit={handleSubmit}>
-                <div className="form-section">
-                    <label htmlFor="cuit">CUIT</label>
-                    <input
-                        type="text"
-                        className="form-input"
-                        id="cuit"
-                        value={cuit}
-                        onChange={(e) => setCuit(e.target.value)}
-                        required
-                    />
+            {/* FORMULARIO CRUD */}
+            <form onSubmit={handleSubmit} className="form-empresa">
+                <div className="form-group">
+                    <label>CUIT</label>
+                    <input type="text" value={cuit} onChange={(e) => setCuit(e.target.value)} required />
                 </div>
-                <div className="form-section">
-                    <label htmlFor="nombre">Razón Social / Nombre</label>
-                    <input
-                        type="text"
-                        className="form-input"
-                        id="nombre"
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
-                        required
-                    />
+                <div className="form-group">
+                    <label>Razón Social / Nombre</label>
+                    <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
                 </div>
-                <div className="form-section">
-                    <label htmlFor="direccion">Dirección</label>
-                    <input
-                        type="text"
-                        className="form-input"
-                        id="direccion"
-                        value={direccion}
-                        onChange={(e) => setDireccion(e.target.value)}
-                        required
-                    />
+                <div className="form-group">
+                    <label>Dirección</label>
+                    <input type="text" value={direccion} onChange={(e) => setDireccion(e.target.value)} required />
                 </div>
 
-                <button type="submit" className="form-button">REGISTRAR EMPRESA</button>
+                {/* CAMPO DE ESTADO SOLO VISIBLE AL EDITAR */}
+                {modoEdicion && (
+                    <div className="form-group">
+                        <label>Estado de la Empresa</label>
+                        <select
+                            value={estadoEdicion ? "true" : "false"}
+                            onChange={(e) => setEstadoEdicion(e.target.value === "true")}
+                            style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }}
+                        >
+                            <option value="true">Activa</option>
+                            <option value="false">Inactiva</option>
+                        </select>
+                    </div>
+                )}
 
-                {error && <p style={{ color: "#DC2626", marginTop: "10px" }}>{error}</p>}
-                {mensaje && <p style={{ color: "#22C55E", marginTop: "10px" }}>{mensaje}</p>}
+                <div className="btn-group-form" style={{ gridColumn: "1 / -1", display: "flex", gap: "8px", marginTop: "8px" }}>
+                    <button type="submit" className="btn-registrar" style={{ flex: 1 }}>
+                        {modoEdicion ? "ACTUALIZAR EMPRESA" : "REGISTRAR EMPRESA"}
+                    </button>
+                    {modoEdicion && (
+                        <button
+                            type="button"
+                            onClick={limpiarFormulario}
+                            style={{
+                                backgroundColor: "#94a3b8",
+                                color: "white",
+                                padding: "10px",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontWeight: "bold"
+                            }}
+                        >
+                            CANCELAR
+                        </button>
+                    )}
+                </div>
             </form>
 
-            <table className="data-table">
-                <thead>
-                    <tr>
-                        <th>CUIT</th>
-                        <th>Nombre</th>
-                        <th>Dirección</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {empresas.map((emp) => (
-                        <tr key={emp.idEmpresa}>
-                            <td>{emp.cuit}</td>
-                            <td>{emp.nombre}</td>
-                            <td>{emp.direccion}</td>
-                            <td style={{ color: emp.activo ? "#22C55E" : "#DC2626", fontWeight: "bold" }}>
-                                {emp.activo ? "Activo" : "Inactivo"}
-                            </td>
-                            <td>
-                                {emp.activo && (
-                                    <button className="btn-baja" onClick={() => handleBaja(emp.idEmpresa)}>
-                                        Dar de baja
-                                    </button>
-                                )}
-                            </td>
+            <hr className="divider" style={{ border: "0", height: "1px", background: "#e2e8f0", margin: "20px 0" }} />
+
+            {/* LISTADO + FILTRO */}
+            <div className="listado-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "12px" }}>
+                <h3 style={{ margin: 0, color: "#064e3b" }}>LISTADO DE EMPRESAS</h3>
+                <div className="filtro-container">
+                    <select
+                        value={filtroEstado}
+                        onChange={(e) => setFiltroEstado(e.target.value)}
+                        className="select-filtro"
+                        style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "0.85rem", outline: "none" }}
+                    >
+                        <option value="TODOS">Todas las empresas</option>
+                        <option value="ACTIVOS">Solo Activas</option>
+                        <option value="INACTIVOS">Solo Inactivas</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* TABLA RESPONSIVA */}
+            <div className="table-responsive">
+                <table className="gestor-table">
+                    <thead>
+                        <tr>
+                            <th>CUIT</th>
+                            <th>Nombre</th>
+                            <th>Dirección</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {empresasFiltradas.map((emp) => {
+                            const esActivo = obtenerEstadoBoolean(emp);
+                            return (
+                                <tr key={emp.idEmpresa}>
+                                    <td>{emp.cuit}</td>
+                                    <td>{emp.nombre}</td>
+                                    <td>{emp.direccion}</td>
+                                    <td>
+                                        <span className={`badge ${esActivo ? "badge-activo" : "badge-inactivo"}`}>
+                                            {esActivo ? "Activo" : "Inactivo"}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div className="acciones-group" style={{ display: "flex", gap: "6px" }}>
+                                            <button
+                                                onClick={() => handleEditarClick(emp)}
+                                                className="btn-editar"
+                                                style={{ backgroundColor: "#22c55e", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold" }}
+                                            >
+                                                Editar
+                                            </button>
+                                            <button
+                                                onClick={() => handleCambiarEstado(emp, esActivo)}
+                                                className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"}`}
+                                                style={{ padding: "6px 10px", borderRadius: "4px", border: "none", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold", color: "white", backgroundColor: esActivo ? "#94a3b8" : "#16a34a" }}
+                                            >
+                                                {esActivo ? "Dar de baja" : "Dar de alta"}
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

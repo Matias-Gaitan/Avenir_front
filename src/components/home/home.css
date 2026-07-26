@@ -1,0 +1,90 @@
+.home-container {
+    min-height: 100vh;
+    background-color: #f4fbf7;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Header Verde */
+.navbar-card {
+    background-color: #064e3b;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    color: white;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.home-title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.home-title-section h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+/* Carrusel de botones navegables en 1 sola fila */
+.nav-pills {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    width: 100% !important;
+    padding: 4px 0 !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+.nav-pills::-webkit-scrollbar {
+    display: none; /* Oculta la barra en celulares */
+}
+
+.nav-pill-btn {
+    background: transparent;
+    color: #e2e8f0;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap !important; /* Evita que el texto se rompa en 2 líneas */
+    flex-shrink: 0; /* Evita que los botones se encojan */
+}
+
+.nav-pill-btn.active {
+    background-color: #22c55e;
+    color: #ffffff;
+}
+
+.btn-logout {
+    background-color: #dc2626;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ÁREA PRINCIPAL */
+.main-content {
+    flex: 1;
+    padding: 12px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
