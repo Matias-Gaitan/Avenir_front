@@ -4,17 +4,17 @@ import "./empresa.css";
 
 interface Empresa {
     idEmpresa?: number;
+    id?: number; // 🔹 Seguro anti-fallos por si Spring Boot lo llama "id"
     cuit: string;
     nombre: string;
     direccion: string;
-    activo?: boolean; // Única propiedad de estado
+    activo?: boolean;
 }
 
 const EmpresaComponent: React.FC = () => {
     const [empresas, setEmpresas] = useState<Empresa[]>([]);
     const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
 
-    // Estados del Formulario CRUD
     const [modoEdicion, setModoEdicion] = useState<boolean>(false);
     const [idEditar, setIdEditar] = useState<number | null>(null);
     const [cuit, setCuit] = useState("");
@@ -22,7 +22,6 @@ const EmpresaComponent: React.FC = () => {
     const [direccion, setDireccion] = useState("");
     const [estadoEdicion, setEstadoEdicion] = useState<boolean>(true);
 
-    // Simplificado ya que no existe más "estado" en la interfaz
     const obtenerEstadoBoolean = (emp: Empresa): boolean => {
         return emp.activo ?? true;
     };
@@ -32,7 +31,17 @@ const EmpresaComponent: React.FC = () => {
             const token = localStorage.getItem("token");
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
             const res = await api.get("/empresas", { headers });
-            setEmpresas(Array.isArray(res.data) ? res.data : []);
+
+            const data = Array.isArray(res.data) ? res.data : [];
+
+            // 🔹 MAGIA: Ordenamos la lista por ID para que las filas no salten de lugar al actualizar
+            data.sort((a, b) => {
+                const idA = a.idEmpresa ?? a.id ?? 0;
+                const idB = b.idEmpresa ?? b.id ?? 0;
+                return idA - idB;
+            });
+
+            setEmpresas(data);
         } catch (err) {
             console.error("Error al cargar empresas:", err);
         }
@@ -51,14 +60,12 @@ const EmpresaComponent: React.FC = () => {
         setIdEditar(null);
     };
 
-    // CREATE & UPDATE
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             const token = localStorage.getItem("token");
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-            // Payload limpio solo con 'activo'
             const payload = {
                 cuit,
                 nombre,
@@ -67,10 +74,8 @@ const EmpresaComponent: React.FC = () => {
             };
 
             if (modoEdicion && idEditar) {
-                // UPDATE
                 await api.put(`/empresas/${idEditar}`, payload, { headers });
             } else {
-                // CREATE
                 await api.post("/empresas", payload, { headers });
             }
 
@@ -82,28 +87,27 @@ const EmpresaComponent: React.FC = () => {
         }
     };
 
-    // Cargar datos al formulario para editar
     const handleEditarClick = (emp: Empresa) => {
         setModoEdicion(true);
-        setIdEditar(emp.idEmpresa || null);
+        // 🔹 Usamos el seguro anti-fallos
+        setIdEditar(emp.idEmpresa || emp.id || null);
         setCuit(emp.cuit);
         setNombre(emp.nombre);
         setDireccion(emp.direccion);
         setEstadoEdicion(obtenerEstadoBoolean(emp));
     };
 
-    // Cambiar estado directo desde la tabla
     const handleCambiarEstado = async (emp: Empresa, estadoActual: boolean) => {
         try {
             const token = localStorage.getItem("token");
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
+            const idSeguro = emp.idEmpresa || emp.id; // 🔹 Seguro anti-fallos
+
             if (estadoActual) {
-                // Si está activa -> Dar de baja
-                await api.patch(`/empresas/${emp.idEmpresa}/baja`, {}, { headers });
+                await api.patch(`/empresas/${idSeguro}/baja`, {}, { headers });
             } else {
-                // Si está inactiva -> Dar de alta (Usando tu NUEVO endpoint PATCH)
-                await api.patch(`/empresas/${emp.idEmpresa}/alta`, {}, { headers });
+                await api.patch(`/empresas/${idSeguro}/alta`, {}, { headers });
             }
 
             cargarEmpresas();
@@ -124,7 +128,6 @@ const EmpresaComponent: React.FC = () => {
         <div className="empresa-card">
             <h2>{modoEdicion ? "EDITAR EMPRESA" : "GESTIÓN DE EMPRESAS"}</h2>
 
-            {/* FORMULARIO CRUD */}
             <form onSubmit={handleSubmit} className="form-empresa">
                 <div className="form-group">
                     <label>CUIT</label>
@@ -139,7 +142,6 @@ const EmpresaComponent: React.FC = () => {
                     <input type="text" value={direccion} onChange={(e) => setDireccion(e.target.value)} required />
                 </div>
 
-                {/* CAMPO DE ESTADO SOLO EN MODO EDICIÓN */}
                 {modoEdicion && (
                     <div className="form-group">
                         <label>Estado de la Empresa</label>
@@ -180,7 +182,6 @@ const EmpresaComponent: React.FC = () => {
 
             <hr className="divider" style={{ border: "0", height: "1px", background: "#e2e8f0", margin: "20px 0" }} />
 
-            {/* LISTADO + FILTRO */}
             <div className="listado-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "12px" }}>
                 <h3 style={{ margin: 0, color: "#064e3b" }}>LISTADO DE EMPRESAS</h3>
                 <div className="filtro-container">
@@ -197,7 +198,6 @@ const EmpresaComponent: React.FC = () => {
                 </div>
             </div>
 
-            {/* TABLA RESPONSIVA */}
             <div className="table-responsive">
                 <table className="gestor-table">
                     <thead>
@@ -213,7 +213,7 @@ const EmpresaComponent: React.FC = () => {
                         {empresasFiltradas.map((emp) => {
                             const esActivo = obtenerEstadoBoolean(emp);
                             return (
-                                <tr key={emp.idEmpresa}>
+                                <tr key={emp.idEmpresa || emp.id}> {/* 🔹 Seguro anti-fallos */}
                                     <td>{emp.cuit}</td>
                                     <td>{emp.nombre}</td>
                                     <td>{emp.direccion}</td>

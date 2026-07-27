@@ -9,6 +9,7 @@ interface Rol {
 
 interface Usuario {
     idUsuario?: number;
+    id?: number; // 🔹 Seguro anti-fallos
     nombre: string;
     apellido: string;
     email: string;
@@ -23,7 +24,6 @@ const GestorUsuarios: React.FC = () => {
     const [roles, setRoles] = useState<Rol[]>([]);
     const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
 
-    // Estados para el Formulario de Crear / Editar
     const [modoEdicion, setModoEdicion] = useState<boolean>(false);
     const [idEditar, setIdEditar] = useState<number | null>(null);
     const [nombre, setNombre] = useState("");
@@ -32,12 +32,10 @@ const GestorUsuarios: React.FC = () => {
     const [contrasena, setContrasena] = useState("");
     const [idRolSeleccionado, setIdRolSeleccionado] = useState<number | "">("");
 
-    // Helper para determinar si un usuario está activo (soporta 'estado', 'activo' o true por defecto)
     const obtenerEstadoBoolean = (u: Usuario): boolean => {
         return u.estado ?? u.activo ?? true;
     };
 
-    // 1. Cargar Usuarios y Roles
     const cargarDatos = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -48,7 +46,16 @@ const GestorUsuarios: React.FC = () => {
                 api.get("/roles", { headers })
             ]);
 
-            setUsuarios(Array.isArray(resUsers.data) ? resUsers.data : []);
+            const usersData = Array.isArray(resUsers.data) ? resUsers.data : [];
+
+            // 🔹 MAGIA: Ordenamos la lista por ID para que las filas no salten
+            usersData.sort((a, b) => {
+                const idA = a.idUsuario ?? a.id ?? 0;
+                const idB = b.idUsuario ?? b.id ?? 0;
+                return idA - idB;
+            });
+
+            setUsuarios(usersData);
             setRoles(Array.isArray(resRoles.data) ? resRoles.data : []);
         } catch (err) {
             console.error("Error al cargar datos:", err);
@@ -59,7 +66,6 @@ const GestorUsuarios: React.FC = () => {
         cargarDatos();
     }, []);
 
-    // 2. Limpiar Formulario
     const limpiarFormulario = () => {
         setNombre("");
         setApellido("");
@@ -70,7 +76,6 @@ const GestorUsuarios: React.FC = () => {
         setIdEditar(null);
     };
 
-    // 3. CREATE / UPDATE
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -78,20 +83,18 @@ const GestorUsuarios: React.FC = () => {
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
             if (modoEdicion && idEditar) {
-                // UPDATE: Envía el objeto Usuario directamente al PUT /usuarios/{id}
                 const payloadUpdate: Usuario = {
                     nombre,
                     apellido,
                     email,
-                    ...(contrasena && { contrasena }), // Envía la contraseña solo si se escribió una nueva
+                    ...(contrasena && { contrasena }),
                     tipoPersona: { idTipoPersona: Number(idRolSeleccionado), nombre: "" }
                 };
 
                 await api.put(`/usuarios/${idEditar}`, payloadUpdate, { headers });
             } else {
-                // CREATE: Envía el wrapper UsuarioRequest que espera Spring Boot
                 const payloadCreate = {
-                    claveAcceso: "000010001", // Clave requerida por tu Controller
+                    claveAcceso: "000010001",
                     usuario: {
                         nombre,
                         apellido,
@@ -112,35 +115,33 @@ const GestorUsuarios: React.FC = () => {
         }
     };
 
-    // 4. Preparar Edición
     const handleEditarClick = (u: Usuario) => {
         setModoEdicion(true);
-        setIdEditar(u.idUsuario || null);
+        // 🔹 Usamos el seguro anti-fallos
+        setIdEditar(u.idUsuario || u.id || null);
         setNombre(u.nombre);
         setApellido(u.apellido);
         setEmail(u.email);
-        setContrasena(""); // Dejar vacío en edición por seguridad
+        setContrasena("");
         setIdRolSeleccionado(u.tipoPersona?.idTipoPersona || "");
     };
 
-    // 5. DAR DE BAJA LÓGICA (DELETE) / REACTIVAR (PUT)
-    // ¡OJO ACÁ! Recibe el objeto entero 'u' para que Java no tire error 500 por datos nulos
     const handleCambiarEstado = async (u: Usuario, estadoActual: boolean) => {
         try {
             const token = localStorage.getItem("token");
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
+            const idSeguro = u.idUsuario || u.id; // 🔹 Seguro anti-fallos
+
             if (estadoActual) {
-                // Si está activo -> Manda DELETE /{id} para dar de baja lógica
-                await api.delete(`/usuarios/${u.idUsuario}`, { headers });
+                await api.delete(`/usuarios/${idSeguro}`, { headers });
             } else {
-                // Si está inactivo -> Clona el usuario completo, lo pone activo y lo envía por PUT
                 const payloadReactivar = {
                     ...u,
                     estado: true,
                     activo: true
                 };
-                await api.put(`/usuarios/${u.idUsuario}`, payloadReactivar, { headers });
+                await api.put(`/usuarios/${idSeguro}`, payloadReactivar, { headers });
             }
 
             cargarDatos();
@@ -150,7 +151,6 @@ const GestorUsuarios: React.FC = () => {
         }
     };
 
-    // Filtro de usuarios en el Front
     const usuariosFiltrados = usuarios.filter((u) => {
         const estaActivo = obtenerEstadoBoolean(u);
         if (filtroEstado === "ACTIVOS") return estaActivo === true;
@@ -162,7 +162,6 @@ const GestorUsuarios: React.FC = () => {
         <div className="gestor-card">
             <h2>{modoEdicion ? "EDITAR USUARIO" : "REGISTRAR NUEVO USUARIO"}</h2>
 
-            {/* FORMULARIO CRUD */}
             <form onSubmit={handleSubmit} className="form-crud">
                 <div className="form-group">
                     <label>Nombre</label>
@@ -215,7 +214,6 @@ const GestorUsuarios: React.FC = () => {
 
             <hr className="divider" />
 
-            {/* LISTADO DE USUARIOS */}
             <div className="listado-header">
                 <h3>LISTADO DE USUARIOS</h3>
                 <div className="filtro-container">
@@ -231,7 +229,6 @@ const GestorUsuarios: React.FC = () => {
                 </div>
             </div>
 
-            {/* TABLA RESPONSIVE */}
             <div className="table-responsive">
                 <table className="gestor-table">
                     <thead>
@@ -248,7 +245,7 @@ const GestorUsuarios: React.FC = () => {
                         {usuariosFiltrados.map((u) => {
                             const esActivo = obtenerEstadoBoolean(u);
                             return (
-                                <tr key={u.idUsuario}>
+                                <tr key={u.idUsuario || u.id}> {/* 🔹 Seguro anti-fallos */}
                                     <td>{u.nombre}</td>
                                     <td>{u.apellido}</td>
                                     <td>{u.email}</td>
@@ -266,7 +263,6 @@ const GestorUsuarios: React.FC = () => {
                                             >
                                                 Editar
                                             </button>
-                                            {/* AQUÍ ESTÁ LA MAGIA: Se pasa el objeto 'u' completo */}
                                             <button
                                                 onClick={() => handleCambiarEstado(u, esActivo)}
                                                 className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"}`}
