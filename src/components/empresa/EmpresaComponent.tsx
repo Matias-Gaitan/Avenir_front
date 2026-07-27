@@ -7,8 +7,7 @@ interface Empresa {
     cuit: string;
     nombre: string;
     direccion: string;
-    estado?: boolean;
-    activo?: boolean;
+    activo?: boolean; // Única propiedad de estado
 }
 
 const EmpresaComponent: React.FC = () => {
@@ -21,10 +20,11 @@ const EmpresaComponent: React.FC = () => {
     const [cuit, setCuit] = useState("");
     const [nombre, setNombre] = useState("");
     const [direccion, setDireccion] = useState("");
-    const [estadoEdicion, setEstadoEdicion] = useState<boolean>(true); // Campo explícito para el estado
+    const [estadoEdicion, setEstadoEdicion] = useState<boolean>(true);
 
+    // Simplificado ya que no existe más "estado" en la interfaz
     const obtenerEstadoBoolean = (emp: Empresa): boolean => {
-        return emp.estado ?? emp.activo ?? true;
+        return emp.activo ?? true;
     };
 
     const cargarEmpresas = async () => {
@@ -58,12 +58,12 @@ const EmpresaComponent: React.FC = () => {
             const token = localStorage.getItem("token");
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
+            // Payload limpio solo con 'activo'
             const payload = {
                 cuit,
                 nombre,
                 direccion,
-                estado: estadoEdicion, // Mandamos explícitamente el estado seleccionado
-                activo: estadoEdicion
+                activo: modoEdicion ? estadoEdicion : true
             };
 
             if (modoEdicion && idEditar) {
@@ -89,25 +89,27 @@ const EmpresaComponent: React.FC = () => {
         setCuit(emp.cuit);
         setNombre(emp.nombre);
         setDireccion(emp.direccion);
-        setEstadoEdicion(obtenerEstadoBoolean(emp)); // Se carga con su estado actual
+        setEstadoEdicion(obtenerEstadoBoolean(emp));
     };
 
-    // Cambiar estado directo desde el botón de la tabla
+    // Cambiar estado directo desde la tabla
     const handleCambiarEstado = async (emp: Empresa, estadoActual: boolean) => {
         try {
             const token = localStorage.getItem("token");
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
             if (estadoActual) {
+                // Si está activa -> Dar de baja
                 await api.patch(`/empresas/${emp.idEmpresa}/baja`, {}, { headers });
             } else {
-                const payloadReactivar = { ...emp, estado: true, activo: true };
-                await api.put(`/empresas/${emp.idEmpresa}`, payloadReactivar, { headers });
+                // Si está inactiva -> Dar de alta (Usando tu NUEVO endpoint PATCH)
+                await api.patch(`/empresas/${emp.idEmpresa}/alta`, {}, { headers });
             }
 
             cargarEmpresas();
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error al cambiar estado:", err);
+            alert(err.response?.data || "No se pudo cambiar el estado de la empresa.");
         }
     };
 
@@ -137,7 +139,7 @@ const EmpresaComponent: React.FC = () => {
                     <input type="text" value={direccion} onChange={(e) => setDireccion(e.target.value)} required />
                 </div>
 
-                {/* CAMPO DE ESTADO SOLO VISIBLE AL EDITAR */}
+                {/* CAMPO DE ESTADO SOLO EN MODO EDICIÓN */}
                 {modoEdicion && (
                     <div className="form-group">
                         <label>Estado de la Empresa</label>
