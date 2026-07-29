@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../../service/api";
+import { tienePermiso } from "../../service/authHelper";
 import "./gestorRoles.css";
 
 interface Permiso {
@@ -13,15 +14,18 @@ interface Rol {
     permisos?: Permiso[];
 }
 
+interface ModuloPermisos {
+    titulo: string;
+    icono: string;
+    permisos: Permiso[];
+}
+
 const GestorRoles: React.FC = () => {
     const [roles, setRoles] = useState<Rol[]>([]);
     const [nuevoRol, setNuevoRol] = useState("");
 
-    // Estados para permisos
     const [permisosDisponibles, setPermisosDisponibles] = useState<Permiso[]>([]);
     const [permisosSeleccionados, setPermisosSeleccionados] = useState<number[]>([]);
-    const [nombreNuevoPermiso, setNombreNuevoPermiso] = useState(""); // Estado para el input del nuevo permiso
-
     const [idRolEditando, setIdRolEditando] = useState<number | null>(null);
 
     useEffect(() => {
@@ -31,9 +35,7 @@ const GestorRoles: React.FC = () => {
 
     const cargarRoles = async () => {
         try {
-            const token = localStorage.getItem("token");
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
-            const res = await api.get("/roles", { headers });
+            const res = await api.get("/roles");
             setRoles(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.error("Error al cargar roles:", err);
@@ -42,32 +44,67 @@ const GestorRoles: React.FC = () => {
 
     const cargarPermisosDisponibles = async () => {
         try {
-            const token = localStorage.getItem("token");
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
-            const res = await api.get("/roles/permisos", { headers });
+            const res = await api.get("/roles/permisos");
             setPermisosDisponibles(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.error("Error al cargar permisos:", err);
         }
     };
 
-    // 👇 NUEVO: Función para crear un permiso en caliente
-    const handleCrearNuevoPermiso = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        if (!nombreNuevoPermiso.trim()) return;
+    // 🌟 AGRUPADOR INTELIGENTE POR MÓDULOS
+    const agruparPermisosPorModulo = (): ModuloPermisos[] => {
+        const modulosMap: { [key: string]: { icono: string; permisos: Permiso[] } } = {
+            "USUARIOS": { icono: "👤", permisos: [] },
+            "ROLES": { icono: "🔑", permisos: [] },
+            "EMPRESAS": { icono: "🏢", permisos: [] },
+            "HORARIOS": { icono: "⏰", permisos: [] },
+            "OTROS": { icono: "⚙️", permisos: [] }
+        };
 
-        try {
-            const token = localStorage.getItem("token");
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        permisosDisponibles.forEach((p) => {
+            const nombre = p.nombre.toUpperCase();
+            if (nombre.includes("USUARIO")) {
+                modulosMap["USUARIOS"].permisos.push(p);
+            } else if (nombre.includes("ROL")) {
+                modulosMap["ROLES"].permisos.push(p);
+            } else if (nombre.includes("EMPRESA")) {
+                modulosMap["EMPRESAS"].permisos.push(p);
+            } else if (nombre.includes("HORARIO")) {
+                modulosMap["HORARIOS"].permisos.push(p);
+            } else {
+                modulosMap["OTROS"].permisos.push(p);
+            }
+        });
 
-            await api.post("/roles/permisos", { nombre: nombreNuevoPermiso }, { headers });
+        return Object.keys(modulosMap)
+            .filter((key) => modulosMap[key].permisos.length > 0)
+            .map((key) => ({
+                titulo: key,
+                icono: modulosMap[key].icono,
+                permisos: modulosMap[key].permisos
+            }));
+    };
 
-            setNombreNuevoPermiso(""); // Limpiamos el input
-            cargarPermisosDisponibles(); // Recargamos los checkboxes
-            alert("¡Permiso creado con éxito!");
-        } catch (err) {
-            console.error("Error al crear permiso:", err);
-            alert("Error al crear el permiso. Puede que ya exista.");
+    // 🌟 SELECCIONAR / DESSELECCIONAR TODOS
+    const handleSeleccionarTodos = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) {
+            setPermisosSeleccionados(permisosDisponibles.map((p) => p.idPermiso));
+        } else {
+            setPermisosSeleccionados([]);
+        }
+    };
+
+    // 🌟 SELECCIONAR / DESSELECCIONAR UN MÓDULO ENTERO
+    const handleToggleModulo = (permisosModulo: Permiso[]) => {
+        const idsModulo = permisosModulo.map((p) => p.idPermiso);
+        const estanTodosModulo = idsModulo.every((id) => permisosSeleccionados.includes(id));
+
+        if (estanTodosModulo) {
+            // Quitamos solo los permisos de este módulo
+            setPermisosSeleccionados((prev) => prev.filter((id) => !idsModulo.includes(id)));
+        } else {
+            // Agregamos los permisos de este módulo que falten
+            setPermisosSeleccionados((prev) => Array.from(new Set([...prev, ...idsModulo])));
         }
     };
 
@@ -87,20 +124,17 @@ const GestorRoles: React.FC = () => {
         }
 
         try {
-            const token = localStorage.getItem("token");
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
             if (idRolEditando) {
                 await api.put(`/roles/${idRolEditando}`, {
                     nombre: nuevoRol,
                     permisosIds: permisosSeleccionados
-                }, { headers });
+                });
                 alert("¡Rol actualizado con éxito!");
             } else {
                 await api.post("/roles", {
                     nombre: nuevoRol,
                     permisosIds: permisosSeleccionados
-                }, { headers });
+                });
                 alert("¡Rol creado con éxito!");
             }
 
@@ -118,10 +152,7 @@ const GestorRoles: React.FC = () => {
         if (!window.confirm("¿Seguro que querés eliminar este rol?")) return;
 
         try {
-            const token = localStorage.getItem("token");
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
-            await api.delete(`/roles/${id}`, { headers });
-
+            await api.delete(`/roles/${id}`);
             alert("Rol eliminado correctamente.");
             cargarRoles();
         } catch (err: any) {
@@ -148,105 +179,238 @@ const GestorRoles: React.FC = () => {
         setIdRolEditando(null);
     };
 
+    const todosSeleccionados = permisosDisponibles.length > 0 && permisosSeleccionados.length === permisosDisponibles.length;
+    const modulosAgrupados = agruparPermisosPorModulo();
+
     return (
         <div className="roles-card">
             <h2>Gestor de Roles y Permisos</h2>
 
-            <form onSubmit={handleGuardarRol} className="form-rol-container">
-                <div className="form-row-top">
-                    <input
-                        type="text"
-                        className="input-rol"
-                        placeholder="Nombre del rol (ej: Gerente)"
-                        value={nuevoRol}
-                        onChange={(e) => setNuevoRol(e.target.value)}
-                    />
-                </div>
+            {/* Formulario de Creación / Edición */}
+            {((!idRolEditando && tienePermiso("CREAR_ROLES")) || (idRolEditando && tienePermiso("EDITAR_ROLES"))) && (
+                <form onSubmit={handleGuardarRol} className="form-rol-container">
+                    <div className="form-row-top" style={{ marginBottom: "20px" }}>
+                        <label style={{ fontWeight: "bold", color: "#0F172A", display: "block", marginBottom: "6px" }}>
+                            Nombre del Rol:
+                        </label>
+                        <input
+                            type="text"
+                            className="input-rol"
+                            placeholder="Ej: Gerente, Supervisor, Contador..."
+                            value={nuevoRol}
+                            onChange={(e) => setNuevoRol(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                <div className="permisos-section">
-                    <div className="header-permisos">
-                        <h4>Asignar Permisos:</h4>
+                    <div className="permisos-section">
+                        {/* Cabecera Principal de Asignación */}
+                        <div style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            backgroundColor: "#F1F5F9",
+                            padding: "12px 20px",
+                            borderRadius: "8px",
+                            marginBottom: "15px"
+                        }}>
+                            <h4 style={{ margin: 0, color: "#0F172A", fontSize: "1.05rem" }}>
+                                Asignar Permisos por Módulo:
+                            </h4>
 
-                        {/* 👇 NUEVO: Input para crear permiso en caliente */}
-                        <div className="crear-permiso-inline">
-                            <input
-                                type="text"
-                                placeholder="Nuevo permiso (ej: VER REPORTES)"
-                                value={nombreNuevoPermiso}
-                                onChange={(e) => setNombreNuevoPermiso(e.target.value)}
-                                className="input-mini"
-                            />
-                            <button type="button" onClick={handleCrearNuevoPermiso} className="btn-mini">
-                                + Agregar
-                            </button>
+                            <label style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                cursor: "pointer",
+                                fontSize: "0.9rem",
+                                fontWeight: "bold",
+                                color: "#047857"
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    checked={todosSeleccionados}
+                                    onChange={handleSeleccionarTodos}
+                                />
+                                Marcar Todo el Sistema ({permisosSeleccionados.length}/{permisosDisponibles.length})
+                            </label>
+                        </div>
+
+                        {/* TARJETAS AGRUPADAS POR MÓDULO */}
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "15px" }}>
+                            {modulosAgrupados.map((mod) => {
+                                const idsMod = mod.permisos.map((p) => p.idPermiso);
+                                const estanTodosMod = idsMod.every((id) => permisosSeleccionados.includes(id));
+                                const algunoMod = idsMod.some((id) => permisosSeleccionados.includes(id));
+
+                                return (
+                                    <div key={mod.titulo} style={{
+                                        backgroundColor: "#FFFFFF",
+                                        border: "1px solid",
+                                        borderColor: algunoMod ? "#A7F3D0" : "#E2E8F0",
+                                        borderRadius: "10px",
+                                        padding: "15px",
+                                        boxShadow: "0 2px 4px rgba(0,0,0,0.02)"
+                                    }}>
+                                        {/* Cabecera del Módulo */}
+                                        <div style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            borderBottom: "1px solid #F1F5F9",
+                                            paddingBottom: "8px",
+                                            marginBottom: "12px"
+                                        }}>
+                                            <span style={{ fontWeight: "bold", color: "#1E293B", fontSize: "0.95rem" }}>
+                                                {mod.icono} Módulo {mod.titulo}
+                                            </span>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleModulo(mod.permisos)}
+                                                style={{
+                                                    backgroundColor: "transparent",
+                                                    border: "none",
+                                                    color: "#059669",
+                                                    fontSize: "0.8rem",
+                                                    fontWeight: "bold",
+                                                    cursor: "pointer"
+                                                }}
+                                            >
+                                                {estanTodosMod ? "Desmarcar Módulo" : "Marcar Módulo"}
+                                            </button>
+                                        </div>
+
+                                        {/* Checkboxes del Módulo */}
+                                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                            {mod.permisos.map((p) => {
+                                                const seleccionado = permisosSeleccionados.includes(p.idPermiso);
+                                                return (
+                                                    <label key={p.idPermiso} style={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: "10px",
+                                                        padding: "6px 10px",
+                                                        borderRadius: "6px",
+                                                        backgroundColor: seleccionado ? "#ECFDF5" : "#F8FAFC",
+                                                        border: "1px solid",
+                                                        borderColor: seleccionado ? "#6EE7B7" : "#E2E8F0",
+                                                        cursor: "pointer",
+                                                        fontSize: "0.85rem",
+                                                        transition: "0.2s"
+                                                    }}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={seleccionado}
+                                                            onChange={() => handleCheckboxChange(p.idPermiso)}
+                                                        />
+                                                        <span style={{
+                                                            fontWeight: seleccionado ? "bold" : "normal",
+                                                            color: seleccionado ? "#065F46" : "#475569"
+                                                        }}>
+                                                            {p.nombre}
+                                                        </span>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
-                    <div className="permisos-grid">
-                        {permisosDisponibles.map((permiso) => (
-                            <label key={permiso.idPermiso} className="permiso-checkbox">
-                                <input
-                                    type="checkbox"
-                                    checked={permisosSeleccionados.includes(permiso.idPermiso)}
-                                    onChange={() => handleCheckboxChange(permiso.idPermiso)}
-                                />
-                                {permiso.nombre}
-                            </label>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="form-actions">
-                    {idRolEditando && (
-                        <button type="button" className="btn-cancelar" onClick={limpiarFormulario}>
-                            Cancelar
+                    <div className="form-actions" style={{ marginTop: "20px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                        {idRolEditando && (
+                            <button type="button" className="btn-cancelar" onClick={limpiarFormulario}>
+                                Cancelar
+                            </button>
+                        )}
+                        <button type="submit" className="btn-agregar-rol">
+                            {idRolEditando ? "Actualizar Rol" : "Crear Rol con Permisos"}
                         </button>
-                    )}
-                    <button type="submit" className="btn-agregar-rol">
-                        {idRolEditando ? "Actualizar Rol" : "Crear Rol con Permisos"}
-                    </button>
-                </div>
-            </form>
+                    </div>
+                </form>
+            )}
 
-            <div className="table-responsive">
-                <table className="gestor-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre del Rol</th>
-                            <th>Permisos Asignados</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {roles.map((rol) => (
-                            <tr key={rol.idTipoPersona}>
-                                <td>{rol.idTipoPersona}</td>
-                                <td><strong>{rol.nombre}</strong></td>
-                                <td>
-                                    {rol.permisos && rol.permisos.length > 0 ? (
-                                        rol.permisos.map((p) => (
-                                            <span key={p.idPermiso} className="badge-permiso">
-                                                {p.nombre}
-                                            </span>
-                                        ))
-                                    ) : (
-                                        <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontStyle: "italic" }}>
-                                            Sin permisos
-                                        </span>
-                                    )}
-                                </td>
-                                <td>
-                                    <div className="acciones-group">
-                                        <button type="button" className="btn-editar" onClick={() => handleEditarClick(rol)}>Editar</button>
-                                        <button type="button" className="btn-eliminar" onClick={() => handleEliminarRol(rol.idTipoPersona)}>Eliminar</button>
-                                    </div>
-                                </td>
+            <hr style={{ margin: "25px 0", border: "none", borderTop: "1px solid #E2E8F0" }} />
+
+            {/* Listado de Roles */}
+            {tienePermiso("VER_ROLES") ? (
+                <div className="table-responsive">
+                    <table className="gestor-table">
+                        <thead>
+                            <tr>
+                                <th style={{ width: "60px" }}>ID</th>
+                                <th style={{ width: "180px" }}>Nombre del Rol</th>
+                                <th>Permisos Asignados</th>
+                                <th style={{ width: "140px" }}>Acciones</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {roles.map((rol) => {
+                                const totalPermisosRol = rol.permisos ? rol.permisos.length : 0;
+                                const esTotal = totalPermisosRol > 0 && totalPermisosRol >= permisosDisponibles.length;
+
+                                return (
+                                    <tr key={rol.idTipoPersona}>
+                                        <td>{rol.idTipoPersona}</td>
+                                        <td><strong>{rol.nombre}</strong></td>
+                                        <td>
+                                            {esTotal ? (
+                                                <span style={{
+                                                    backgroundColor: "#DCFCE7",
+                                                    color: "#166534",
+                                                    padding: "4px 12px",
+                                                    borderRadius: "15px",
+                                                    fontWeight: "bold",
+                                                    fontSize: "0.8rem",
+                                                    border: "1px solid #86EFAC"
+                                                }}>
+                                                    ⭐ Todos los Permisos ({totalPermisosRol})
+                                                </span>
+                                            ) : totalPermisosRol > 0 ? (
+                                                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                                                    {rol.permisos?.map((p) => (
+                                                        <span key={p.idPermiso} className="badge-permiso" style={{
+                                                            backgroundColor: "#E0F2FE",
+                                                            color: "#0369A1",
+                                                            padding: "3px 8px",
+                                                            borderRadius: "4px",
+                                                            fontSize: "0.75rem",
+                                                            fontWeight: "600"
+                                                        }}>
+                                                            {p.nombre}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontStyle: "italic" }}>
+                                                    Sin permisos asignados
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <div className="acciones-group">
+                                                {tienePermiso("EDITAR_ROLES") && (
+                                                    <button type="button" className="btn-editar" onClick={() => handleEditarClick(rol)}>Editar</button>
+                                                )}
+                                                {(tienePermiso("DAR_DE_BAJA_ROLES") || tienePermiso("ELIMINAR_ROLES")) && (
+                                                    <button type="button" className="btn-eliminar" onClick={() => handleEliminarRol(rol.idTipoPersona)}>Eliminar</button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <p style={{ color: "#ef4444", textAlign: "center", padding: "20px" }}>
+                    ⚠️ No tenés permisos para visualizar la lista de roles.
+                </p>
+            )}
         </div>
     );
 };

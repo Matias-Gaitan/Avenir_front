@@ -17,6 +17,7 @@ const LoginComponent: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError("");
 
         if (!validarEmail(email)) {
             setError("El email no es válido");
@@ -26,15 +27,33 @@ const LoginComponent: React.FC = () => {
         const loginData: Login = { email, contrasena };
 
         try {
+            // 🛑 Limpiamos la sesión anterior
+            localStorage.clear();
+
             const response = await api.post("/usuarios/login", loginData);
 
-            if(response.data.mensaje !== "Credenciales inválidas"){
-                localStorage.setItem("token", response.data.token);
+            if (response.status === 200 && response.data.token) {
+                const token = response.data.token;
+                const rolBackend = response.data.rol ? String(response.data.rol).trim().toUpperCase() : "";
+
+                // Guardamos la información limpia en el localStorage
+                localStorage.setItem("token", token);
                 localStorage.setItem("email", loginData.email);
-                navigate("/home");
+                localStorage.setItem("usuario", JSON.stringify({
+                    username: response.data.username || loginData.email,
+                    rol: rolBackend,
+                    permisos: response.data.permisos || []
+                }));
+
+                // 🚀 Refresco total de la app para sincronizar permisos y componentes
+                window.location.href = "/home";
+            } else {
+                setError("Credenciales inválidas o cuenta no aprobada.");
             }
         } catch (err: any) {
-            setError("Error al iniciar sesión: " + (err.response?.data || "Verifique sus credenciales"));
+            console.error("Error en login:", err.response);
+            const msgError = err.response?.data?.mensaje || err.response?.data || "Verifique sus credenciales o estado de cuenta.";
+            setError("Error al iniciar sesión: " + msgError);
         }
     };
 
@@ -54,6 +73,7 @@ const LoginComponent: React.FC = () => {
                         id="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        required
                     />
                 </div>
 
@@ -65,6 +85,7 @@ const LoginComponent: React.FC = () => {
                         id="contrasena"
                         value={contrasena}
                         onChange={(e) => setContrasena(e.target.value)}
+                        required
                     />
                 </div>
 
@@ -72,12 +93,13 @@ const LoginComponent: React.FC = () => {
                     INGRESAR
                 </button>
 
-                {error && <p style={{ color: "red" }}>{error}</p>}
+                {error && <p style={{ color: "red", marginTop: "10px", textAlign: "center" }}>{error}</p>}
             </form>
 
             <section>
                 <p>¿No tienes una cuenta?</p>
                 <button
+                    type="button"
                     className="registrer-button"
                     onClick={() => navigate("/register")}
                 >

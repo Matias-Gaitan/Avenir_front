@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import api from "../../service/api";
+import { tienePermiso } from "../../service/authHelper";
 import "./empresa.css";
 
 interface Empresa {
     idEmpresa?: number;
-    id?: number; // 🔹 Seguro anti-fallos por si Spring Boot lo llama "id"
+    id?: number;
     cuit: string;
     nombre: string;
     direccion: string;
@@ -34,7 +35,6 @@ const EmpresaComponent: React.FC = () => {
 
             const data = Array.isArray(res.data) ? res.data : [];
 
-            // 🔹 MAGIA: Ordenamos la lista por ID para que las filas no salten de lugar al actualizar
             data.sort((a, b) => {
                 const idA = a.idEmpresa ?? a.id ?? 0;
                 const idB = b.idEmpresa ?? b.id ?? 0;
@@ -89,7 +89,6 @@ const EmpresaComponent: React.FC = () => {
 
     const handleEditarClick = (emp: Empresa) => {
         setModoEdicion(true);
-        // 🔹 Usamos el seguro anti-fallos
         setIdEditar(emp.idEmpresa || emp.id || null);
         setCuit(emp.cuit);
         setNombre(emp.nombre);
@@ -102,7 +101,7 @@ const EmpresaComponent: React.FC = () => {
             const token = localStorage.getItem("token");
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-            const idSeguro = emp.idEmpresa || emp.id; // 🔹 Seguro anti-fallos
+            const idSeguro = emp.idEmpresa || emp.id;
 
             if (estadoActual) {
                 await api.patch(`/empresas/${idSeguro}/baja`, {}, { headers });
@@ -126,126 +125,141 @@ const EmpresaComponent: React.FC = () => {
 
     return (
         <div className="empresa-card">
-            <h2>{modoEdicion ? "EDITAR EMPRESA" : "GESTIÓN DE EMPRESAS"}</h2>
-
-            <form onSubmit={handleSubmit} className="form-empresa">
-                <div className="form-group">
-                    <label>CUIT</label>
-                    <input type="text" value={cuit} onChange={(e) => setCuit(e.target.value)} required />
-                </div>
-                <div className="form-group">
-                    <label>Razón Social / Nombre</label>
-                    <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
-                </div>
-                <div className="form-group">
-                    <label>Dirección</label>
-                    <input type="text" value={direccion} onChange={(e) => setDireccion(e.target.value)} required />
-                </div>
-
-                {modoEdicion && (
+            {/* Formulario solo visible si puede CREAR o EDITAR */}
+            {((!modoEdicion && tienePermiso("CREAR_EMPRESAS")) || (modoEdicion && tienePermiso("EDITAR_EMPRESAS"))) && (
+                <form onSubmit={handleSubmit} className="form-empresa">
+                    <h2>{modoEdicion ? "EDITAR EMPRESA" : "GESTIÓN DE EMPRESAS"}</h2>
                     <div className="form-group">
-                        <label>Estado de la Empresa</label>
-                        <select
-                            value={estadoEdicion ? "true" : "false"}
-                            onChange={(e) => setEstadoEdicion(e.target.value === "true")}
-                            style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }}
-                        >
-                            <option value="true">Activa</option>
-                            <option value="false">Inactiva</option>
-                        </select>
+                        <label>CUIT</label>
+                        <input type="text" value={cuit} onChange={(e) => setCuit(e.target.value)} required />
                     </div>
-                )}
+                    <div className="form-group">
+                        <label>Razón Social / Nombre</label>
+                        <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                        <label>Dirección</label>
+                        <input type="text" value={direccion} onChange={(e) => setDireccion(e.target.value)} required />
+                    </div>
 
-                <div className="btn-group-form" style={{ gridColumn: "1 / -1", display: "flex", gap: "8px", marginTop: "8px" }}>
-                    <button type="submit" className="btn-registrar" style={{ flex: 1 }}>
-                        {modoEdicion ? "ACTUALIZAR EMPRESA" : "REGISTRAR EMPRESA"}
-                    </button>
                     {modoEdicion && (
-                        <button
-                            type="button"
-                            onClick={limpiarFormulario}
-                            style={{
-                                backgroundColor: "#94a3b8",
-                                color: "white",
-                                padding: "10px",
-                                border: "none",
-                                borderRadius: "6px",
-                                cursor: "pointer",
-                                fontWeight: "bold"
-                            }}
-                        >
-                            CANCELAR
-                        </button>
+                        <div className="form-group">
+                            <label>Estado de la Empresa</label>
+                            <select
+                                value={estadoEdicion ? "true" : "false"}
+                                onChange={(e) => setEstadoEdicion(e.target.value === "true")}
+                                style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }}
+                            >
+                                <option value="true">Activa</option>
+                                <option value="false">Inactiva</option>
+                            </select>
+                        </div>
                     )}
-                </div>
-            </form>
+
+                    <div className="btn-group-form" style={{ gridColumn: "1 / -1", display: "flex", gap: "8px", marginTop: "8px" }}>
+                        <button type="submit" className="btn-registrar" style={{ flex: 1 }}>
+                            {modoEdicion ? "ACTUALIZAR EMPRESA" : "REGISTRAR EMPRESA"}
+                        </button>
+                        {modoEdicion && (
+                            <button
+                                type="button"
+                                onClick={limpiarFormulario}
+                                style={{
+                                    backgroundColor: "#94a3b8",
+                                    color: "white",
+                                    padding: "10px",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    fontWeight: "bold"
+                                }}
+                            >
+                                CANCELAR
+                            </button>
+                        )}
+                    </div>
+                </form>
+            )}
 
             <hr className="divider" style={{ border: "0", height: "1px", background: "#e2e8f0", margin: "20px 0" }} />
 
-            <div className="listado-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "12px" }}>
-                <h3 style={{ margin: 0, color: "#064e3b" }}>LISTADO DE EMPRESAS</h3>
-                <div className="filtro-container">
-                    <select
-                        value={filtroEstado}
-                        onChange={(e) => setFiltroEstado(e.target.value)}
-                        className="select-filtro"
-                        style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "0.85rem", outline: "none" }}
-                    >
-                        <option value="TODOS">Todas las empresas</option>
-                        <option value="ACTIVOS">Solo Activas</option>
-                        <option value="INACTIVOS">Solo Inactivas</option>
-                    </select>
-                </div>
-            </div>
+            {/* Listado protegido con VER_EMPRESAS */}
+            {tienePermiso("VER_EMPRESAS") ? (
+                <>
+                    <div className="listado-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "12px" }}>
+                        <h3 style={{ margin: 0, color: "#064e3b" }}>LISTADO DE EMPRESAS</h3>
+                        <div className="filtro-container">
+                            <select
+                                value={filtroEstado}
+                                onChange={(e) => setFiltroEstado(e.target.value)}
+                                className="select-filtro"
+                                style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "0.85rem", outline: "none" }}
+                            >
+                                <option value="TODOS">Todas las empresas</option>
+                                <option value="ACTIVOS">Solo Activas</option>
+                                <option value="INACTIVOS">Solo Inactivas</option>
+                            </select>
+                        </div>
+                    </div>
 
-            <div className="table-responsive">
-                <table className="gestor-table">
-                    <thead>
-                        <tr>
-                            <th>CUIT</th>
-                            <th>Nombre</th>
-                            <th>Dirección</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {empresasFiltradas.map((emp) => {
-                            const esActivo = obtenerEstadoBoolean(emp);
-                            return (
-                                <tr key={emp.idEmpresa || emp.id}> {/* 🔹 Seguro anti-fallos */}
-                                    <td>{emp.cuit}</td>
-                                    <td>{emp.nombre}</td>
-                                    <td>{emp.direccion}</td>
-                                    <td>
-                                        <span className={`badge ${esActivo ? "badge-activo" : "badge-inactivo"}`}>
-                                            {esActivo ? "Activo" : "Inactivo"}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="acciones-group" style={{ display: "flex", gap: "6px" }}>
-                                            <button
-                                                onClick={() => handleEditarClick(emp)}
-                                                className="btn-editar"
-                                                style={{ backgroundColor: "#22c55e", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold" }}
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                onClick={() => handleCambiarEstado(emp, esActivo)}
-                                                className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"}`}
-                                                style={{ padding: "6px 10px", borderRadius: "4px", border: "none", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold", color: "white", backgroundColor: esActivo ? "#94a3b8" : "#16a34a" }}
-                                            >
-                                                {esActivo ? "Dar de baja" : "Dar de alta"}
-                                            </button>
-                                        </div>
-                                    </td>
+                    <div className="table-responsive">
+                        <table className="gestor-table">
+                            <thead>
+                                <tr>
+                                    <th>CUIT</th>
+                                    <th>Nombre</th>
+                                    <th>Dirección</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
                                 </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </div>
+                            </thead>
+                            <tbody>
+                                {empresasFiltradas.map((emp) => {
+                                    const esActivo = obtenerEstadoBoolean(emp);
+                                    return (
+                                        <tr key={emp.idEmpresa || emp.id}>
+                                            <td>{emp.cuit}</td>
+                                            <td>{emp.nombre}</td>
+                                            <td>{emp.direccion}</td>
+                                            <td>
+                                                <span className={`badge ${esActivo ? "badge-activo" : "badge-inactivo"}`}>
+                                                    {esActivo ? "Activo" : "Inactivo"}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="acciones-group" style={{ display: "flex", gap: "6px" }}>
+                                                    {tienePermiso("EDITAR_EMPRESAS") && (
+                                                        <button
+                                                            onClick={() => handleEditarClick(emp)}
+                                                            className="btn-editar"
+                                                            style={{ backgroundColor: "#22c55e", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold" }}
+                                                        >
+                                                            Editar
+                                                        </button>
+                                                    )}
+                                                    {tienePermiso("DAR_DE_BAJA_EMPRESAS") && (
+                                                        <button
+                                                            onClick={() => handleCambiarEstado(emp, esActivo)}
+                                                            className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"}`}
+                                                            style={{ padding: "6px 10px", borderRadius: "4px", border: "none", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold", color: "white", backgroundColor: esActivo ? "#94a3b8" : "#16a34a" }}
+                                                        >
+                                                            {esActivo ? "Dar de baja" : "Dar de alta"}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            ) : (
+                <p style={{ color: "#ef4444", textAlign: "center", padding: "20px" }}>
+                    ⚠️ No tenés permisos para visualizar la lista de empresas.
+                </p>
+            )}
         </div>
     );
 };
