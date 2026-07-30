@@ -1,0 +1,152 @@
+/* ☀️ TEMA CLARO (Default) */
+:root {
+    --bg-principal: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --txt-principal: #0F172A;
+    --txt-secundario: #475569;
+    --border-color: #E2E8F0;
+}
+
+/* 🌙 MODO OSCURO GLOBAL ABSOLUTO (Pisa cualquier CSS de componentes) */
+body.dark-mode {
+    background-color: #0D1117 !important;
+    color: #F0F6FC !important;
+}
+
+body.dark-mode * {
+    border-color: #30363D !important;
+}
+
+/* 1. FORZAR FONDO OSCURO EN CUALQUIER CONTENEDOR O TARJETA */
+body.dark-mode div,
+body.dark-mode section,
+body.dark-mode article,
+body.dark-mode form,
+body.dark-mode main {
+    background-color: transparent;
+}
+
+/* Excepción para tarjetas principales y formularios que eran blancos */
+body.dark-mode .horario-card,
+body.dark-mode .roles-card,
+body.dark-mode .user-card,
+body.dark-mode .empresa-card,
+body.dark-mode div[class*="-card"],
+body.dark-mode div[class*="-container"],
+body.dark-mode form {
+    background-color: #161B22 !important;
+    color: #F0F6FC !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* 2. ELIMINAR EL HOVER BLANCO EN LAS TABLAS Y FORZAR TEXTO CLARO */
+body.dark-mode tr:hover,
+body.dark-mode tr:hover td,
+body.dark-mode tbody tr:hover {
+    background-color: #21262D !important;
+    color: #F0F6FC !important;
+}
+
+body.dark-mode table {
+    background-color: #161B22 !important;
+    color: #F0F6FC !important;
+}
+
+body.dark-mode th {
+    background-color: #21262D !important;
+    color: #58A6FF !important;
+}
+
+body.dark-mode td {
+    background-color: #161B22 !important;
+    color: #C9D1D9 !important;
+}
+
+/* 3. FORZAR VISIBILIDAD DE TODOS LOS TEXTOS, LABELS Y TÍTULOS */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode label,
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode th,
+body.dark-mode .filtro-label,
+body.dark-mode div {
+    color: #F0F6FC;
+}
+
+/* Títulos principales destacados */
+body.dark-mode h1,
+body.dark-mode h2 {
+    color: #58A6FF !important;
+}
+
+/* 4. INPUTS, SELECTS Y TEXTAREAS OSCUROS Y LEGIBLES */
+body.dark-mode input:not([type="checkbox"]):not([type="radio"]),
+body.dark-mode select,
+body.dark-mode textarea {
+    background-color: #0D1117 !important;
+    color: #F0F6FC !important;
+    border: 1px solid #30363D !important;
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: #8B949E !important;
+}
+
+/* 5. BOTONES PRINCIPALES Y DE ACCIÓN */
+body.dark-mode button[type="submit"],
+body.dark-mode .form-button,
+body.dark-mode .btn-aprobar-hora,
+body.dark-mode .btn-agregar-rol {
+    background-color: #238636 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #2EA043 !important;
+}
+
+body.dark-mode button[type="submit"]:hover,
+body.dark-mode .form-button:hover {
+    background-color: #2EA043 !important;
+}
+
+body.dark-mode .btn-rechazar-hora,
+body.dark-mode .btn-eliminar,
+body.dark-mode .btn-cancelar {
+    background-color: #DA3633 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #F85149 !important;
+}
+
+/* 6. BOTÓN SWITCH DEL TEMA */
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--txt-principal);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body.dark-mode .theme-toggle-btn {
+    border-color: #30363D !important;
+    background-color: #21262D !important;
+    color: #F0F6FC !important;
+}
+
+/* 🏷️ 7. CORRECCIÓN DEFINITIVA DE BADGES Y PASTILLAS EN MODO OSCURO */
+body.dark-mode .badge-estado,
+body.dark-mode .badge-horas,
+body.dark-mode .badge-activo,
+body.dark-mode span[class*="badge"],
+body.dark-mode span[style*="background"] {
+    color: #1F2937 !important; /* Texto gris muy oscuro para contraste perfecto sobre las pastillas */
+    font-weight: 700 !important;
+    text-shadow: none !important;
+}

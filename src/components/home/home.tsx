@@ -29,6 +29,25 @@ const Home: React.FC = () => {
     const [horaActual, setHoraActual] = useState<string>("");
     const [horaInicioSesion, setHoraInicioSesion] = useState<string>("");
 
+    // 🌟 ESTADO Y MANEJO DE MODO OSCURO (NEÓN)
+    const [darkMode, setDarkMode] = useState<boolean>(() => {
+        return localStorage.getItem("theme") === "dark";
+    });
+
+    useEffect(() => {
+        if (darkMode) {
+            document.body.classList.add("dark-mode");
+            localStorage.setItem("theme", "dark");
+        } else {
+            document.body.classList.remove("dark-mode");
+            localStorage.setItem("theme", "light");
+        }
+    }, [darkMode]);
+
+    const toggleDarkMode = () => {
+        setDarkMode((prev) => !prev);
+    };
+
     const cargarListaRoles = async () => {
         try {
             const res = await api.get("/roles");
@@ -141,7 +160,6 @@ const Home: React.FC = () => {
             window.location.reload();
         } catch (err) {
             console.error("Error al cambiar rol para testing:", err);
-            // Fallback en caso de error de red
             window.location.reload();
         }
     };
@@ -152,36 +170,44 @@ const Home: React.FC = () => {
     };
 
     return (
-        <div style={{ minHeight: "100vh", backgroundColor: "#F4FBF7" }}>
+        <div style={{ minHeight: "100vh" }}>
             <nav style={{
-                backgroundColor: "#064E3B",
+                backgroundColor: darkMode ? "#0B132B" : "#064E3B",
+                borderBottom: darkMode ? "1px solid #10B981" : "none",
                 padding: "12px 30px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                boxShadow: darkMode ? "0 0 15px rgba(16,185,129,0.2)" : "0 4px 6px rgba(0,0,0,0.1)",
                 flexWrap: "wrap",
-                gap: "15px"
+                gap: "15px",
+                transition: "all 0.3s ease"
             }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
-                    <h2 style={{ color: "#FFFFFF", margin: 0 }}>Panel de Control</h2>
+                    <h2 style={{
+                        color: darkMode ? "#38BDF8" : "#FFFFFF",
+                        margin: 0,
+                        textShadow: darkMode ? "0 0 8px rgba(56,189,248,0.4)" : "none"
+                    }}>
+                        Panel de Control
+                    </h2>
 
                     {/* INFORMACIÓN COMPLETA DE SESIÓN */}
                     <div style={{
                         display: "flex",
                         flexDirection: "column",
                         gap: "4px",
-                        backgroundColor: "#042F2E",
+                        backgroundColor: darkMode ? "#111827" : "#042F2E",
                         padding: "8px 14px",
                         borderRadius: "6px",
-                        border: "1px solid #14B8A6"
+                        border: darkMode ? "1px solid #38BDF8" : "1px solid #14B8A6"
                     }}>
                         <div style={{ display: "flex", gap: "10px", alignItems: "center", fontSize: "0.85rem" }}>
-                            <span style={{ color: "#A7F3D0", fontWeight: "600" }}>
+                            <span style={{ color: darkMode ? "#38BDF8" : "#A7F3D0", fontWeight: "600" }}>
                                 👤 {usuarioData.nombre} {usuarioData.apellido}
                             </span>
                             <span style={{ color: "#6EE7B7" }}>|</span>
-                            <span style={{ color: "#A7F3D0" }}>📧 {usuarioData.email}</span>
+                            <span style={{ color: darkMode ? "#E2E8F0" : "#A7F3D0" }}>📧 {usuarioData.email}</span>
                             <span style={{ color: "#6EE7B7" }}>|</span>
                             <span style={{ color: "#FDE047", fontWeight: "bold" }}>🔑 Rol: {usuarioData.rol}</span>
                         </div>
@@ -193,25 +219,25 @@ const Home: React.FC = () => {
 
                     {/* 🧪 SIMULADOR (FIJO SI LA CUENTA ORIGINAL ES ADMIN) */}
                     {esAdminReal && (
-                        <div style={{
-                            backgroundColor: "#065F46",
+                        <div className="simulador-card" style={{
+                            backgroundColor: darkMode ? "#1F2937" : "#065F46",
                             padding: "6px 12px",
                             borderRadius: "6px",
                             display: "flex",
                             alignItems: "center",
                             gap: "8px",
-                            border: "1px dashed #34D399"
+                            border: darkMode ? "1px solid #10B981" : "1px dashed #34D399"
                         }}>
-                            <span style={{ color: "#99F6E4", fontSize: "0.8rem", fontWeight: "bold" }}>
+                            <span style={{ color: darkMode ? "#10B981" : "#99F6E4", fontSize: "0.8rem", fontWeight: "bold" }}>
                                 🧪 Simular Rol:
                             </span>
                             <select
                                 value={rolActivoTesting}
                                 onChange={(e) => handleCambiarRolTesting(e.target.value)}
                                 style={{
-                                    backgroundColor: "#047857",
+                                    backgroundColor: darkMode ? "#111827" : "#047857",
                                     color: "#FFFFFF",
-                                    border: "1px solid #10B981",
+                                    border: darkMode ? "1px solid #10B981" : "1px solid #10B981",
                                     padding: "4px 8px",
                                     borderRadius: "4px",
                                     cursor: "pointer",
@@ -239,6 +265,11 @@ const Home: React.FC = () => {
                     <button onClick={() => setVistaActiva("empresas")} style={{ backgroundColor: vistaActiva === "empresas" ? "#22C55E" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>Gestor de Empresas</button>
                     <button onClick={() => setVistaActiva("horarios")} style={{ backgroundColor: vistaActiva === "horarios" ? "#22C55E" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>Registro de Horarios</button>
 
+                    {/* 🌙 SWITCH MODO NEÓN / MODO CLARO */}
+                    <button type="button" className="theme-toggle-btn" onClick={toggleDarkMode}>
+                        {darkMode ? "🌙 Modo Oscuro" : "☀️ Modo Claro"}
+                    </button>
+
                     <button
                         onClick={handleCerrarSesion}
                         style={{
@@ -249,7 +280,7 @@ const Home: React.FC = () => {
                             borderRadius: "5px",
                             cursor: "pointer",
                             fontWeight: "bold",
-                            marginLeft: "15px"
+                            marginLeft: "10px"
                         }}
                     >
                         Cerrar Sesión 🚪
