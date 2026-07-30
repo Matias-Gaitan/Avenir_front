@@ -23,7 +23,7 @@ interface Usuario {
 const GestorUsuarios: React.FC = () => {
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
     const [roles, setRoles] = useState<Rol[]>([]);
-    const [filtroEstado, setFiltroEstado] = useState<string>("PENDIENTES");
+    const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
 
     const [modoEdicion, setModoEdicion] = useState<boolean>(false);
     const [idEditar, setIdEditar] = useState<number | null>(null);
@@ -47,14 +47,9 @@ const GestorUsuarios: React.FC = () => {
         return esInactivo || tieneRolPendiente;
     };
 
-    // 🌟 CARGA DE DATOS LIMPIA (Dejamos que api.ts adjunte el token solo)
     const cargarDatos = async () => {
         try {
-            const [resUsers, resRoles] = await Promise.all([
-                api.get("/usuarios"),
-                api.get("/roles")
-            ]);
-
+            const resUsers = await api.get("/usuarios");
             const usersData = Array.isArray(resUsers.data) ? resUsers.data : [];
 
             usersData.sort((a, b) => {
@@ -64,9 +59,15 @@ const GestorUsuarios: React.FC = () => {
             });
 
             setUsuarios(usersData);
+        } catch (err) {
+            console.error("Error al cargar usuarios:", err);
+        }
+
+        try {
+            const resRoles = await api.get("/roles");
             setRoles(Array.isArray(resRoles.data) ? resRoles.data : []);
         } catch (err) {
-            console.error("Error al cargar datos:", err);
+            console.error("Error al cargar roles:", err);
         }
     };
 
@@ -233,24 +234,25 @@ const GestorUsuarios: React.FC = () => {
                                 onChange={(e) => setFiltroEstado(e.target.value)}
                                 className="select-filtro"
                             >
+                                <option value="TODOS">🌐 Todos los usuarios</option>
                                 <option value="PENDIENTES">⏳ Pendientes de Aprobación</option>
                                 <option value="ACTIVOS">✅ Solo Activos</option>
                                 <option value="INACTIVOS">⛔ Solo Inactivos</option>
-                                <option value="TODOS">🌐 Todos los usuarios</option>
                             </select>
                         </div>
                     </div>
 
-                    <div className="table-responsive">
-                        <table className="gestor-table">
+                    {/* 🌟 TABLA SIMÉTRICA APLICADA */}
+                    <div className="tabla-simetrica-wrapper">
+                        <table className="tabla-usuarios-simetrica">
                             <thead>
                                 <tr>
-                                    <th>Nombre</th>
-                                    <th>Apellido</th>
-                                    <th>Email</th>
-                                    <th>Rol</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
+                                    <th style={{ width: "20%", textAlign: "left" }}>Nombre</th>
+                                    <th style={{ width: "20%", textAlign: "left" }}>Apellido</th>
+                                    <th style={{ width: "25%", textAlign: "left" }}>Email</th>
+                                    <th style={{ width: "15%", textAlign: "center" }}>Rol</th>
+                                    <th style={{ width: "10%", textAlign: "center" }}>Estado</th>
+                                    <th style={{ width: "10%", textAlign: "center" }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -260,15 +262,15 @@ const GestorUsuarios: React.FC = () => {
 
                                     return (
                                         <tr key={u.idUsuario || u.id}>
-                                            <td>{u.nombre}</td>
-                                            <td>{u.apellido}</td>
-                                            <td>{u.email}</td>
-                                            <td>
+                                            <td className="txt-bold" style={{ textAlign: "left" }}>{u.nombre}</td>
+                                            <td style={{ textAlign: "left" }}>{u.apellido}</td>
+                                            <td style={{ textAlign: "left" }}>{u.email}</td>
+                                            <td style={{ textAlign: "center" }}>
                                                 <span className={esPendiente ? "badge-pendiente-texto" : ""}>
                                                     {u.tipoPersona?.nombre || "Sin Rol"}
                                                 </span>
                                             </td>
-                                            <td>
+                                            <td style={{ textAlign: "center" }}>
                                                 {esPendiente ? (
                                                     <span className="badge badge-inactivo" style={{ backgroundColor: "#f59e0b" }}>
                                                         Pendiente
@@ -279,22 +281,16 @@ const GestorUsuarios: React.FC = () => {
                                                     </span>
                                                 )}
                                             </td>
-                                            <td>
-                                                <div className="acciones-group">
+                                            <td style={{ textAlign: "center" }}>
+                                                <div className="acciones-group" style={{ justifyContent: "center" }}>
                                                     {tienePermiso("EDITAR_USUARIOS") && (
-                                                        <button
-                                                            onClick={() => handleEditarClick(u)}
-                                                            className="btn-editar"
-                                                        >
-                                                            {esPendiente ? "Aprobar y Asignar Rol" : "Editar"}
+                                                        <button onClick={() => handleEditarClick(u)} className="btn-editar">
+                                                            {esPendiente ? "Aprobar Rol" : "Editar"}
                                                         </button>
                                                     )}
                                                     {(tienePermiso("DAR_DE_BAJA_USUARIOS") || tienePermiso("ELIMINAR_USUARIOS")) && (
-                                                        <button
-                                                            onClick={() => handleCambiarEstado(u, esActivo)}
-                                                            className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"}`}
-                                                        >
-                                                            {esActivo ? "Dar de baja" : "Dar de alta"}
+                                                        <button onClick={() => handleCambiarEstado(u, esActivo)} className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"}`}>
+                                                            {esActivo ? "Baja" : "Alta"}
                                                         </button>
                                                     )}
                                                 </div>

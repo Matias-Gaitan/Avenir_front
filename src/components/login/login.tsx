@@ -36,16 +36,19 @@ const LoginComponent: React.FC = () => {
                 const token = response.data.token;
                 const rolBackend = response.data.rol ? String(response.data.rol).trim().toUpperCase() : "";
 
-                // Guardamos la información limpia en el localStorage
+                // 🌟 Guardamos la sesión limpia con rolOriginal para fijar el simulador
                 localStorage.setItem("token", token);
                 localStorage.setItem("email", loginData.email);
+                localStorage.setItem("rolOriginal", rolBackend);
                 localStorage.setItem("usuario", JSON.stringify({
                     username: response.data.username || loginData.email,
+                    nombre: response.data.nombre || response.data.usuario?.nombre || "",
+                    apellido: response.data.apellido || response.data.usuario?.apellido || "",
                     rol: rolBackend,
                     permisos: response.data.permisos || []
                 }));
 
-                // 🚀 Refresco total de la app para sincronizar permisos y componentes
+                // 🚀 Refresco total para aplicar sesión limpia
                 window.location.href = "/home";
             } else {
                 setError("Credenciales inválidas o cuenta no aprobada.");

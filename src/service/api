@@ -6,11 +6,11 @@ const api = axios.create({
     baseURL: API_BASE_URL,
 });
 
-// 👇 Interceptor: Agrega el Bearer Token automáticamente de forma SEGURA
+// 🌟 Interceptor: Agrega el Bearer Token automáticamente de forma SEGURA en todas las peticiones
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");
-        // Validamos que el token exista y no sea basura de JS
+        // Validamos que el token exista y no sea una cadena inválida/nula
         if (token && token !== "undefined" && token !== "null") {
             config.headers.Authorization = `Bearer ${token}`;
         }

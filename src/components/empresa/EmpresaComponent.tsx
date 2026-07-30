@@ -202,32 +202,33 @@ const EmpresaComponent: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="table-responsive">
-                        <table className="gestor-table">
+                    {/* 🌟 TABLA SIMÉTRICA CORREGIDA A ANCHO COMPLETO */}
+                    <div className="tabla-simetrica-wrapper" style={{ width: "100%", marginTop: "15px", border: "1px solid #E2E8F0", borderRadius: "8px", overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
                             <thead>
-                                <tr>
-                                    <th>CUIT</th>
-                                    <th>Nombre</th>
-                                    <th>Dirección</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
+                                <tr style={{ backgroundColor: "#F1F5F9", color: "#0F172A", fontSize: "0.85rem", borderBottom: "1px solid #CBD5E1" }}>
+                                    <th style={{ width: "25%", padding: "12px 16px", textAlign: "left" }}>CUIT</th>
+                                    <th style={{ width: "25%", padding: "12px 16px", textAlign: "left" }}>Nombre / Razón Social</th>
+                                    <th style={{ width: "25%", padding: "12px 16px", textAlign: "left" }}>Dirección</th>
+                                    <th style={{ width: "12%", padding: "12px 16px", textAlign: "center" }}>Estado</th>
+                                    <th style={{ width: "13%", padding: "12px 16px", textAlign: "center" }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {empresasFiltradas.map((emp) => {
                                     const esActivo = obtenerEstadoBoolean(emp);
                                     return (
-                                        <tr key={emp.idEmpresa || emp.id}>
-                                            <td>{emp.cuit}</td>
-                                            <td>{emp.nombre}</td>
-                                            <td>{emp.direccion}</td>
-                                            <td>
+                                        <tr key={emp.idEmpresa || emp.id} style={{ borderBottom: "1px solid #F1F5F9", fontSize: "0.9rem", color: "#334155" }}>
+                                            <td style={{ padding: "12px 16px", fontWeight: "bold", textAlign: "left" }}>{emp.cuit}</td>
+                                            <td style={{ padding: "12px 16px", textAlign: "left" }}>{emp.nombre}</td>
+                                            <td style={{ padding: "12px 16px", textAlign: "left" }}>{emp.direccion}</td>
+                                            <td style={{ padding: "12px 16px", textAlign: "center" }}>
                                                 <span className={`badge ${esActivo ? "badge-activo" : "badge-inactivo"}`}>
                                                     {esActivo ? "Activo" : "Inactivo"}
                                                 </span>
                                             </td>
-                                            <td>
-                                                <div className="acciones-group" style={{ display: "flex", gap: "6px" }}>
+                                            <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                                                <div className="acciones-group" style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
                                                     {tienePermiso("EDITAR_EMPRESAS") && (
                                                         <button
                                                             onClick={() => handleEditarClick(emp)}

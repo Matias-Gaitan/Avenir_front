@@ -51,7 +51,7 @@ const GestorRoles: React.FC = () => {
         }
     };
 
-    // 🌟 AGRUPADOR INTELIGENTE POR MÓDULOS
+    // 🌟 AGRUPADOR INTELIGENTE POR MÓDULOS (INCLUYE APROBAR_HORARIOS EN EL MÓDULO HORARIOS)
     const agruparPermisosPorModulo = (): ModuloPermisos[] => {
         const modulosMap: { [key: string]: { icono: string; permisos: Permiso[] } } = {
             "USUARIOS": { icono: "👤", permisos: [] },
@@ -69,7 +69,7 @@ const GestorRoles: React.FC = () => {
                 modulosMap["ROLES"].permisos.push(p);
             } else if (nombre.includes("EMPRESA")) {
                 modulosMap["EMPRESAS"].permisos.push(p);
-            } else if (nombre.includes("HORARIO")) {
+            } else if (nombre.includes("HORARIO") || nombre.includes("APROBAR")) {
                 modulosMap["HORARIOS"].permisos.push(p);
             } else {
                 modulosMap["OTROS"].permisos.push(p);
@@ -138,6 +138,9 @@ const GestorRoles: React.FC = () => {
                 alert("¡Rol creado con éxito!");
             }
 
+            // 🚀 NOTIFICA AL SIMULADOR EN HOME.TSX QUE HAY ROLES NUEVOS/MODIFICADOS
+            window.dispatchEvent(new Event("rolesActualizados"));
+
             limpiarFormulario();
             cargarRoles();
         } catch (err: any) {
@@ -154,6 +157,10 @@ const GestorRoles: React.FC = () => {
         try {
             await api.delete(`/roles/${id}`);
             alert("Rol eliminado correctamente.");
+
+            // 🚀 NOTIFICA AL SIMULADOR EN HOME.TSX QUE SE ELIMINÓ UN ROL
+            window.dispatchEvent(new Event("rolesActualizados"));
+
             cargarRoles();
         } catch (err: any) {
             console.error("Error al eliminar:", err);

@@ -104,38 +104,54 @@
     font-size: 0.85rem;
 }
 
-/* TABLA Y BOTONES */
-.table-responsive {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: auto !important;
-    display: block !important;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-}
-
-.gestor-table {
+/* 🌟 TABLA SIMÉTRICA PARA USUARIOS */
+.tabla-simetrica-wrapper {
     width: 100%;
-    min-width: 650px;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #ffffff;
+    margin-top: 15px;
+}
+
+.tabla-usuarios-simetrica {
+    width: 100%;
     border-collapse: collapse;
+    table-layout: fixed; /* Mantiene la simetría exacta y clava las columnas */
 }
 
-.gestor-table th {
+.tabla-usuarios-simetrica th {
     background-color: #f1f5f9;
-    color: #064e3b;
-    padding: 10px;
+    color: #0f172a;
+    font-weight: 700;
     font-size: 0.85rem;
-    white-space: nowrap;
+    padding: 12px 16px;
+    border-bottom: 1px solid #cbd5e1;
 }
 
-.gestor-table td {
-    padding: 10px;
+.tabla-usuarios-simetrica td {
+    padding: 12px 16px;
     border-bottom: 1px solid #f1f5f9;
-    font-size: 0.85rem;
-    white-space: nowrap;
+    font-size: 0.9rem;
+    color: #334155;
+    word-wrap: break-word; /* Evita que correos muy largos rompan la tabla */
+    vertical-align: middle;
 }
 
+.tabla-usuarios-simetrica tr:last-child td {
+    border-bottom: none;
+}
+
+.tabla-usuarios-simetrica tr:hover {
+    background-color: #f8fafc;
+}
+
+.txt-bold {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* BOTONES Y BADGES */
 .acciones-group {
     display: flex;
     gap: 6px;
@@ -166,6 +182,7 @@
 
 .badge-activo { background-color: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 10px; font-size: 0.75rem; }
 .badge-inactivo { background-color: #f1f5f9; color: #64748b; padding: 3px 8px; border-radius: 10px; font-size: 0.75rem; }
+.badge-pendiente-texto { color: #d97706; font-weight: bold; }
 
 @media (max-width: 768px) {
     .gestor-card { padding: 12px !important; }
