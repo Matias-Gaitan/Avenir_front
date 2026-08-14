@@ -7,9 +7,12 @@ import LoginComponent from "./components/login/Login";
 import Register from "./components/registrer/registrer";
 import Home from "./components/home/home";
 
-// Importaciones nuevas del Sprint 2
+// Importaciones del Sprint 2
 import EmpresaComponent from "./components/empresa/EmpresaComponent";
 import RegistroHorarioComponent from "./components/Horarios/RegistroHorariosComponents";
+
+// 🌟 Importación IPER (Apuntando a src/components/AdminCatalogosPage)
+import { AdminCatalogosPage } from "./components/AdminCatalogosPage";
 
 const App: React.FC = () => {
   return (
@@ -26,6 +29,9 @@ const App: React.FC = () => {
         {/* Nuevas rutas - Sprint 2 */}
         <Route path="/empresas" element={<EmpresaComponent />} />
         <Route path="/horarios" element={<RegistroHorarioComponent />} />
+
+        {/* 🌟 Nueva Ruta: Administración de Catálogos IPER */}
+        <Route path="/admin/catalogos" element={<AdminCatalogosPage />} />
 
         {/* Ruta por defecto si no existe */}
         <Route path="*" element={<h1>404 - Página no encontrada</h1>} />

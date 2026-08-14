@@ -4,6 +4,7 @@ import GestorUsuarios from "../gestorUsuarios/gestorUsuarios";
 import GestorRoles from "../gestorRoles/gestorRoles";
 import EmpresaComponent from "../empresa/EmpresaComponent";
 import RegistroHorarioComponent from "../Horarios/RegistroHorariosComponents";
+import { AdminCatalogosPage } from "../AdminCatalogosPage";
 
 interface PermisoBD {
     idPermiso?: number;
@@ -17,19 +18,16 @@ interface RolBD {
 }
 
 const Home: React.FC = () => {
-    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios">("usuarios");
+    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "iper">("usuarios");
     const [rolesDisponibles, setRolesDisponibles] = useState<RolBD[]>([]);
     const [rolActivoTesting, setRolActivoTesting] = useState<string>("");
 
-    // CONTROL DE ADMIN REAL MEDIANTE ROL ORIGINAL
     const [esAdminReal, setEsAdminReal] = useState<boolean>(false);
 
-    // DATOS DE SESIÓN Y RELOJ
     const [usuarioData, setUsuarioData] = useState({ nombre: "", apellido: "", email: "", rol: "" });
     const [horaActual, setHoraActual] = useState<string>("");
     const [horaInicioSesion, setHoraInicioSesion] = useState<string>("");
 
-    // 🌟 ESTADO Y MANEJO DE MODO OSCURO (NEÓN)
     const [darkMode, setDarkMode] = useState<boolean>(() => {
         return localStorage.getItem("theme") === "dark";
     });
@@ -60,7 +58,6 @@ const Home: React.FC = () => {
     };
 
     useEffect(() => {
-        // 1. Reloj en tiempo real
         const actualizarHora = () => {
             const ahora = new Date();
             setHoraActual(ahora.toLocaleTimeString());
@@ -68,7 +65,6 @@ const Home: React.FC = () => {
         actualizarHora();
         const intervalId = setInterval(actualizarHora, 1000);
 
-        // 2. Hora de inicio de sesión
         let horaLogin = localStorage.getItem("horaInicioSesion");
         if (!horaLogin) {
             horaLogin = new Date().toLocaleTimeString();
@@ -76,7 +72,6 @@ const Home: React.FC = () => {
         }
         setHoraInicioSesion(horaLogin);
 
-        // 3. Cargar sesión
         const email = localStorage.getItem("email") || "";
         const rolOriginal = (localStorage.getItem("rolOriginal") || "").toUpperCase();
 
@@ -99,7 +94,6 @@ const Home: React.FC = () => {
         setUsuarioData({ nombre, apellido, email, rol: rolSimuladoActual });
         setRolActivoTesting(rolSimuladoActual);
 
-        // Mantener simulador si la cuenta original es Admin
         if (rolOriginal === "ADMINISTRADOR" || rolSimuladoActual === "ADMINISTRADOR") {
             setEsAdminReal(true);
             if (!localStorage.getItem("rolOriginal")) {
@@ -109,7 +103,6 @@ const Home: React.FC = () => {
 
         cargarListaRoles();
 
-        // 🌟 ESCUCHADOR EN VIVO DE CAMBIOS EN LOS ROLES
         const handleEventoRolesActualizados = () => {
             cargarListaRoles();
         };
@@ -122,13 +115,11 @@ const Home: React.FC = () => {
         };
     }, []);
 
-    // 🌟 CAMBIO DE ROL CON CONSULTA EN TIEMPO REAL A BD DE LOS PERMISOS
     const handleCambiarRolTesting = async (nombreNuevoRol: string) => {
         const usuarioStorage = localStorage.getItem("usuario");
         if (!usuarioStorage) return;
 
         try {
-            // Traemos los roles frescos directamente de la base de datos
             const res = await api.get("/roles");
             const rolesFrescos: RolBD[] = Array.isArray(res.data) ? res.data : rolesDisponibles;
 
@@ -138,13 +129,11 @@ const Home: React.FC = () => {
 
             const usuarioObj = JSON.parse(usuarioStorage);
 
-            // Extraemos los nombres de permisos frescos
             let nuevosPermisos: string[] = [];
             if (rolEncontrado && Array.isArray(rolEncontrado.permisos)) {
                 nuevosPermisos = rolEncontrado.permisos.map((p) => typeof p === 'string' ? p : p.nombre);
             }
 
-            // Si es Admin, tiene acceso total siempre
             if (nombreNuevoRol.toUpperCase() === "ADMINISTRADOR") {
                 nuevosPermisos = ["*"];
             }
@@ -152,11 +141,9 @@ const Home: React.FC = () => {
             usuarioObj.rol = nombreNuevoRol.toUpperCase();
             usuarioObj.permisos = nuevosPermisos;
 
-            // Actualizamos localStorage con los permisos actualizados de la BD
             localStorage.setItem("usuario", JSON.stringify(usuarioObj));
             setRolActivoTesting(nombreNuevoRol.toUpperCase());
 
-            // Recargamos para que authHelper lea los nuevos permisos
             window.location.reload();
         } catch (err) {
             console.error("Error al cambiar rol para testing:", err);
@@ -192,7 +179,6 @@ const Home: React.FC = () => {
                         Panel de Control
                     </h2>
 
-                    {/* INFORMACIÓN COMPLETA DE SESIÓN */}
                     <div style={{
                         display: "flex",
                         flexDirection: "column",
@@ -217,7 +203,6 @@ const Home: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* 🧪 SIMULADOR (FIJO SI LA CUENTA ORIGINAL ES ADMIN) */}
                     {esAdminReal && (
                         <div className="simulador-card" style={{
                             backgroundColor: darkMode ? "#1F2937" : "#065F46",
@@ -265,7 +250,8 @@ const Home: React.FC = () => {
                     <button onClick={() => setVistaActiva("empresas")} style={{ backgroundColor: vistaActiva === "empresas" ? "#22C55E" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>Gestor de Empresas</button>
                     <button onClick={() => setVistaActiva("horarios")} style={{ backgroundColor: vistaActiva === "horarios" ? "#22C55E" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>Registro de Horarios</button>
 
-                    {/* 🌙 SWITCH MODO NEÓN / MODO CLARO */}
+                    <button onClick={() => setVistaActiva("iper")} style={{ backgroundColor: vistaActiva === "iper" ? "#22C55E" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>⚠️ Parámetros IPER</button>
+
                     <button type="button" className="theme-toggle-btn" onClick={toggleDarkMode}>
                         {darkMode ? "🌙 Modo Oscuro" : "☀️ Modo Claro"}
                     </button>
@@ -293,6 +279,7 @@ const Home: React.FC = () => {
                 {vistaActiva === "roles" && <GestorRoles />}
                 {vistaActiva === "empresas" && <EmpresaComponent />}
                 {vistaActiva === "horarios" && <RegistroHorarioComponent />}
+                {vistaActiva === "iper" && <AdminCatalogosPage darkMode={darkMode} />}
             </div>
         </div>
     );

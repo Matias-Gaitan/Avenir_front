@@ -51,13 +51,14 @@ const GestorRoles: React.FC = () => {
         }
     };
 
-    // 🌟 AGRUPADOR INTELIGENTE POR MÓDULOS (INCLUYE APROBAR_HORARIOS EN EL MÓDULO HORARIOS)
+    // 🌟 AGRUPADOR INTELIGENTE POR MÓDULOS (INCLUYE MÓDULO IPER)
     const agruparPermisosPorModulo = (): ModuloPermisos[] => {
         const modulosMap: { [key: string]: { icono: string; permisos: Permiso[] } } = {
             "USUARIOS": { icono: "👤", permisos: [] },
             "ROLES": { icono: "🔑", permisos: [] },
             "EMPRESAS": { icono: "🏢", permisos: [] },
             "HORARIOS": { icono: "⏰", permisos: [] },
+            "IPER": { icono: "⚠️", permisos: [] },
             "OTROS": { icono: "⚙️", permisos: [] }
         };
 
@@ -71,10 +72,22 @@ const GestorRoles: React.FC = () => {
                 modulosMap["EMPRESAS"].permisos.push(p);
             } else if (nombre.includes("HORARIO") || nombre.includes("APROBAR")) {
                 modulosMap["HORARIOS"].permisos.push(p);
+            } else if (nombre.includes("IPER") || nombre.includes("RIESGO") || nombre.includes("CATALOGO")) {
+                modulosMap["IPER"].permisos.push(p);
             } else {
                 modulosMap["OTROS"].permisos.push(p);
             }
         });
+
+        // 🌟 Si no vienen permisos de IPER desde el backend, agregamos un grupo por defecto para la UI
+        if (modulosMap["IPER"].permisos.length === 0) {
+            modulosMap["IPER"].permisos = [
+                { idPermiso: 901, nombre: "VER_CATALOGOS_IPER" },
+                { idPermiso: 902, nombre: "CREAR_CATALOGOS_IPER" },
+                { idPermiso: 903, nombre: "EDITAR_CATALOGOS_IPER" },
+                { idPermiso: 904, nombre: "ELIMINAR_CATALOGOS_IPER" }
+            ];
+        }
 
         return Object.keys(modulosMap)
             .filter((key) => modulosMap[key].permisos.length > 0)
@@ -100,10 +113,8 @@ const GestorRoles: React.FC = () => {
         const estanTodosModulo = idsModulo.every((id) => permisosSeleccionados.includes(id));
 
         if (estanTodosModulo) {
-            // Quitamos solo los permisos de este módulo
             setPermisosSeleccionados((prev) => prev.filter((id) => !idsModulo.includes(id)));
         } else {
-            // Agregamos los permisos de este módulo que falten
             setPermisosSeleccionados((prev) => Array.from(new Set([...prev, ...idsModulo])));
         }
     };
@@ -138,7 +149,6 @@ const GestorRoles: React.FC = () => {
                 alert("¡Rol creado con éxito!");
             }
 
-            // 🚀 NOTIFICA AL SIMULADOR EN HOME.TSX QUE HAY ROLES NUEVOS/MODIFICADOS
             window.dispatchEvent(new Event("rolesActualizados"));
 
             limpiarFormulario();
@@ -158,7 +168,6 @@ const GestorRoles: React.FC = () => {
             await api.delete(`/roles/${id}`);
             alert("Rol eliminado correctamente.");
 
-            // 🚀 NOTIFICA AL SIMULADOR EN HOME.TSX QUE SE ELIMINÓ UN ROL
             window.dispatchEvent(new Event("rolesActualizados"));
 
             cargarRoles();
