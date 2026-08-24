@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Users, UserPlus, CheckCircle2, XCircle, Clock, ShieldAlert, UserCheck } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./gestorUsuarios.css";
@@ -171,7 +172,10 @@ const GestorUsuarios: React.FC = () => {
         <div className="gestor-card">
             {((!modoEdicion && tienePermiso("CREAR_USUARIOS")) || (modoEdicion && tienePermiso("EDITAR_USUARIOS"))) && (
                 <form onSubmit={handleSubmit} className="form-crud">
-                    <h2>{modoEdicion ? "APROBAR / EDITAR USUARIO" : "REGISTRAR NUEVO USUARIO"}</h2>
+                    <h2 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        {modoEdicion ? <UserCheck size={20} color="#059669" /> : <UserPlus size={20} color="#059669" />}
+                        {modoEdicion ? "APROBAR / EDITAR USUARIO" : "REGISTRAR NUEVO USUARIO"}
+                    </h2>
                     <div className="form-group">
                         <label>Nombre</label>
                         <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
@@ -210,7 +214,7 @@ const GestorUsuarios: React.FC = () => {
                     </div>
 
                     <div className="btn-group-form">
-                        <button type="submit" className="btn-guardar">
+                        <button type="submit" className="btn-guardar btn-interactive">
                             {modoEdicion ? "APROBAR Y ACTIVAR USUARIO" : "CREAR USUARIO"}
                         </button>
                         {modoEdicion && (
@@ -227,22 +231,23 @@ const GestorUsuarios: React.FC = () => {
             {tienePermiso("VER_USUARIOS") ? (
                 <>
                     <div className="listado-header">
-                        <h3>LISTADO DE USUARIOS</h3>
+                        <h3 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <Users size={18} /> LISTADO DE USUARIOS
+                        </h3>
                         <div className="filtro-container">
                             <select
                                 value={filtroEstado}
                                 onChange={(e) => setFiltroEstado(e.target.value)}
                                 className="select-filtro"
                             >
-                                <option value="TODOS">🌐 Todos los usuarios</option>
-                                <option value="PENDIENTES">⏳ Pendientes de Aprobación</option>
-                                <option value="ACTIVOS">✅ Solo Activos</option>
-                                <option value="INACTIVOS">⛔ Solo Inactivos</option>
+                                <option value="TODOS">Todos los usuarios</option>
+                                <option value="PENDIENTES">Pendientes de Aprobación</option>
+                                <option value="ACTIVOS">Solo Activos</option>
+                                <option value="INACTIVOS">Solo Inactivos</option>
                             </select>
                         </div>
                     </div>
 
-                    {/* 🌟 TABLA SIMÉTRICA APLICADA */}
                     <div className="tabla-simetrica-wrapper">
                         <table className="tabla-usuarios-simetrica">
                             <thead>
@@ -272,11 +277,12 @@ const GestorUsuarios: React.FC = () => {
                                             </td>
                                             <td style={{ textAlign: "center" }}>
                                                 {esPendiente ? (
-                                                    <span className="badge badge-inactivo" style={{ backgroundColor: "#f59e0b" }}>
-                                                        Pendiente
+                                                    <span className="badge badge-inactivo" style={{ backgroundColor: "#d97706", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                                        <Clock size={12} /> Pendiente
                                                     </span>
                                                 ) : (
-                                                    <span className={`badge ${esActivo ? "badge-activo" : "badge-inactivo"}`}>
+                                                    <span className={`badge ${esActivo ? "badge-activo" : "badge-inactivo"}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                                        {esActivo ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
                                                         {esActivo ? "Activo" : "Inactivo"}
                                                     </span>
                                                 )}
@@ -284,12 +290,12 @@ const GestorUsuarios: React.FC = () => {
                                             <td style={{ textAlign: "center" }}>
                                                 <div className="acciones-group" style={{ justifyContent: "center" }}>
                                                     {tienePermiso("EDITAR_USUARIOS") && (
-                                                        <button onClick={() => handleEditarClick(u)} className="btn-editar">
+                                                        <button onClick={() => handleEditarClick(u)} className="btn-editar btn-interactive">
                                                             {esPendiente ? "Aprobar Rol" : "Editar"}
                                                         </button>
                                                     )}
                                                     {(tienePermiso("DAR_DE_BAJA_USUARIOS") || tienePermiso("ELIMINAR_USUARIOS")) && (
-                                                        <button onClick={() => handleCambiarEstado(u, esActivo)} className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"}`}>
+                                                        <button onClick={() => handleCambiarEstado(u, esActivo)} className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"} btn-interactive`}>
                                                             {esActivo ? "Baja" : "Alta"}
                                                         </button>
                                                     )}
@@ -303,8 +309,8 @@ const GestorUsuarios: React.FC = () => {
                     </div>
                 </>
             ) : (
-                <p style={{ color: "#ef4444", textAlign: "center", padding: "20px" }}>
-                    ⚠️ No tenés permisos para visualizar la lista de usuarios.
+                <p style={{ color: "#ef4444", textAlign: "center", padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                    <ShieldAlert size={18} /> No tenés permisos para visualizar la lista de usuarios.
                 </p>
             )}
         </div>

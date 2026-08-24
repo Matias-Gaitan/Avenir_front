@@ -1,4 +1,3 @@
-// src/App.tsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
@@ -13,6 +12,9 @@ import RegistroHorarioComponent from "./components/Horarios/RegistroHorariosComp
 
 // 🌟 Importación IPER (Apuntando a src/components/AdminCatalogosPage)
 import { AdminCatalogosPage } from "./components/AdminCatalogosPage";
+
+// 🌟 Importación ATS (Gestión de Análisis de Trabajo Seguro)
+import { GestionAtsComponent } from "./components/ats/GestionAtsComponent";
 
 const App: React.FC = () => {
   return (
@@ -32,6 +34,9 @@ const App: React.FC = () => {
 
         {/* 🌟 Nueva Ruta: Administración de Catálogos IPER */}
         <Route path="/admin/catalogos" element={<AdminCatalogosPage />} />
+
+        {/* 🌟 Nueva Ruta: Análisis de Trabajo Seguro (ATS) */}
+        <Route path="/ats" element={<GestionAtsComponent />} />
 
         {/* Ruta por defecto si no existe */}
         <Route path="*" element={<h1>404 - Página no encontrada</h1>} />

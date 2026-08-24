@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Key, ShieldCheck, Users, Building2, Clock, ShieldAlert, Settings, CheckSquare, Square, Trash2, Edit2 } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./gestorRoles.css";
@@ -16,7 +17,7 @@ interface Rol {
 
 interface ModuloPermisos {
     titulo: string;
-    icono: string;
+    icono: React.ReactNode;
     permisos: Permiso[];
 }
 
@@ -51,15 +52,14 @@ const GestorRoles: React.FC = () => {
         }
     };
 
-    // 🌟 AGRUPADOR INTELIGENTE POR MÓDULOS (INCLUYE MÓDULO IPER)
     const agruparPermisosPorModulo = (): ModuloPermisos[] => {
-        const modulosMap: { [key: string]: { icono: string; permisos: Permiso[] } } = {
-            "USUARIOS": { icono: "👤", permisos: [] },
-            "ROLES": { icono: "🔑", permisos: [] },
-            "EMPRESAS": { icono: "🏢", permisos: [] },
-            "HORARIOS": { icono: "⏰", permisos: [] },
-            "IPER": { icono: "⚠️", permisos: [] },
-            "OTROS": { icono: "⚙️", permisos: [] }
+        const modulosMap: { [key: string]: { icono: React.ReactNode; permisos: Permiso[] } } = {
+            "USUARIOS": { icono: <Users size={18} />, permisos: [] },
+            "ROLES": { icono: <Key size={18} />, permisos: [] },
+            "EMPRESAS": { icono: <Building2 size={18} />, permisos: [] },
+            "HORARIOS": { icono: <Clock size={18} />, permisos: [] },
+            "IPER": { icono: <ShieldAlert size={18} className="icon-pulse" color="#059669" />, permisos: [] },
+            "OTROS": { icono: <Settings size={18} className="icon-spin-hover" />, permisos: [] }
         };
 
         permisosDisponibles.forEach((p) => {
@@ -79,7 +79,6 @@ const GestorRoles: React.FC = () => {
             }
         });
 
-        // 🌟 Si no vienen permisos de IPER desde el backend, agregamos un grupo por defecto para la UI
         if (modulosMap["IPER"].permisos.length === 0) {
             modulosMap["IPER"].permisos = [
                 { idPermiso: 901, nombre: "VER_CATALOGOS_IPER" },
@@ -98,7 +97,6 @@ const GestorRoles: React.FC = () => {
             }));
     };
 
-    // 🌟 SELECCIONAR / DESSELECCIONAR TODOS
     const handleSeleccionarTodos = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
             setPermisosSeleccionados(permisosDisponibles.map((p) => p.idPermiso));
@@ -107,7 +105,6 @@ const GestorRoles: React.FC = () => {
         }
     };
 
-    // 🌟 SELECCIONAR / DESSELECCIONAR UN MÓDULO ENTERO
     const handleToggleModulo = (permisosModulo: Permiso[]) => {
         const idsModulo = permisosModulo.map((p) => p.idPermiso);
         const estanTodosModulo = idsModulo.every((id) => permisosSeleccionados.includes(id));
@@ -200,9 +197,11 @@ const GestorRoles: React.FC = () => {
 
     return (
         <div className="roles-card">
-            <h2>Gestor de Roles y Permisos</h2>
+            <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Key size={22} className="icon-pulse" color="#059669" />
+                Gestor de Roles y Permisos
+            </h2>
 
-            {/* Formulario de Creación / Edición */}
             {((!idRolEditando && tienePermiso("CREAR_ROLES")) || (idRolEditando && tienePermiso("EDITAR_ROLES"))) && (
                 <form onSubmit={handleGuardarRol} className="form-rol-container">
                     <div className="form-row-top" style={{ marginBottom: "20px" }}>
@@ -220,7 +219,6 @@ const GestorRoles: React.FC = () => {
                     </div>
 
                     <div className="permisos-section">
-                        {/* Cabecera Principal de Asignación */}
                         <div style={{
                             display: "flex",
                             justifyContent: "space-between",
@@ -252,7 +250,6 @@ const GestorRoles: React.FC = () => {
                             </label>
                         </div>
 
-                        {/* TARJETAS AGRUPADAS POR MÓDULO */}
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "15px" }}>
                             {modulosAgrupados.map((mod) => {
                                 const idsMod = mod.permisos.map((p) => p.idPermiso);
@@ -268,7 +265,6 @@ const GestorRoles: React.FC = () => {
                                         padding: "15px",
                                         boxShadow: "0 2px 4px rgba(0,0,0,0.02)"
                                     }}>
-                                        {/* Cabecera del Módulo */}
                                         <div style={{
                                             display: "flex",
                                             justifyContent: "space-between",
@@ -277,7 +273,7 @@ const GestorRoles: React.FC = () => {
                                             paddingBottom: "8px",
                                             marginBottom: "12px"
                                         }}>
-                                            <span style={{ fontWeight: "bold", color: "#1E293B", fontSize: "0.95rem" }}>
+                                            <span style={{ fontWeight: "bold", color: "#1E293B", fontSize: "0.95rem", display: "flex", alignItems: "center", gap: "6px" }}>
                                                 {mod.icono} Módulo {mod.titulo}
                                             </span>
 
@@ -297,7 +293,6 @@ const GestorRoles: React.FC = () => {
                                             </button>
                                         </div>
 
-                                        {/* Checkboxes del Módulo */}
                                         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                                             {mod.permisos.map((p) => {
                                                 const seleccionado = permisosSeleccionados.includes(p.idPermiso);
@@ -342,7 +337,7 @@ const GestorRoles: React.FC = () => {
                                 Cancelar
                             </button>
                         )}
-                        <button type="submit" className="btn-agregar-rol">
+                        <button type="submit" className="btn-agregar-rol btn-interactive">
                             {idRolEditando ? "Actualizar Rol" : "Crear Rol con Permisos"}
                         </button>
                     </div>
@@ -351,7 +346,6 @@ const GestorRoles: React.FC = () => {
 
             <hr style={{ margin: "25px 0", border: "none", borderTop: "1px solid #E2E8F0" }} />
 
-            {/* Listado de Roles */}
             {tienePermiso("VER_ROLES") ? (
                 <div className="table-responsive">
                     <table className="gestor-table">
@@ -370,7 +364,7 @@ const GestorRoles: React.FC = () => {
 
                                 return (
                                     <tr key={rol.idTipoPersona}>
-                                        <td>{rol.idTipoPersona}</td>
+                                        <td>#{rol.idTipoPersona}</td>
                                         <td><strong>{rol.nombre}</strong></td>
                                         <td>
                                             {esTotal ? (
@@ -381,9 +375,12 @@ const GestorRoles: React.FC = () => {
                                                     borderRadius: "15px",
                                                     fontWeight: "bold",
                                                     fontSize: "0.8rem",
-                                                    border: "1px solid #86EFAC"
+                                                    border: "1px solid #86EFAC",
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    gap: "6px"
                                                 }}>
-                                                    ⭐ Todos los Permisos ({totalPermisosRol})
+                                                    <ShieldCheck size={14} /> Todos los Permisos ({totalPermisosRol})
                                                 </span>
                                             ) : totalPermisosRol > 0 ? (
                                                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -409,10 +406,10 @@ const GestorRoles: React.FC = () => {
                                         <td>
                                             <div className="acciones-group">
                                                 {tienePermiso("EDITAR_ROLES") && (
-                                                    <button type="button" className="btn-editar" onClick={() => handleEditarClick(rol)}>Editar</button>
+                                                    <button type="button" className="btn-editar btn-interactive" onClick={() => handleEditarClick(rol)}>Editar</button>
                                                 )}
                                                 {(tienePermiso("DAR_DE_BAJA_ROLES") || tienePermiso("ELIMINAR_ROLES")) && (
-                                                    <button type="button" className="btn-eliminar" onClick={() => handleEliminarRol(rol.idTipoPersona)}>Eliminar</button>
+                                                    <button type="button" className="btn-eliminar btn-interactive" onClick={() => handleEliminarRol(rol.idTipoPersona)}>Eliminar</button>
                                                 )}
                                             </div>
                                         </td>
@@ -423,8 +420,8 @@ const GestorRoles: React.FC = () => {
                     </table>
                 </div>
             ) : (
-                <p style={{ color: "#ef4444", textAlign: "center", padding: "20px" }}>
-                    ⚠️ No tenés permisos para visualizar la lista de roles.
+                <p style={{ color: "#ef4444", textAlign: "center", padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                    <ShieldAlert size={18} /> No tenés permisos para visualizar la lista de roles.
                 </p>
             )}
         </div>

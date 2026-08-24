@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Building2, Plus, Edit2, ShieldAlert, CheckCircle2, XCircle, ArrowUpDown } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./empresa.css";
@@ -125,10 +126,12 @@ const EmpresaComponent: React.FC = () => {
 
     return (
         <div className="empresa-card">
-            {/* Formulario solo visible si puede CREAR o EDITAR */}
             {((!modoEdicion && tienePermiso("CREAR_EMPRESAS")) || (modoEdicion && tienePermiso("EDITAR_EMPRESAS"))) && (
                 <form onSubmit={handleSubmit} className="form-empresa">
-                    <h2>{modoEdicion ? "EDITAR EMPRESA" : "GESTIÓN DE EMPRESAS"}</h2>
+                    <h2 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <Building2 size={20} className="icon-pulse" color="#059669" />
+                        {modoEdicion ? "EDITAR EMPRESA" : "GESTIÓN DE EMPRESAS"}
+                    </h2>
                     <div className="form-group">
                         <label>CUIT</label>
                         <input type="text" value={cuit} onChange={(e) => setCuit(e.target.value)} required />
@@ -157,7 +160,8 @@ const EmpresaComponent: React.FC = () => {
                     )}
 
                     <div className="btn-group-form" style={{ gridColumn: "1 / -1", display: "flex", gap: "8px", marginTop: "8px" }}>
-                        <button type="submit" className="btn-registrar" style={{ flex: 1 }}>
+                        <button type="submit" className="btn-registrar btn-interactive" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+                            {modoEdicion ? <Edit2 size={16} /> : <Plus size={16} />}
                             {modoEdicion ? "ACTUALIZAR EMPRESA" : "REGISTRAR EMPRESA"}
                         </button>
                         {modoEdicion && (
@@ -183,11 +187,12 @@ const EmpresaComponent: React.FC = () => {
 
             <hr className="divider" style={{ border: "0", height: "1px", background: "#e2e8f0", margin: "20px 0" }} />
 
-            {/* Listado protegido con VER_EMPRESAS */}
             {tienePermiso("VER_EMPRESAS") ? (
                 <>
                     <div className="listado-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "12px" }}>
-                        <h3 style={{ margin: 0, color: "#064e3b" }}>LISTADO DE EMPRESAS</h3>
+                        <h3 style={{ margin: 0, color: "#064e3b", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <Building2 size={18} /> LISTADO DE EMPRESAS
+                        </h3>
                         <div className="filtro-container">
                             <select
                                 value={filtroEstado}
@@ -202,7 +207,6 @@ const EmpresaComponent: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* 🌟 TABLA SIMÉTRICA CORREGIDA A ANCHO COMPLETO */}
                     <div className="tabla-simetrica-wrapper" style={{ width: "100%", marginTop: "15px", border: "1px solid #E2E8F0", borderRadius: "8px", overflowX: "auto" }}>
                         <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
                             <thead>
@@ -223,7 +227,8 @@ const EmpresaComponent: React.FC = () => {
                                             <td style={{ padding: "12px 16px", textAlign: "left" }}>{emp.nombre}</td>
                                             <td style={{ padding: "12px 16px", textAlign: "left" }}>{emp.direccion}</td>
                                             <td style={{ padding: "12px 16px", textAlign: "center" }}>
-                                                <span className={`badge ${esActivo ? "badge-activo" : "badge-inactivo"}`}>
+                                                <span className={`badge ${esActivo ? "badge-activo" : "badge-inactivo"}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                                    {esActivo ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
                                                     {esActivo ? "Activo" : "Inactivo"}
                                                 </span>
                                             </td>
@@ -232,8 +237,8 @@ const EmpresaComponent: React.FC = () => {
                                                     {tienePermiso("EDITAR_EMPRESAS") && (
                                                         <button
                                                             onClick={() => handleEditarClick(emp)}
-                                                            className="btn-editar"
-                                                            style={{ backgroundColor: "#22c55e", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold" }}
+                                                            className="btn-editar btn-interactive"
+                                                            style={{ backgroundColor: "#059669", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold" }}
                                                         >
                                                             Editar
                                                         </button>
@@ -241,8 +246,8 @@ const EmpresaComponent: React.FC = () => {
                                                     {tienePermiso("DAR_DE_BAJA_EMPRESAS") && (
                                                         <button
                                                             onClick={() => handleCambiarEstado(emp, esActivo)}
-                                                            className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"}`}
-                                                            style={{ padding: "6px 10px", borderRadius: "4px", border: "none", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold", color: "white", backgroundColor: esActivo ? "#94a3b8" : "#16a34a" }}
+                                                            className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"} btn-interactive`}
+                                                            style={{ padding: "6px 10px", borderRadius: "4px", border: "none", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold", color: "white", backgroundColor: esActivo ? "#64748b" : "#16a34a" }}
                                                         >
                                                             {esActivo ? "Dar de baja" : "Dar de alta"}
                                                         </button>
@@ -257,8 +262,8 @@ const EmpresaComponent: React.FC = () => {
                     </div>
                 </>
             ) : (
-                <p style={{ color: "#ef4444", textAlign: "center", padding: "20px" }}>
-                    ⚠️ No tenés permisos para visualizar la lista de empresas.
+                <p style={{ color: "#ef4444", textAlign: "center", padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                    <ShieldAlert size={18} /> No tenés permisos para visualizar la lista de empresas.
                 </p>
             )}
         </div>

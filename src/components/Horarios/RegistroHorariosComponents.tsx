@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Clock, Calendar, CheckCircle2, XCircle, AlertCircle, Check, X } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./horarios.css";
@@ -91,7 +92,6 @@ const RegistroHorarioComponent: React.FC = () => {
         }
     };
 
-    // 🌟 MANEJADOR CON AUTENTICACIÓN JWT Y MULTI-ENDPOINT FALLBACK
     const handleCambiarEstadoHoras = async (reg: RegistroHoraConEstado, nuevoEstado: "APROBADO" | "RECHAZADO") => {
         const idSeguro = reg.idRegistro || reg.id;
         if (!idSeguro) {
@@ -101,7 +101,6 @@ const RegistroHorarioComponent: React.FC = () => {
 
         const config = obtenerHeaders();
 
-        // 🚀 1. Actualización optimista inmediata en la UI para respuesta visual rápida
         setRegistros((prev) =>
             prev.map((r) =>
                 (r.idRegistro === idSeguro || r.id === idSeguro) ? { ...r, estado: nuevoEstado } : r
@@ -109,19 +108,16 @@ const RegistroHorarioComponent: React.FC = () => {
         );
 
         try {
-            // Variante 1: PUT /horas/{id}/estado con body JSON
             await api.put(`/horas/${idSeguro}/estado`, { estado: nuevoEstado }, config);
             buscarRegistros(fechaFiltro);
             return;
         } catch (e1) {
             try {
-                // Variante 2: PATCH /horas/{id}/estado?estado=APROBADO
                 await api.patch(`/horas/${idSeguro}/estado?estado=${nuevoEstado}`, {}, config);
                 buscarRegistros(fechaFiltro);
                 return;
             } catch (e2) {
                 try {
-                    // Variante 3: PUT /horas/{id} (Objeto de entidad completo)
                     const payloadActualizar = {
                         ...reg,
                         estado: nuevoEstado
@@ -133,7 +129,6 @@ const RegistroHorarioComponent: React.FC = () => {
                     console.error("Error al actualizar horas en el backend:", errFinal?.response || errFinal);
                     const detalle = errFinal?.response?.data?.mensaje || errFinal?.response?.data || `Error HTTP ${errFinal?.response?.status || ''}`;
 
-                    // Revertimos cambios visuales si rebota en el servidor
                     buscarRegistros(fechaFiltro);
                     alert(`No se pudo cambiar el estado: ${detalle}`);
                 }
@@ -143,10 +138,11 @@ const RegistroHorarioComponent: React.FC = () => {
 
     return (
         <div className="horario-container">
-            {/* 1. Formulario de Carga */}
             <div className="horario-card">
                 <div className="horario-tittle">
-                    <h1>REGISTRAR HORAS DE TRABAJO</h1>
+                    <h1 style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
+                        <Clock size={24} color="#059669" /> REGISTRAR HORAS DE TRABAJO
+                    </h1>
                 </div>
 
                 <form className="horario-form" onSubmit={handleSubmit}>
@@ -207,17 +203,18 @@ const RegistroHorarioComponent: React.FC = () => {
                         />
                     </div>
 
-                    <button type="submit" className="form-button">GUARDAR REGISTRO</button>
+                    <button type="submit" className="form-button btn-interactive">GUARDAR REGISTRO</button>
 
                     {error && <p className="msg-error">{error}</p>}
                     {mensaje && <p className="msg-exito">{mensaje}</p>}
                 </form>
             </div>
 
-            {/* 2. Calendario / Tabla Simétrica con Acciones */}
             <div className="horario-card">
                 <div className="horario-tittle">
-                    <h1>CALENDARIO DIARIO DE HORAS</h1>
+                    <h1 style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
+                        <Calendar size={24} color="#059669" /> CALENDARIO DIARIO DE HORAS
+                    </h1>
                 </div>
 
                 <div className="filtros-bar">
@@ -228,7 +225,7 @@ const RegistroHorarioComponent: React.FC = () => {
                         value={fechaFiltro}
                         onChange={(e) => setFechaFiltro(e.target.value)}
                     />
-                    <button type="button" className="btn-filtrar" onClick={handleFiltrar}>
+                    <button type="button" className="btn-filtrar btn-interactive" onClick={handleFiltrar}>
                         Buscar
                     </button>
                 </div>
@@ -260,20 +257,24 @@ const RegistroHorarioComponent: React.FC = () => {
                                             </td>
                                             <td>{reg.tareasRealizadas}</td>
 
-                                            {/* BADGES DE ESTADO */}
                                             <td style={{ textAlign: "center" }}>
                                                 {estadoActual === "PENDIENTE" && (
-                                                    <span className="badge-estado badge-pendiente">⏳ Pendiente</span>
+                                                    <span className="badge-estado badge-pendiente" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                                        <Clock size={12} /> Pendiente
+                                                    </span>
                                                 )}
                                                 {estadoActual === "APROBADO" && (
-                                                    <span className="badge-estado badge-aprobado">✅ Aprobado</span>
+                                                    <span className="badge-estado badge-aprobado" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                                        <CheckCircle2 size={12} /> Aprobado
+                                                    </span>
                                                 )}
                                                 {estadoActual === "RECHAZADO" && (
-                                                    <span className="badge-estado badge-rechazado">❌ Rechazado</span>
+                                                    <span className="badge-estado badge-rechazado" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                                        <XCircle size={12} /> Rechazado
+                                                    </span>
                                                 )}
                                             </td>
 
-                                            {/* 🌟 ACCIONES: BOTONES VISIBLES SOLO CON PERMISO "APROBAR_HORARIOS" */}
                                             <td style={{ textAlign: "center" }}>
                                                 {tienePermiso("APROBAR_HORARIOS") ? (
                                                     <div className="acciones-group" style={{ justifyContent: "center" }}>
@@ -281,26 +282,26 @@ const RegistroHorarioComponent: React.FC = () => {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleCambiarEstadoHoras(reg, "APROBADO")}
-                                                                className="btn-aprobar-hora"
+                                                                className="btn-aprobar-hora btn-interactive"
                                                                 title="Aprobar Horas"
                                                             >
-                                                                Aprobar
+                                                                <Check size={14} /> Aprobar
                                                             </button>
                                                         )}
                                                         {estadoActual !== "RECHAZADO" && (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleCambiarEstadoHoras(reg, "RECHAZADO")}
-                                                                className="btn-rechazar-hora"
+                                                                className="btn-rechazar-hora btn-interactive"
                                                                 title="Rechazar Horas"
                                                             >
-                                                                Rechazar
+                                                                <X size={14} /> Rechazar
                                                             </button>
                                                         )}
                                                     </div>
                                                 ) : (
                                                     <span style={{ fontSize: "0.8rem", color: "#94A3B8", fontStyle: "italic" }}>
-                                                        Sin permisos de aprobación
+                                                        Sin permisos
                                                     </span>
                                                 )}
                                             </td>
