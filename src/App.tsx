@@ -10,11 +10,14 @@ import Home from "./components/home/home";
 import EmpresaComponent from "./components/empresa/EmpresaComponent";
 import RegistroHorarioComponent from "./components/Horarios/RegistroHorariosComponents";
 
-// 🌟 Importación IPER (Apuntando a src/components/AdminCatalogosPage)
+// 🌟 Importación IPER
 import { AdminCatalogosPage } from "./components/AdminCatalogosPage";
 
 // 🌟 Importación ATS (Gestión de Análisis de Trabajo Seguro)
 import { GestionAtsComponent } from "./components/ats/GestionAtsComponent";
+
+// 🌟 Importación Gestor de Permisos Unitarios de Usuario
+import GestorPermisosUsuarios from "./components/gestorUsuarios/GestorPermisosUsuarios";
 
 const App: React.FC = () => {
   return (
@@ -33,10 +36,13 @@ const App: React.FC = () => {
         <Route path="/horarios" element={<RegistroHorarioComponent />} />
 
         {/* 🌟 Nueva Ruta: Administración de Catálogos IPER */}
-        <Route path="/admin/catalogos" element={<AdminCatalogosPage />} />
+        <Route path="/admin/catalogos" element={<AdminCatalogosPage darkMode={true} />} />
 
         {/* 🌟 Nueva Ruta: Análisis de Trabajo Seguro (ATS) */}
         <Route path="/ats" element={<GestionAtsComponent />} />
+
+        {/* 🌟 Nueva Ruta: Permisos Unitarios por Usuario */}
+        <Route path="/admin/permisos-usuario" element={<GestorPermisosUsuarios />} />
 
         {/* Ruta por defecto si no existe */}
         <Route path="*" element={<h1>404 - Página no encontrada</h1>} />

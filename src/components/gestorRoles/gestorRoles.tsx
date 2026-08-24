@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Key, ShieldCheck, Users, Building2, Clock, ShieldAlert, Settings, CheckSquare, Square, Trash2, Edit2 } from "lucide-react";
+import { Key, ShieldCheck, Users, Building2, Clock, ShieldAlert, Settings, FileCheck, CheckSquare, Square, Trash2, Edit2 } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./gestorRoles.css";
@@ -59,6 +59,7 @@ const GestorRoles: React.FC = () => {
             "EMPRESAS": { icono: <Building2 size={18} />, permisos: [] },
             "HORARIOS": { icono: <Clock size={18} />, permisos: [] },
             "IPER": { icono: <ShieldAlert size={18} className="icon-pulse" color="#059669" />, permisos: [] },
+            "ATS": { icono: <FileCheck size={18} color="#10B981" />, permisos: [] },
             "OTROS": { icono: <Settings size={18} className="icon-spin-hover" />, permisos: [] }
         };
 
@@ -70,21 +71,31 @@ const GestorRoles: React.FC = () => {
                 modulosMap["ROLES"].permisos.push(p);
             } else if (nombre.includes("EMPRESA")) {
                 modulosMap["EMPRESAS"].permisos.push(p);
-            } else if (nombre.includes("HORARIO") || nombre.includes("APROBAR")) {
+            } else if (nombre.includes("HORARIO")) {
                 modulosMap["HORARIOS"].permisos.push(p);
             } else if (nombre.includes("IPER") || nombre.includes("RIESGO") || nombre.includes("CATALOGO")) {
                 modulosMap["IPER"].permisos.push(p);
+            } else if (nombre.includes("ATS")) {
+                modulosMap["ATS"].permisos.push(p);
             } else {
                 modulosMap["OTROS"].permisos.push(p);
             }
         });
 
+        // Aseguramos valores por defecto si la base de datos no retornó los módulos nuevos aún
         if (modulosMap["IPER"].permisos.length === 0) {
             modulosMap["IPER"].permisos = [
                 { idPermiso: 901, nombre: "VER_CATALOGOS_IPER" },
                 { idPermiso: 902, nombre: "CREAR_CATALOGOS_IPER" },
                 { idPermiso: 903, nombre: "EDITAR_CATALOGOS_IPER" },
                 { idPermiso: 904, nombre: "ELIMINAR_CATALOGOS_IPER" }
+            ];
+        }
+
+        if (modulosMap["ATS"].permisos.length === 0) {
+            modulosMap["ATS"].permisos = [
+                { idPermiso: 905, nombre: "CREAR_ATS" },
+                { idPermiso: 906, nombre: "APROBAR_ATS" }
             ];
         }
 
@@ -99,7 +110,10 @@ const GestorRoles: React.FC = () => {
 
     const handleSeleccionarTodos = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
-            setPermisosSeleccionados(permisosDisponibles.map((p) => p.idPermiso));
+            const todosIds = permisosDisponibles.length > 0
+                ? permisosDisponibles.map((p) => p.idPermiso)
+                : [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,901,902,903,904,905,906];
+            setPermisosSeleccionados(todosIds);
         } else {
             setPermisosSeleccionados([]);
         }
@@ -246,7 +260,7 @@ const GestorRoles: React.FC = () => {
                                     checked={todosSeleccionados}
                                     onChange={handleSeleccionarTodos}
                                 />
-                                Marcar Todo el Sistema ({permisosSeleccionados.length}/{permisosDisponibles.length})
+                                Marcar Todo el Sistema ({permisosSeleccionados.length}/{permisosDisponibles.length || 15})
                             </label>
                         </div>
 
@@ -360,7 +374,7 @@ const GestorRoles: React.FC = () => {
                         <tbody>
                             {roles.map((rol) => {
                                 const totalPermisosRol = rol.permisos ? rol.permisos.length : 0;
-                                const esTotal = totalPermisosRol > 0 && totalPermisosRol >= permisosDisponibles.length;
+                                const esTotal = totalPermisosRol > 0 && totalPermisosRol >= (permisosDisponibles.length || 15);
 
                                 return (
                                     <tr key={rol.idTipoPersona}>

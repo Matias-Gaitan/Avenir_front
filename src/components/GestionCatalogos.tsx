@@ -141,7 +141,6 @@ export const GestionCatalogos: React.FC<Props> = ({ modulo, titulo, darkMode = f
     setNivel(1);
   };
 
-  // 🌟 RENDERING DE BADGES CON COLORES DE ALTO CONTRASTE Y LECTURA CLARA
   const renderBadgeNivel = (numNivel: number) => {
     const configNiveles: { [key: number]: { label: string; bg: string; color: string } } = {
       1: { label: '1 - Bajo', bg: '#065F46', color: '#D1FAE5' },
@@ -337,10 +336,9 @@ export const GestionCatalogos: React.FC<Props> = ({ modulo, titulo, darkMode = f
                     </td>
                   )}
                   <td style={{ ...estilos.td, textAlign: 'center' }}>
-                    {/* 🌟 BADGE "ACTIVO" CON ALTO CONTRASTE IDENTICO A EMPRESAS */}
                     <span style={{
-                      backgroundColor: '#ECFDF5',
-                      color: '#047857',
+                      backgroundColor: darkMode ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5',
+                      color: darkMode ? '#34D399' : '#047857',
                       padding: '4px 10px',
                       borderRadius: '12px',
                       fontSize: '0.75rem',
@@ -348,7 +346,7 @@ export const GestionCatalogos: React.FC<Props> = ({ modulo, titulo, darkMode = f
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '4px',
-                      border: '1px solid #A7F3D0'
+                      border: darkMode ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid #A7F3D0'
                     }}>
                       <CheckCircle2 size={13} /> Activo
                     </span>

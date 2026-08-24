@@ -13,7 +13,9 @@ import {
   Mail,
   ShieldCheck,
   FileCheck,
-  ClipboardList
+  ClipboardList,
+  MapPin,
+  UserCheck
 } from "lucide-react";
 import api from "../../service/api";
 import GestorUsuarios from "../gestorUsuarios/gestorUsuarios";
@@ -23,6 +25,8 @@ import RegistroHorarioComponent from "../Horarios/RegistroHorariosComponents";
 import { AdminCatalogosPage } from "../AdminCatalogosPage";
 import { GestionAtsComponent } from "../ats/GestionAtsComponent";
 import { IperFormularioWizard } from "../IperFormularioWizard";
+import GestorPermisosUsuarios from "../gestorUsuarios/GestorPermisosUsuarios";
+import { MapaGeolocalizacion } from "../mapa/MapaGeolocalizacion";
 
 interface PermisoBD {
     idPermiso?: number;
@@ -36,7 +40,7 @@ interface RolBD {
 }
 
 const Home: React.FC = () => {
-    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "iper" | "iper-form" | "ats">("usuarios");
+    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "iper" | "iper-form" | "ats" | "permisos-usuario" | "mapa">("usuarios");
     const [rolesDisponibles, setRolesDisponibles] = useState<RolBD[]>([]);
     const [rolActivoTesting, setRolActivoTesting] = useState<string>("");
 
@@ -179,20 +183,20 @@ const Home: React.FC = () => {
             <nav style={{
                 backgroundColor: darkMode ? "#0B132B" : "#064E3B",
                 borderBottom: darkMode ? "1px solid #10B981" : "none",
-                padding: "12px 30px",
+                padding: "12px 20px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 boxShadow: darkMode ? "0 0 15px rgba(16,185,129,0.2)" : "0 4px 6px rgba(0,0,0,0.1)",
                 flexWrap: "wrap",
-                gap: "15px",
+                gap: "12px",
                 transition: "all 0.3s ease"
             }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap" }}>
                     <h2 style={{
                         color: darkMode ? "#38BDF8" : "#FFFFFF",
                         margin: 0,
-                        textShadow: darkMode ? "0 0 8px rgba(56,189,248,0.4)" : "none",
+                        fontSize: "1.25rem",
                         display: "flex",
                         alignItems: "center",
                         gap: "8px"
@@ -204,24 +208,24 @@ const Home: React.FC = () => {
                     <div style={{
                         display: "flex",
                         flexDirection: "column",
-                        gap: "4px",
+                        gap: "2px",
                         backgroundColor: darkMode ? "#111827" : "#042F2E",
-                        padding: "8px 14px",
+                        padding: "6px 12px",
                         borderRadius: "6px",
                         border: darkMode ? "1px solid #38BDF8" : "1px solid #14B8A6"
                     }}>
-                        <div style={{ display: "flex", gap: "10px", alignItems: "center", fontSize: "0.85rem" }}>
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "0.8rem" }}>
                             <span style={{ color: darkMode ? "#38BDF8" : "#A7F3D0", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>
-                                <User size={14} /> {usuarioData.nombre} {usuarioData.apellido}
+                                <User size={13} /> {usuarioData.nombre} {usuarioData.apellido}
                             </span>
                             <span style={{ color: "#6EE7B7" }}>|</span>
                             <span style={{ color: darkMode ? "#E2E8F0" : "#A7F3D0", display: "flex", alignItems: "center", gap: "4px" }}>
-                                <Mail size={14} /> {usuarioData.email}
+                                <Mail size={13} /> {usuarioData.email}
                             </span>
                             <span style={{ color: "#6EE7B7" }}>|</span>
                             <span style={{ color: "#FDE047", fontWeight: "bold" }}>Rol: {usuarioData.rol}</span>
                         </div>
-                        <div style={{ display: "flex", gap: "15px", alignItems: "center", fontSize: "0.8rem", color: "#E2E8F0" }}>
+                        <div style={{ display: "flex", gap: "12px", alignItems: "center", fontSize: "0.75rem", color: "#E2E8F0" }}>
                             <span>Ingreso: <strong>{horaInicioSesion}</strong></span>
                             <span>Actual: <strong>{horaActual}</strong></span>
                         </div>
@@ -230,15 +234,15 @@ const Home: React.FC = () => {
                     {esAdminReal && (
                         <div className="simulador-card" style={{
                             backgroundColor: darkMode ? "#1F2937" : "#065F46",
-                            padding: "6px 12px",
+                            padding: "4px 10px",
                             borderRadius: "6px",
                             display: "flex",
                             alignItems: "center",
-                            gap: "8px",
+                            gap: "6px",
                             border: darkMode ? "1px solid #10B981" : "1px dashed #34D399"
                         }}>
-                            <span style={{ color: darkMode ? "#10B981" : "#99F6E4", fontSize: "0.8rem", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}>
-                                <FlaskConical size={14} /> Simular Rol:
+                            <span style={{ color: darkMode ? "#10B981" : "#99F6E4", fontSize: "0.75rem", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}>
+                                <FlaskConical size={13} /> Simular Rol:
                             </span>
                             <select
                                 value={rolActivoTesting}
@@ -247,11 +251,11 @@ const Home: React.FC = () => {
                                     backgroundColor: darkMode ? "#111827" : "#047857",
                                     color: "#FFFFFF",
                                     border: "1px solid #10B981",
-                                    padding: "4px 8px",
+                                    padding: "3px 6px",
                                     borderRadius: "4px",
                                     cursor: "pointer",
                                     fontWeight: "bold",
-                                    fontSize: "0.8rem",
+                                    fontSize: "0.75rem",
                                     outline: "none"
                                 }}
                             >
@@ -268,17 +272,20 @@ const Home: React.FC = () => {
                     )}
                 </div>
 
-                <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-                    <button onClick={() => setVistaActiva("usuarios")} style={{ backgroundColor: vistaActiva === "usuarios" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 12px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", gap: "6px" }} className="btn-interactive"><Users size={16} /> Usuarios</button>
-                    <button onClick={() => setVistaActiva("roles")} style={{ backgroundColor: vistaActiva === "roles" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 12px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", gap: "6px" }} className="btn-interactive"><Key size={16} /> Roles</button>
-                    <button onClick={() => setVistaActiva("empresas")} style={{ backgroundColor: vistaActiva === "empresas" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 12px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", gap: "6px" }} className="btn-interactive"><Building2 size={16} /> Empresas</button>
-                    <button onClick={() => setVistaActiva("horarios")} style={{ backgroundColor: vistaActiva === "horarios" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 12px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", gap: "6px" }} className="btn-interactive"><Clock size={16} /> Horarios</button>
-                    <button onClick={() => setVistaActiva("iper")} style={{ backgroundColor: vistaActiva === "iper" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 12px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", gap: "6px" }} className="btn-interactive"><ShieldAlert size={16} className="icon-pulse" /> Parámetros IPER</button>
-                    <button onClick={() => setVistaActiva("iper-form")} style={{ backgroundColor: vistaActiva === "iper-form" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 12px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", gap: "6px" }} className="btn-interactive"><ClipboardList size={16} /> Formulario IPER</button>
-                    <button onClick={() => setVistaActiva("ats")} style={{ backgroundColor: vistaActiva === "ats" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 12px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", gap: "6px" }} className="btn-interactive"><FileCheck size={16} /> ATS Campo</button>
+                {/* BOTONES DE NAVEGACIÓN SUPERIOR INTEGRADOS */}
+                <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+                    <button onClick={() => setVistaActiva("usuarios")} style={{ backgroundColor: vistaActiva === "usuarios" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "5px" }} className="btn-interactive"><Users size={15} /> Usuarios</button>
+                    <button onClick={() => setVistaActiva("permisos-usuario")} style={{ backgroundColor: vistaActiva === "permisos-usuario" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "5px" }} className="btn-interactive"><UserCheck size={15} /> Permisos Empleado</button>
+                    <button onClick={() => setVistaActiva("roles")} style={{ backgroundColor: vistaActiva === "roles" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "5px" }} className="btn-interactive"><Key size={15} /> Roles</button>
+                    <button onClick={() => setVistaActiva("empresas")} style={{ backgroundColor: vistaActiva === "empresas" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "5px" }} className="btn-interactive"><Building2 size={15} /> Empresas</button>
+                    <button onClick={() => setVistaActiva("horarios")} style={{ backgroundColor: vistaActiva === "horarios" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "5px" }} className="btn-interactive"><Clock size={15} /> Horarios</button>
+                    <button onClick={() => setVistaActiva("iper")} style={{ backgroundColor: vistaActiva === "iper" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "5px" }} className="btn-interactive"><ShieldAlert size={15} className="icon-pulse" /> Parámetros IPER</button>
+                    <button onClick={() => setVistaActiva("iper-form")} style={{ backgroundColor: vistaActiva === "iper-form" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "5px" }} className="btn-interactive"><ClipboardList size={15} /> Formulario IPER</button>
+                    <button onClick={() => setVistaActiva("ats")} style={{ backgroundColor: vistaActiva === "ats" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "5px" }} className="btn-interactive"><FileCheck size={15} /> ATS Campo</button>
+                    <button onClick={() => setVistaActiva("mapa")} style={{ backgroundColor: vistaActiva === "mapa" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "5px" }} className="btn-interactive"><MapPin size={15} /> Mapa 2D</button>
 
-                    <button type="button" className="theme-toggle-btn btn-interactive" onClick={toggleDarkMode} style={{ display: "flex", alignItems: "center", gap: "6px", marginLeft: "4px" }}>
-                        {darkMode ? <Moon size={16} /> : <Sun size={16} />}
+                    <button type="button" className="theme-toggle-btn btn-interactive" onClick={toggleDarkMode} style={{ display: "flex", alignItems: "center", gap: "5px", padding: "6px 10px", fontSize: "0.8rem" }}>
+                        {darkMode ? <Moon size={15} /> : <Sun size={15} />}
                         {darkMode ? "Oscuro" : "Claro"}
                     </button>
 
@@ -289,29 +296,31 @@ const Home: React.FC = () => {
                             backgroundColor: "#DC2626",
                             color: "#FFFFFF",
                             border: "none",
-                            padding: "8px 12px",
+                            padding: "6px 10px",
                             borderRadius: "5px",
                             cursor: "pointer",
                             fontWeight: "bold",
-                            marginLeft: "6px",
+                            fontSize: "0.8rem",
                             display: "flex",
                             alignItems: "center",
-                            gap: "6px"
+                            gap: "5px"
                         }}
                     >
-                        <LogOut size={16} /> Salir
+                        <LogOut size={15} /> Salir
                     </button>
                 </div>
             </nav>
 
             <div style={{ padding: "20px" }}>
                 {vistaActiva === "usuarios" && <GestorUsuarios />}
+                {vistaActiva === "permisos-usuario" && <GestorPermisosUsuarios />}
                 {vistaActiva === "roles" && <GestorRoles />}
                 {vistaActiva === "empresas" && <EmpresaComponent />}
                 {vistaActiva === "horarios" && <RegistroHorarioComponent />}
                 {vistaActiva === "iper" && <AdminCatalogosPage darkMode={darkMode} />}
                 {vistaActiva === "iper-form" && <IperFormularioWizard />}
                 {vistaActiva === "ats" && <GestionAtsComponent />}
+                {vistaActiva === "mapa" && <MapaGeolocalizacion darkMode={darkMode} />}
             </div>
         </div>
     );

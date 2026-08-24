@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // 🌟 URL Corregida (sin el espacio después de http://)
-export const API_BASE_URL = "http://192.168.0.173:8080/api";
+export const API_BASE_URL = "http://192.168.0.10:8082/api";
 
 const api = axios.create({
     baseURL: API_BASE_URL,

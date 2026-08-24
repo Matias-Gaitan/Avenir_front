@@ -1,0 +1,27 @@
+/* Corrección de Popups de Leaflet - Lectura Clara */
+.leaflet-popup-content-wrapper {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+  padding: 6px 12px !important;
+}
+
+.leaflet-popup-content {
+  color: #0f172a !important;
+  margin: 8px 10px !important;
+  line-height: 1.4 !important;
+}
+
+.leaflet-popup-content strong {
+  color: #0f172a !important;
+}
+
+.leaflet-popup-content p,
+.leaflet-popup-content span {
+  color: #334155 !important;
+}
+
+.leaflet-popup-tip {
+  background: #ffffff !important;
+}
