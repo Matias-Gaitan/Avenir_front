@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Building2, Plus, Edit2, ShieldAlert, CheckCircle2, XCircle, ArrowUpDown } from "lucide-react";
+import { Building2, Plus, Edit2, ShieldAlert, CheckCircle2, XCircle } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
+import { AddressAutocomplete, type UbicacionSeleccionada } from "../common/AddressAutocomplete";
 import "./empresa.css";
 
 interface Empresa {
@@ -10,6 +11,14 @@ interface Empresa {
     cuit: string;
     nombre: string;
     direccion: string;
+    pais?: string;
+    provincia?: string;
+    ciudad?: string;
+    barrio?: string;
+    calle?: string;
+    numero?: string;
+    latitud?: number;
+    longitud?: number;
     activo?: boolean;
 }
 
@@ -22,43 +31,39 @@ const EmpresaComponent: React.FC = () => {
     const [cuit, setCuit] = useState("");
     const [nombre, setNombre] = useState("");
     const [direccion, setDireccion] = useState("");
+    const [geoData, setGeoData] = useState<Partial<UbicacionSeleccionada>>({});
     const [estadoEdicion, setEstadoEdicion] = useState<boolean>(true);
 
-    const obtenerEstadoBoolean = (emp: Empresa): boolean => {
-        return emp.activo ?? true;
-    };
+    const obtenerEstadoBoolean = (emp: Empresa): boolean => emp.activo ?? true;
 
     const cargarEmpresas = async () => {
         try {
             const token = localStorage.getItem("token");
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
             const res = await api.get("/empresas", { headers });
-
             const data = Array.isArray(res.data) ? res.data : [];
-
-            data.sort((a, b) => {
-                const idA = a.idEmpresa ?? a.id ?? 0;
-                const idB = b.idEmpresa ?? b.id ?? 0;
-                return idA - idB;
-            });
-
+            data.sort((a, b) => (a.idEmpresa ?? a.id ?? 0) - (b.idEmpresa ?? b.id ?? 0));
             setEmpresas(data);
         } catch (err) {
             console.error("Error al cargar empresas:", err);
         }
     };
 
-    useEffect(() => {
-        cargarEmpresas();
-    }, []);
+    useEffect(() => { cargarEmpresas(); }, []);
 
     const limpiarFormulario = () => {
         setCuit("");
         setNombre("");
         setDireccion("");
+        setGeoData({});
         setEstadoEdicion(true);
         setModoEdicion(false);
         setIdEditar(null);
+    };
+
+    const handleSelectAddress = (data: UbicacionSeleccionada) => {
+        setDireccion(data.direccionCompleta);
+        setGeoData(data);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -71,6 +76,7 @@ const EmpresaComponent: React.FC = () => {
                 cuit,
                 nombre,
                 direccion,
+                ...geoData,
                 activo: modoEdicion ? estadoEdicion : true
             };
 
@@ -94,6 +100,16 @@ const EmpresaComponent: React.FC = () => {
         setCuit(emp.cuit);
         setNombre(emp.nombre);
         setDireccion(emp.direccion);
+        setGeoData({
+            pais: emp.pais,
+            provincia: emp.provincia,
+            ciudad: emp.ciudad,
+            barrio: emp.barrio,
+            calle: emp.calle,
+            numero: emp.numero,
+            latitud: emp.latitud,
+            longitud: emp.longitud
+        });
         setEstadoEdicion(obtenerEstadoBoolean(emp));
     };
 
@@ -101,7 +117,6 @@ const EmpresaComponent: React.FC = () => {
         try {
             const token = localStorage.getItem("token");
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
             const idSeguro = emp.idEmpresa || emp.id;
 
             if (estadoActual) {
@@ -109,7 +124,6 @@ const EmpresaComponent: React.FC = () => {
             } else {
                 await api.patch(`/empresas/${idSeguro}/alta`, {}, { headers });
             }
-
             cargarEmpresas();
         } catch (err: any) {
             console.error("Error al cambiar estado:", err);
@@ -119,8 +133,8 @@ const EmpresaComponent: React.FC = () => {
 
     const empresasFiltradas = empresas.filter((emp) => {
         const estaActiva = obtenerEstadoBoolean(emp);
-        if (filtroEstado === "ACTIVOS") return estaActiva === true;
-        if (filtroEstado === "INACTIVOS") return estaActiva === false;
+        if (filtroEstado === "ACTIVOS") return estaActiva;
+        if (filtroEstado === "INACTIVOS") return !estaActiva;
         return true;
     });
 
@@ -140,9 +154,9 @@ const EmpresaComponent: React.FC = () => {
                         <label>Razón Social / Nombre</label>
                         <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
                     </div>
-                    <div className="form-group">
-                        <label>Dirección</label>
-                        <input type="text" value={direccion} onChange={(e) => setDireccion(e.target.value)} required />
+                    <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                        <label>Buscar Dirección (Autocompletado)</label>
+                        <AddressAutocomplete value={direccion} onSelectAddress={handleSelectAddress} />
                     </div>
 
                     {modoEdicion && (
@@ -165,19 +179,7 @@ const EmpresaComponent: React.FC = () => {
                             {modoEdicion ? "ACTUALIZAR EMPRESA" : "REGISTRAR EMPRESA"}
                         </button>
                         {modoEdicion && (
-                            <button
-                                type="button"
-                                onClick={limpiarFormulario}
-                                style={{
-                                    backgroundColor: "#94a3b8",
-                                    color: "white",
-                                    padding: "10px",
-                                    border: "none",
-                                    borderRadius: "6px",
-                                    cursor: "pointer",
-                                    fontWeight: "bold"
-                                }}
-                            >
+                            <button type="button" onClick={limpiarFormulario} style={{ backgroundColor: "#94a3b8", color: "white", padding: "10px", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}>
                                 CANCELAR
                             </button>
                         )}
@@ -194,12 +196,7 @@ const EmpresaComponent: React.FC = () => {
                             <Building2 size={18} /> LISTADO DE EMPRESAS
                         </h3>
                         <div className="filtro-container">
-                            <select
-                                value={filtroEstado}
-                                onChange={(e) => setFiltroEstado(e.target.value)}
-                                className="select-filtro"
-                                style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "0.85rem", outline: "none" }}
-                            >
+                            <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="select-filtro" style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "0.85rem", outline: "none" }}>
                                 <option value="TODOS">Todas las empresas</option>
                                 <option value="ACTIVOS">Solo Activas</option>
                                 <option value="INACTIVOS">Solo Inactivas</option>
@@ -211,9 +208,9 @@ const EmpresaComponent: React.FC = () => {
                         <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
                             <thead>
                                 <tr style={{ backgroundColor: "#F1F5F9", color: "#0F172A", fontSize: "0.85rem", borderBottom: "1px solid #CBD5E1" }}>
-                                    <th style={{ width: "25%", padding: "12px 16px", textAlign: "left" }}>CUIT</th>
+                                    <th style={{ width: "20%", padding: "12px 16px", textAlign: "left" }}>CUIT</th>
                                     <th style={{ width: "25%", padding: "12px 16px", textAlign: "left" }}>Nombre / Razón Social</th>
-                                    <th style={{ width: "25%", padding: "12px 16px", textAlign: "left" }}>Dirección</th>
+                                    <th style={{ width: "30%", padding: "12px 16px", textAlign: "left" }}>Dirección</th>
                                     <th style={{ width: "12%", padding: "12px 16px", textAlign: "center" }}>Estado</th>
                                     <th style={{ width: "13%", padding: "12px 16px", textAlign: "center" }}>Acciones</th>
                                 </tr>
@@ -235,20 +232,12 @@ const EmpresaComponent: React.FC = () => {
                                             <td style={{ padding: "12px 16px", textAlign: "center" }}>
                                                 <div className="acciones-group" style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
                                                     {tienePermiso("EDITAR_EMPRESAS") && (
-                                                        <button
-                                                            onClick={() => handleEditarClick(emp)}
-                                                            className="btn-editar btn-interactive"
-                                                            style={{ backgroundColor: "#059669", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold" }}
-                                                        >
+                                                        <button onClick={() => handleEditarClick(emp)} className="btn-editar btn-interactive" style={{ backgroundColor: "#059669", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold" }}>
                                                             Editar
                                                         </button>
                                                     )}
                                                     {tienePermiso("DAR_DE_BAJA_EMPRESAS") && (
-                                                        <button
-                                                            onClick={() => handleCambiarEstado(emp, esActivo)}
-                                                            className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"} btn-interactive`}
-                                                            style={{ padding: "6px 10px", borderRadius: "4px", border: "none", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold", color: "white", backgroundColor: esActivo ? "#64748b" : "#16a34a" }}
-                                                        >
+                                                        <button onClick={() => handleCambiarEstado(emp, esActivo)} className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"} btn-interactive`} style={{ padding: "6px 10px", borderRadius: "4px", border: "none", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold", color: "white", backgroundColor: esActivo ? "#64748b" : "#16a34a" }}>
                                                             {esActivo ? "Dar de baja" : "Dar de alta"}
                                                         </button>
                                                     )}

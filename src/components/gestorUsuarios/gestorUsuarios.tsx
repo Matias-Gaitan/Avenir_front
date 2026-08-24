@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Users, UserPlus, CheckCircle2, XCircle, Clock, ShieldAlert, UserCheck } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
+import { AddressAutocomplete, type UbicacionSeleccionada } from "../common/AddressAutocomplete";
 import "./gestorUsuarios.css";
 
 interface Rol {
@@ -15,6 +16,15 @@ interface Usuario {
     nombre: string;
     apellido: string;
     email: string;
+    direccion?: string;
+    pais?: string;
+    provincia?: string;
+    ciudad?: string;
+    barrio?: string;
+    calle?: string;
+    numero?: string;
+    latitud?: number;
+    longitud?: number;
     contrasena?: string;
     estado?: boolean;
     activo?: boolean;
@@ -31,34 +41,24 @@ const GestorUsuarios: React.FC = () => {
     const [nombre, setNombre] = useState("");
     const [apellido, setApellido] = useState("");
     const [email, setEmail] = useState("");
+    const [direccion, setDireccion] = useState("");
+    const [geoData, setGeoData] = useState<Partial<UbicacionSeleccionada>>({});
     const [contrasena, setContrasena] = useState("");
     const [idRolSeleccionado, setIdRolSeleccionado] = useState<number | "">("");
 
-    const obtenerEstadoBoolean = (u: Usuario): boolean => {
-        if (u.activo !== undefined && u.activo !== null) return Boolean(u.activo);
-        if (u.estado !== undefined && u.estado !== null) return Boolean(u.estado);
-        return false;
-    };
+    const obtenerEstadoBoolean = (u: Usuario): boolean => u.activo ?? u.estado ?? false;
 
     const esUsuarioPendiente = (u: Usuario): boolean => {
         const esInactivo = !obtenerEstadoBoolean(u);
         const nombreRol = u.tipoPersona?.nombre?.toUpperCase() || "";
-        const tieneRolPendiente = nombreRol === "PENDIENTE" || nombreRol === "SIN_ROL" || nombreRol === "";
-
-        return esInactivo || tieneRolPendiente;
+        return esInactivo || nombreRol === "PENDIENTE" || nombreRol === "SIN_ROL" || nombreRol === "";
     };
 
     const cargarDatos = async () => {
         try {
             const resUsers = await api.get("/usuarios");
             const usersData = Array.isArray(resUsers.data) ? resUsers.data : [];
-
-            usersData.sort((a, b) => {
-                const idA = a.idUsuario ?? a.id ?? 0;
-                const idB = b.idUsuario ?? b.id ?? 0;
-                return idA - idB;
-            });
-
+            usersData.sort((a, b) => (a.idUsuario ?? a.id ?? 0) - (b.idUsuario ?? b.id ?? 0));
             setUsuarios(usersData);
         } catch (err) {
             console.error("Error al cargar usuarios:", err);
@@ -72,28 +72,35 @@ const GestorUsuarios: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        cargarDatos();
-    }, []);
+    useEffect(() => { cargarDatos(); }, []);
 
     const limpiarFormulario = () => {
         setNombre("");
         setApellido("");
         setEmail("");
+        setDireccion("");
+        setGeoData({});
         setContrasena("");
         setIdRolSeleccionado("");
         setModoEdicion(false);
         setIdEditar(null);
     };
 
+    const handleSelectAddress = (data: UbicacionSeleccionada) => {
+        setDireccion(data.direccionCompleta);
+        setGeoData(data);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             if (modoEdicion && idEditar) {
-                const payloadUpdate: Usuario = {
+                const payloadUpdate = {
                     nombre,
                     apellido,
                     email,
+                    direccion,
+                    ...geoData,
                     activo: true,
                     ...(contrasena && { contrasena }),
                     tipoPersona: { idTipoPersona: Number(idRolSeleccionado), nombre: "" }
@@ -108,6 +115,8 @@ const GestorUsuarios: React.FC = () => {
                         nombre,
                         apellido,
                         email,
+                        direccion,
+                        ...geoData,
                         contrasena,
                         activo: true,
                         tipoPersona: { idTipoPersona: Number(idRolSeleccionado) }
@@ -131,6 +140,17 @@ const GestorUsuarios: React.FC = () => {
         setNombre(u.nombre);
         setApellido(u.apellido);
         setEmail(u.email);
+        setDireccion(u.direccion || "");
+        setGeoData({
+            pais: u.pais,
+            provincia: u.provincia,
+            ciudad: u.ciudad,
+            barrio: u.barrio,
+            calle: u.calle,
+            numero: u.numero,
+            latitud: u.latitud,
+            longitud: u.longitud
+        });
         setContrasena("");
         setIdRolSeleccionado(u.tipoPersona?.idTipoPersona || "");
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -139,22 +159,15 @@ const GestorUsuarios: React.FC = () => {
     const handleCambiarEstado = async (u: Usuario, estadoActual: boolean) => {
         try {
             const idSeguro = u.idUsuario || u.id;
-
             if (estadoActual) {
                 await api.delete(`/usuarios/${idSeguro}`);
             } else {
-                const payloadReactivar = {
-                    ...u,
-                    estado: true,
-                    activo: true
-                };
-                await api.put(`/usuarios/${idSeguro}`, payloadReactivar);
+                await api.put(`/usuarios/${idSeguro}`, { ...u, estado: true, activo: true });
             }
-
             cargarDatos();
         } catch (err) {
             console.error("Error al cambiar estado del usuario:", err);
-            alert("No se pudo cambiar el estado. Verifica la consola.");
+            alert("No se pudo cambiar el estado.");
         }
     };
 
@@ -163,8 +176,8 @@ const GestorUsuarios: React.FC = () => {
         const esPendiente = esUsuarioPendiente(u);
 
         if (filtroEstado === "PENDIENTES") return esPendiente;
-        if (filtroEstado === "ACTIVOS") return estaActivo === true && !esPendiente;
-        if (filtroEstado === "INACTIVOS") return estaActivo === false;
+        if (filtroEstado === "ACTIVOS") return estaActivo && !esPendiente;
+        if (filtroEstado === "INACTIVOS") return !estaActivo;
         return true;
     });
 
@@ -188,27 +201,20 @@ const GestorUsuarios: React.FC = () => {
                         <label>Email</label>
                         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                     </div>
+                    <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                        <label>Dirección Domicilio (Autocompletado)</label>
+                        <AddressAutocomplete value={direccion} onSelectAddress={handleSelectAddress} />
+                    </div>
                     <div className="form-group">
                         <label>{modoEdicion ? "Nueva Contraseña (Opcional)" : "Contraseña (mínimo 6 chars)"}</label>
-                        <input
-                            type="password"
-                            value={contrasena}
-                            onChange={(e) => setContrasena(e.target.value)}
-                            required={!modoEdicion}
-                        />
+                        <input type="password" value={contrasena} onChange={(e) => setContrasena(e.target.value)} required={!modoEdicion} />
                     </div>
                     <div className="form-group">
                         <label>Asignar Rol (Aprobación)</label>
-                        <select
-                            value={idRolSeleccionado}
-                            onChange={(e) => setIdRolSeleccionado(Number(e.target.value))}
-                            required
-                        >
+                        <select value={idRolSeleccionado} onChange={(e) => setIdRolSeleccionado(Number(e.target.value))} required>
                             <option value="">Seleccione un Rol para Activar</option>
                             {roles.map((r) => (
-                                <option key={r.idTipoPersona} value={r.idTipoPersona}>
-                                    {r.nombre}
-                                </option>
+                                <option key={r.idTipoPersona} value={r.idTipoPersona}>{r.nombre}</option>
                             ))}
                         </select>
                     </div>
@@ -218,9 +224,7 @@ const GestorUsuarios: React.FC = () => {
                             {modoEdicion ? "APROBAR Y ACTIVAR USUARIO" : "CREAR USUARIO"}
                         </button>
                         {modoEdicion && (
-                            <button type="button" onClick={limpiarFormulario} className="btn-cancelar">
-                                CANCELAR
-                            </button>
+                            <button type="button" onClick={limpiarFormulario} className="btn-cancelar">CANCELAR</button>
                         )}
                     </div>
                 </form>
@@ -231,15 +235,9 @@ const GestorUsuarios: React.FC = () => {
             {tienePermiso("VER_USUARIOS") ? (
                 <>
                     <div className="listado-header">
-                        <h3 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <Users size={18} /> LISTADO DE USUARIOS
-                        </h3>
+                        <h3 style={{ display: "flex", alignItems: "center", gap: "8px" }}><Users size={18} /> LISTADO DE USUARIOS</h3>
                         <div className="filtro-container">
-                            <select
-                                value={filtroEstado}
-                                onChange={(e) => setFiltroEstado(e.target.value)}
-                                className="select-filtro"
-                            >
+                            <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="select-filtro">
                                 <option value="TODOS">Todos los usuarios</option>
                                 <option value="PENDIENTES">Pendientes de Aprobación</option>
                                 <option value="ACTIVOS">Solo Activos</option>
@@ -252,10 +250,11 @@ const GestorUsuarios: React.FC = () => {
                         <table className="tabla-usuarios-simetrica">
                             <thead>
                                 <tr>
-                                    <th style={{ width: "20%", textAlign: "left" }}>Nombre</th>
-                                    <th style={{ width: "20%", textAlign: "left" }}>Apellido</th>
-                                    <th style={{ width: "25%", textAlign: "left" }}>Email</th>
-                                    <th style={{ width: "15%", textAlign: "center" }}>Rol</th>
+                                    <th style={{ width: "15%", textAlign: "left" }}>Nombre</th>
+                                    <th style={{ width: "15%", textAlign: "left" }}>Apellido</th>
+                                    <th style={{ width: "20%", textAlign: "left" }}>Email</th>
+                                    <th style={{ width: "20%", textAlign: "left" }}>Dirección</th>
+                                    <th style={{ width: "10%", textAlign: "center" }}>Rol</th>
                                     <th style={{ width: "10%", textAlign: "center" }}>Estado</th>
                                     <th style={{ width: "10%", textAlign: "center" }}>Acciones</th>
                                 </tr>
@@ -270,6 +269,7 @@ const GestorUsuarios: React.FC = () => {
                                             <td className="txt-bold" style={{ textAlign: "left" }}>{u.nombre}</td>
                                             <td style={{ textAlign: "left" }}>{u.apellido}</td>
                                             <td style={{ textAlign: "left" }}>{u.email}</td>
+                                            <td style={{ textAlign: "left", fontSize: "0.8rem" }}>{u.direccion || "Sin registrar"}</td>
                                             <td style={{ textAlign: "center" }}>
                                                 <span className={esPendiente ? "badge-pendiente-texto" : ""}>
                                                     {u.tipoPersona?.nombre || "Sin Rol"}
