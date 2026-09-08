@@ -14,13 +14,11 @@ import {
   ShieldCheck,
   FileCheck,
   ClipboardList,
-  MapPin,
   UserCheck,
   Menu,
   X,
   ChevronDown,
   ChevronRight,
-  Sliders,
   Compass
 } from "lucide-react";
 import api from "../../service/api";
@@ -55,6 +53,9 @@ const Home: React.FC = () => {
     const [usuarioData, setUsuarioData] = useState({ nombre: "", apellido: "", email: "", rol: "" });
     const [horaActual, setHoraActual] = useState<string>("");
     const [horaInicioSesion, setHoraInicioSesion] = useState<string>("");
+
+    // 📍 Estado para transmitir la posición y hacer zoom automático en el mapa
+    const [puntoEnfocadoMapa, setPuntoEnfocadoMapa] = useState<{ lat: number; lng: number; titulo?: string; timestamp?: number } | null>(null);
 
     // Estado del Menú Lateral Colapsable
     const [sidebarAbierta, setSidebarAbierta] = useState<boolean>(true);
@@ -190,6 +191,12 @@ const Home: React.FC = () => {
         window.location.href = "/login";
     };
 
+    // ⚡ Manejador para cambiar de vista y enfocar la entidad en el Mapa
+    const handleIrAlMapaConZoom = (punto: { lat: number; lng: number; titulo?: string }) => {
+        setPuntoEnfocadoMapa({ ...punto, timestamp: Date.now() });
+        setVistaActiva("mapa");
+    };
+
     return (
         <div style={{ display: "flex", minHeight: "100vh" }}>
 
@@ -291,7 +298,7 @@ const Home: React.FC = () => {
                         ) : <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.1)", margin: "10px 0" }} />}
 
                         {(catCampo || !sidebarAbierta) && (
-                            <button onClick={() => setVistaActiva("mapa")} style={{ backgroundColor: vistaActiva === "mapa" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Compass size={18} /> {sidebarAbierta && "Mapa 2D"}</button>
+                            <button onClick={() => { setPuntoEnfocadoMapa(null); setVistaActiva("mapa"); }} style={{ backgroundColor: vistaActiva === "mapa" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Compass size={18} /> {sidebarAbierta && "Mapa 2D"}</button>
                         )}
                     </div>
                 </div>
@@ -330,7 +337,7 @@ const Home: React.FC = () => {
             {/* CONTENEDOR PRINCIPAL */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
-                {/* NAV INFORMATIVO SUPERIOR (CONSERVADO INTACTO) */}
+                {/* NAV INFORMATIVO SUPERIOR */}
                 <nav style={{
                     backgroundColor: darkMode ? "#0B132B" : "#064E3B",
                     borderBottom: darkMode ? "1px solid #10B981" : "none",
@@ -426,15 +433,15 @@ const Home: React.FC = () => {
 
                 {/* RENDIMIENTO DE LAS VISTAS */}
                 <main style={{ padding: "20px", flex: 1 }}>
-                    {vistaActiva === "usuarios" && <GestorUsuarios />}
+                    {vistaActiva === "usuarios" && <GestorUsuarios onIrAlMapa={handleIrAlMapaConZoom} />}
                     {vistaActiva === "permisos-usuario" && <GestorPermisosUsuarios />}
                     {vistaActiva === "roles" && <GestorRoles />}
-                    {vistaActiva === "empresas" && <EmpresaComponent />}
+                    {vistaActiva === "empresas" && <EmpresaComponent onIrAlMapa={handleIrAlMapaConZoom} />}
                     {vistaActiva === "horarios" && <RegistroHorarioComponent />}
                     {vistaActiva === "iper" && <AdminCatalogosPage darkMode={darkMode} />}
                     {vistaActiva === "iper-form" && <IperFormularioWizard />}
                     {vistaActiva === "ats" && <GestionAtsComponent />}
-                    {vistaActiva === "mapa" && <MapaGeolocalizacion darkMode={darkMode} />}
+                    {vistaActiva === "mapa" && <MapaGeolocalizacion darkMode={darkMode} puntoEnfocado={puntoEnfocadoMapa} />}
                 </main>
             </div>
         </div>

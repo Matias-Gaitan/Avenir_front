@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Users, UserPlus, CheckCircle2, XCircle, Clock, ShieldAlert, UserCheck } from "lucide-react";
+import { Users, UserPlus, CheckCircle2, XCircle, Clock, ShieldAlert, UserCheck, MapPin } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import { AddressAutocomplete, type UbicacionSeleccionada } from "../common/AddressAutocomplete";
@@ -31,7 +31,11 @@ interface Usuario {
     tipoPersona?: Rol;
 }
 
-const GestorUsuarios: React.FC = () => {
+interface Props {
+    onIrAlMapa?: (punto: { lat: number; lng: number; titulo?: string }) => void;
+}
+
+const GestorUsuarios: React.FC<Props> = ({ onIrAlMapa }) => {
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
     const [roles, setRoles] = useState<Rol[]>([]);
     const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
@@ -91,23 +95,64 @@ const GestorUsuarios: React.FC = () => {
         setGeoData(data);
     };
 
+    // ⚡ NAVEGACIÓN DIRECTA AL MAPA CON BÚSQUEDA SILENCIOSA
+    const irAlMapaConValidacion = async (entidad: { id?: number; direccion: string; latitud?: number; longitud?: number; nombre: string }) => {
+        let lat = entidad.latitud;
+        let lng = entidad.longitud;
+
+        // Si no tiene coordenadas guardadas en la BD, buscamos en segundo plano silenciosamente
+        if (!lat || !lng) {
+            if (!entidad.direccion || entidad.direccion.trim() === "") {
+                alert(`Error: El usuario "${entidad.nombre}" no posee una dirección registrada.`);
+                return;
+            }
+
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(entidad.direccion)}`);
+                const data = await res.json();
+
+                if (data && data.length > 0) {
+                    lat = parseFloat(data[0].lat);
+                    lng = parseFloat(data[0].lon);
+                } else {
+                    alert(`No se pudo encontrar la ubicación para la dirección: "${entidad.direccion}". Verifique que esté bien tipeada.`);
+                    return;
+                }
+            } catch (err) {
+                alert("Ocurrió un error al verificar la geolocalización de la dirección.");
+                return;
+            }
+        }
+
+        if (onIrAlMapa && lat && lng) {
+            onIrAlMapa({ lat, lng, titulo: entidad.nombre });
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             if (modoEdicion && idEditar) {
-                const payloadUpdate = {
+                const payloadUpdate: Usuario = {
                     nombre,
                     apellido,
                     email,
                     direccion,
-                    ...geoData,
+                    pais: geoData.pais ?? "",
+                    provincia: geoData.provincia ?? "",
+                    ciudad: geoData.ciudad ?? "",
+                    barrio: geoData.barrio ?? "",
+                    calle: geoData.calle ?? "",
+                    numero: geoData.numero ?? "",
+                    latitud: geoData.latitud ?? undefined,
+                    longitud: geoData.longitud ?? undefined,
                     activo: true,
                     ...(contrasena && { contrasena }),
                     tipoPersona: { idTipoPersona: Number(idRolSeleccionado), nombre: "" }
                 };
 
                 await api.put(`/usuarios/${idEditar}`, payloadUpdate);
-                alert("¡Usuario actualizado y activado con éxito!");
+                alert("¡Usuario y dirección actualizados con éxito!");
             } else {
                 const payloadCreate = {
                     claveAcceso: "000010001",
@@ -116,7 +161,14 @@ const GestorUsuarios: React.FC = () => {
                         apellido,
                         email,
                         direccion,
-                        ...geoData,
+                        pais: geoData.pais ?? "",
+                        provincia: geoData.provincia ?? "",
+                        ciudad: geoData.ciudad ?? "",
+                        barrio: geoData.barrio ?? "",
+                        calle: geoData.calle ?? "",
+                        numero: geoData.numero ?? "",
+                        latitud: geoData.latitud ?? undefined,
+                        longitud: geoData.longitud ?? undefined,
                         contrasena,
                         activo: true,
                         tipoPersona: { idTipoPersona: Number(idRolSeleccionado) }
@@ -254,9 +306,9 @@ const GestorUsuarios: React.FC = () => {
                                     <th style={{ width: "15%", textAlign: "left" }}>Apellido</th>
                                     <th style={{ width: "20%", textAlign: "left" }}>Email</th>
                                     <th style={{ width: "20%", textAlign: "left" }}>Dirección</th>
-                                    <th style={{ width: "10%", textAlign: "center" }}>Rol</th>
-                                    <th style={{ width: "10%", textAlign: "center" }}>Estado</th>
-                                    <th style={{ width: "10%", textAlign: "center" }}>Acciones</th>
+                                    <th style={{ width: "8%", textAlign: "center" }}>Rol</th>
+                                    <th style={{ width: "8%", textAlign: "center" }}>Estado</th>
+                                    <th style={{ width: "14%", textAlign: "center" }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -288,10 +340,25 @@ const GestorUsuarios: React.FC = () => {
                                                 )}
                                             </td>
                                             <td style={{ textAlign: "center" }}>
-                                                <div className="acciones-group" style={{ justifyContent: "center" }}>
+                                                <div className="acciones-group" style={{ justifyContent: "center", gap: "4px" }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => irAlMapaConValidacion({
+                                                            id: u.idUsuario || u.id,
+                                                            direccion: u.direccion || "",
+                                                            latitud: u.latitud,
+                                                            longitud: u.longitud,
+                                                            nombre: `${u.nombre} ${u.apellido}`
+                                                        })}
+                                                        title="Ver domicilio en Mapa 2D"
+                                                        style={{ backgroundColor: "#3b82f6", color: "white", border: "none", padding: "5px 7px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "3px" }}
+                                                    >
+                                                        <MapPin size={13} />
+                                                    </button>
+
                                                     {tienePermiso("EDITAR_USUARIOS") && (
                                                         <button onClick={() => handleEditarClick(u)} className="btn-editar btn-interactive">
-                                                            {esPendiente ? "Aprobar Rol" : "Editar"}
+                                                            {esPendiente ? "Aprobar" : "Editar"}
                                                         </button>
                                                     )}
                                                     {(tienePermiso("DAR_DE_BAJA_USUARIOS") || tienePermiso("ELIMINAR_USUARIOS")) && (

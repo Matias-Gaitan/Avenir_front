@@ -12,12 +12,14 @@
   "dependencies": {
     "@types/leaflet": "^1.9.22",
     "axios": "^1.17.0",
+    "globe.gl": "^2.46.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.33.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-leaflet": "^5.0.0",
-    "react-router-dom": "^7.17.0"
+    "react-router-dom": "^7.17.0",
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -26,6 +28,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/react-router-dom": "^5.3.3",
+    "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",

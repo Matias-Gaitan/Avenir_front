@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Building2, Plus, Edit2, ShieldAlert, CheckCircle2, XCircle } from "lucide-react";
+import { Building2, Plus, Edit2, ShieldAlert, CheckCircle2, XCircle, MapPin } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import { AddressAutocomplete, type UbicacionSeleccionada } from "../common/AddressAutocomplete";
@@ -22,7 +22,11 @@ interface Empresa {
     activo?: boolean;
 }
 
-const EmpresaComponent: React.FC = () => {
+interface Props {
+    onIrAlMapa?: (punto: { lat: number; lng: number; titulo?: string }) => void;
+}
+
+const EmpresaComponent: React.FC<Props> = ({ onIrAlMapa }) => {
     const [empresas, setEmpresas] = useState<Empresa[]>([]);
     const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
 
@@ -64,6 +68,40 @@ const EmpresaComponent: React.FC = () => {
     const handleSelectAddress = (data: UbicacionSeleccionada) => {
         setDireccion(data.direccionCompleta);
         setGeoData(data);
+    };
+
+    // ⚡ NAVEGACIÓN DIRECTA AL MAPA CON BÚSQUEDA SILENCIOSA
+    const irAlMapaConValidacion = async (entidad: { id?: number; direccion: string; latitud?: number; longitud?: number; nombre: string }) => {
+        let lat = entidad.latitud;
+        let lng = entidad.longitud;
+
+        // Si no tiene coordenadas guardadas en la BD, buscamos en segundo plano silenciosamente
+        if (!lat || !lng) {
+            if (!entidad.direccion || entidad.direccion.trim() === "") {
+                alert(`Error: La empresa "${entidad.nombre}" no posee una dirección registrada.`);
+                return;
+            }
+
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(entidad.direccion)}`);
+                const data = await res.json();
+
+                if (data && data.length > 0) {
+                    lat = parseFloat(data[0].lat);
+                    lng = parseFloat(data[0].lon);
+                } else {
+                    alert(`No se pudo encontrar la ubicación para la dirección: "${entidad.direccion}". Verifique que esté bien tipeada.`);
+                    return;
+                }
+            } catch (err) {
+                alert("Ocurrió un error al verificar la geolocalización de la dirección.");
+                return;
+            }
+        }
+
+        if (onIrAlMapa && lat && lng) {
+            onIrAlMapa({ lat, lng, titulo: entidad.nombre });
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -208,11 +246,11 @@ const EmpresaComponent: React.FC = () => {
                         <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
                             <thead>
                                 <tr style={{ backgroundColor: "#F1F5F9", color: "#0F172A", fontSize: "0.85rem", borderBottom: "1px solid #CBD5E1" }}>
-                                    <th style={{ width: "20%", padding: "12px 16px", textAlign: "left" }}>CUIT</th>
-                                    <th style={{ width: "25%", padding: "12px 16px", textAlign: "left" }}>Nombre / Razón Social</th>
+                                    <th style={{ width: "18%", padding: "12px 16px", textAlign: "left" }}>CUIT</th>
+                                    <th style={{ width: "22%", padding: "12px 16px", textAlign: "left" }}>Nombre / Razón Social</th>
                                     <th style={{ width: "30%", padding: "12px 16px", textAlign: "left" }}>Dirección</th>
                                     <th style={{ width: "12%", padding: "12px 16px", textAlign: "center" }}>Estado</th>
-                                    <th style={{ width: "13%", padding: "12px 16px", textAlign: "center" }}>Acciones</th>
+                                    <th style={{ width: "18%", padding: "12px 16px", textAlign: "center" }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -231,6 +269,21 @@ const EmpresaComponent: React.FC = () => {
                                             </td>
                                             <td style={{ padding: "12px 16px", textAlign: "center" }}>
                                                 <div className="acciones-group" style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => irAlMapaConValidacion({
+                                                            id: emp.idEmpresa || emp.id,
+                                                            direccion: emp.direccion,
+                                                            latitud: emp.latitud,
+                                                            longitud: emp.longitud,
+                                                            nombre: emp.nombre
+                                                        })}
+                                                        title="Ver ubicación en Mapa 2D"
+                                                        style={{ backgroundColor: "#3b82f6", color: "white", border: "none", padding: "6px 8px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+                                                    >
+                                                        <MapPin size={14} /> Mapa
+                                                    </button>
+
                                                     {tienePermiso("EDITAR_EMPRESAS") && (
                                                         <button onClick={() => handleEditarClick(emp)} className="btn-editar btn-interactive" style={{ backgroundColor: "#059669", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold" }}>
                                                             Editar
@@ -238,7 +291,7 @@ const EmpresaComponent: React.FC = () => {
                                                     )}
                                                     {tienePermiso("DAR_DE_BAJA_EMPRESAS") && (
                                                         <button onClick={() => handleCambiarEstado(emp, esActivo)} className={`btn-accion ${esActivo ? "btn-baja" : "btn-alta"} btn-interactive`} style={{ padding: "6px 10px", borderRadius: "4px", border: "none", fontSize: "0.75rem", cursor: "pointer", fontWeight: "bold", color: "white", backgroundColor: esActivo ? "#64748b" : "#16a34a" }}>
-                                                            {esActivo ? "Dar de baja" : "Dar de alta"}
+                                                            {esActivo ? "Baja" : "Alta"}
                                                         </button>
                                                     )}
                                                 </div>
