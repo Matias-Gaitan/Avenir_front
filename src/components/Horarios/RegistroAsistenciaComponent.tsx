@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { LogIn, LogOut, Clock, Calendar, Timer, Building2 } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { LogIn, LogOut, Clock, Calendar, Timer, Building2, WifiOff, RefreshCw } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./asistencia.css";
 import type { RegistroAsistencia } from "../../interfaces/RegistroAsistencia";
 import type { Empresa } from "../../interfaces/Empresa";
+import { encolarFichaje, obtenerPendientes, quitarPendiente, esErrorDeRed } from "../../service/offlineQueue";
 
 const obtenerHeaders = () => {
     const token = localStorage.getItem("token");
@@ -54,9 +55,50 @@ const RegistroAsistenciaComponent: React.FC = () => {
 
     const email = localStorage.getItem("email") || "";
 
+    const [enLinea, setEnLinea] = useState(navigator.onLine);
+    const [pendientes, setPendientes] = useState(() => obtenerPendientes().length);
+    const [sincronizando, setSincronizando] = useState(false);
+
     useEffect(() => {
         const intervalo = setInterval(() => setHoraActual(new Date()), 1000);
         return () => clearInterval(intervalo);
+    }, []);
+
+    // US: si el dispositivo se queda sin señal, el fichaje se guarda localmente en vez
+    // de perderse; apenas vuelve la conexión se sincroniza solo con el servidor.
+    const sincronizarPendientes = useCallback(async () => {
+        const cola = obtenerPendientes();
+        if (cola.length === 0) return;
+        setSincronizando(true);
+        for (const item of cola) {
+            try {
+                const endpoint = item.tipo === "ingreso" ? "/asistencia/ingreso" : "/asistencia/egreso";
+                await api.post(endpoint, item.payload, obtenerHeaders());
+                quitarPendiente(item.id);
+            } catch (err) {
+                // Si todavía no hay señal (o el servidor no responde), dejamos el resto en
+                // la cola para el próximo intento y no seguimos golpeando el servidor.
+                break;
+            }
+        }
+        setPendientes(obtenerPendientes().length);
+        setSincronizando(false);
+        await consultarEstado();
+        if (tienePermiso("VER_ASISTENCIA")) buscarRegistrosDia(fechaFiltro);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        const alConectar = () => { setEnLinea(true); sincronizarPendientes(); };
+        const alDesconectar = () => setEnLinea(false);
+        window.addEventListener("online", alConectar);
+        window.addEventListener("offline", alDesconectar);
+        if (navigator.onLine) sincronizarPendientes();
+        return () => {
+            window.removeEventListener("online", alConectar);
+            window.removeEventListener("offline", alDesconectar);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const cargarEmpresas = async () => {
@@ -101,20 +143,20 @@ const RegistroAsistenciaComponent: React.FC = () => {
         setCargando(true);
         setError("");
         setMensaje("");
+        const { latitud, longitud } = await obtenerCoordenadas();
+        const loginLatitud = localStorage.getItem("loginLat");
+        const loginLongitud = localStorage.getItem("loginLng");
+        const payload = {
+            emailUsuario: email,
+            latitud,
+            longitud,
+            idEmpresa: idEmpresaVisita || null,
+            loginLatitud,
+            loginLongitud
+        };
+
         try {
-            const { latitud, longitud } = await obtenerCoordenadas();
-            const loginLatitud = localStorage.getItem("loginLat");
-            const loginLongitud = localStorage.getItem("loginLng");
-
-            await api.post("/asistencia/ingreso", {
-                emailUsuario: email,
-                latitud,
-                longitud,
-                idEmpresa: idEmpresaVisita || null,
-                loginLatitud,
-                loginLongitud
-            }, obtenerHeaders());
-
+            await api.post("/asistencia/ingreso", payload, obtenerHeaders());
             setMensaje(
                 idEmpresaVisita
                     ? "Ingreso registrado con éxito. Se generó automáticamente el viático estimado para su aprobación."
@@ -123,7 +165,25 @@ const RegistroAsistenciaComponent: React.FC = () => {
             await consultarEstado();
             if (tienePermiso("VER_ASISTENCIA")) buscarRegistrosDia(fechaFiltro);
         } catch (err: any) {
-            setError(err.response?.data || "Error al registrar el ingreso.");
+            if (esErrorDeRed(err)) {
+                encolarFichaje("ingreso", payload);
+                setPendientes(obtenerPendientes().length);
+                setEnLinea(false);
+                setRegistroAbierto({
+                    idAsistencia: -1,
+                    fecha: new Date().toISOString().split("T")[0],
+                    horaIngreso: new Date().toISOString(),
+                    horaEgreso: null,
+                    latitudIngreso: latitud, longitudIngreso: longitud,
+                    latitudEgreso: null, longitudEgreso: null,
+                    observaciones: undefined,
+                    usuario: { idUsuario: 0, nombre: "", apellido: "", email },
+                    empresa: idEmpresaVisita ? (empresas.find((e) => e.idEmpresa === idEmpresaVisita) as any) : null
+                } as RegistroAsistencia);
+                setMensaje("Sin conexión: tu ingreso se guardó en el dispositivo y se va a sincronizar solo apenas vuelva la señal.");
+            } else {
+                setError(err.response?.data || "Error al registrar el ingreso.");
+            }
         } finally {
             setCargando(false);
         }
@@ -133,15 +193,26 @@ const RegistroAsistenciaComponent: React.FC = () => {
         setCargando(true);
         setError("");
         setMensaje("");
+        const { latitud, longitud } = await obtenerCoordenadas();
+        const payload = { emailUsuario: email, latitud, longitud };
+
         try {
-            const { latitud, longitud } = await obtenerCoordenadas();
-            await api.post("/asistencia/egreso", { emailUsuario: email, latitud, longitud }, obtenerHeaders());
+            await api.post("/asistencia/egreso", payload, obtenerHeaders());
             setMensaje("Egreso registrado con éxito.");
             setIdEmpresaVisita("");
             await consultarEstado();
             if (tienePermiso("VER_ASISTENCIA")) buscarRegistrosDia(fechaFiltro);
         } catch (err: any) {
-            setError(err.response?.data || "Error al registrar el egreso.");
+            if (esErrorDeRed(err)) {
+                encolarFichaje("egreso", payload);
+                setPendientes(obtenerPendientes().length);
+                setEnLinea(false);
+                setIdEmpresaVisita("");
+                setRegistroAbierto(null);
+                setMensaje("Sin conexión: tu egreso se guardó en el dispositivo y se va a sincronizar solo apenas vuelva la señal.");
+            } else {
+                setError(err.response?.data || "Error al registrar el egreso.");
+            }
         } finally {
             setCargando(false);
         }
@@ -153,6 +224,14 @@ const RegistroAsistenciaComponent: React.FC = () => {
                 <h1 style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
                     <Timer size={24} color="#059669" /> INGRESO Y EGRESO
                 </h1>
+
+                {(!enLinea || pendientes > 0) && (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", backgroundColor: enLinea ? "#FEF3C7" : "#FEE2E2", color: enLinea ? "#92400E" : "#991B1B", padding: "8px 14px", borderRadius: "8px", fontSize: "0.82rem", fontWeight: 700, marginBottom: "12px" }}>
+                        {enLinea ? <RefreshCw size={14} className={sincronizando ? "icon-spin-hover" : ""} /> : <WifiOff size={14} />}
+                        {!enLinea && "Sin conexión — tus fichajes se guardan en este dispositivo"}
+                        {enLinea && pendientes > 0 && `Sincronizando ${pendientes} fichaje${pendientes > 1 ? "s" : ""} pendiente${pendientes > 1 ? "s" : ""}...`}
+                    </div>
+                )}
 
                 <div className="asistencia-reloj">
                     <div className="hora">{horaActual.toLocaleTimeString()}</div>
