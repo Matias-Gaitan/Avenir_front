@@ -1,68 +1,127 @@
 import React, { useState, useEffect } from 'react';
-import { UserCheck, Shield, Check, FileText, Building2, Search, Filter, Save, MapPin } from 'lucide-react';
+import {
+  UserCheck, Shield, Search, Filter, Save, Clock,
+  Users, Key, Building2, ShieldAlert, FileCheck, Timer, Package, Fuel, FileText, Calendar, Settings
+} from 'lucide-react';
 import api from '../../service/api';
+import { tienePermiso } from '../../service/authHelper';
+import '../gestorRoles/gestorRoles.css';
+import '../insumos/insumos.css';
+
+interface Permiso {
+  idPermiso: number;
+  nombre: string;
+}
 
 interface UsuarioBD {
-  idUsuario?: number;
+  idUsuario: number;
   nombre: string;
   apellido: string;
   email: string;
   tipoPersona?: { nombre: string } | string;
-  rol?: string;
-  tareaActual?: string;
-  empresaActual?: string;
-  direccionTarea?: string;
-  barrio?: string;
-  horarioAsignado?: string;
+  permisosPersonalizados?: boolean;
+  permisosEspecificos?: Permiso[];
+  tieneHorarioAsignado?: boolean;
+  horarioLaboral?: string;
 }
 
+interface ModuloPermisos {
+  titulo: string;
+  icono: React.ReactNode;
+  permisos: Permiso[];
+}
+
+const obtenerHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+};
+
+const agruparPermisosPorModulo = (permisosDisponibles: Permiso[]): ModuloPermisos[] => {
+  const modulosMap: { [key: string]: { icono: React.ReactNode; permisos: Permiso[] } } = {
+    "USUARIOS": { icono: <Users size={16} />, permisos: [] },
+    "ROLES": { icono: <Key size={16} />, permisos: [] },
+    "EMPRESAS": { icono: <Building2 size={16} />, permisos: [] },
+    "HORARIOS": { icono: <Clock size={16} />, permisos: [] },
+    "IPER": { icono: <ShieldAlert size={16} color="#059669" />, permisos: [] },
+    "ATS": { icono: <FileCheck size={16} color="#10B981" />, permisos: [] },
+    "ASISTENCIA": { icono: <Timer size={16} color="#0EA5E9" />, permisos: [] },
+    "INSUMOS": { icono: <Package size={16} color="#7C3AED" />, permisos: [] },
+    "VIATICOS": { icono: <Fuel size={16} color="#D97706" />, permisos: [] },
+    "DOCUMENTOS": { icono: <FileText size={16} color="#0369A1" />, permisos: [] },
+    "CRONOGRAMA": { icono: <Calendar size={16} color="#DB2777" />, permisos: [] },
+    "OTROS": { icono: <Settings size={16} />, permisos: [] }
+  };
+
+  permisosDisponibles.forEach((p) => {
+    const nombre = p.nombre.toUpperCase();
+    if (nombre.includes("USUARIO")) modulosMap["USUARIOS"].permisos.push(p);
+    else if (nombre.includes("ROL")) modulosMap["ROLES"].permisos.push(p);
+    else if (nombre.includes("EMPRESA")) modulosMap["EMPRESAS"].permisos.push(p);
+    else if (nombre.includes("ASISTENCIA")) modulosMap["ASISTENCIA"].permisos.push(p);
+    else if (nombre.includes("HORARIO")) modulosMap["HORARIOS"].permisos.push(p);
+    else if (nombre.includes("IPER") || nombre.includes("RIESGO") || nombre.includes("CATALOGO")) modulosMap["IPER"].permisos.push(p);
+    else if (nombre.includes("ATS")) modulosMap["ATS"].permisos.push(p);
+    else if (nombre.includes("INSUMO")) modulosMap["INSUMOS"].permisos.push(p);
+    else if (nombre.includes("VIATICO")) modulosMap["VIATICOS"].permisos.push(p);
+    else if (nombre.includes("DOCUMENTO")) modulosMap["DOCUMENTOS"].permisos.push(p);
+    else if (nombre.includes("EVENTO")) modulosMap["CRONOGRAMA"].permisos.push(p);
+    else modulosMap["OTROS"].permisos.push(p);
+  });
+
+  return Object.entries(modulosMap)
+    .filter(([, v]) => v.permisos.length > 0)
+    .map(([titulo, v]) => ({ titulo, icono: v.icono, permisos: v.permisos }));
+};
+
 export const GestorPermisosUsuarios: React.FC = () => {
+  const puedeEditar = tienePermiso("EDITAR_USUARIOS");
+
   const [usuarios, setUsuarios] = useState<UsuarioBD[]>([]);
+  const [permisosDisponibles, setPermisosDisponibles] = useState<Permiso[]>([]);
   const [busqueda, setBusqueda] = useState<string>("");
   const [filtroRol, setFiltroRol] = useState<string>("TODOS");
   const [idUsuarioSel, setIdUsuarioSel] = useState<number | null>(null);
 
-  // Formulario para Asignar Actividad/Ubicación
-  const [nuevaTarea, setNuevaTarea] = useState("");
-  const [nuevaEmpresa, setNuevaEmpresa] = useState("Panda");
-  const [nuevaDireccion, setNuevaDireccion] = useState("Derqui 99");
-  const [nuevoBarrio, setNuevoBarrio] = useState("Nueva Córdoba");
-  const [nuevoHorario, setNuevoHorario] = useState("08:00 a 16:00 Hs");
+  // Formulario de permisos individuales del usuario seleccionado
+  const [personalizados, setPersonalizados] = useState(false);
+  const [permisosSeleccionados, setPermisosSeleccionados] = useState<number[]>([]);
+
+  // Formulario de horario laboral del usuario seleccionado
+  const [tieneHorario, setTieneHorario] = useState(false);
+  const [horarioTexto, setHorarioTexto] = useState("");
+
+  const [error, setError] = useState("");
+  const [mensaje, setMensaje] = useState("");
 
   useEffect(() => {
-    cargarUsuariosBD();
+    cargarUsuarios();
+    cargarPermisosDisponibles();
   }, []);
 
-  const cargarUsuariosBD = async () => {
+  const cargarUsuarios = async () => {
     try {
-      const res = await api.get("/usuarios");
+      const res = await api.get("/usuarios", obtenerHeaders());
       const lista: UsuarioBD[] = Array.isArray(res.data) ? res.data : [];
       setUsuarios(lista);
-      if (lista.length > 0) setIdUsuarioSel(lista[0].idUsuario || 1);
+      setIdUsuarioSel((actual) => actual ?? lista[0]?.idUsuario ?? null);
     } catch (err) {
       console.error("Error al cargar usuarios:", err);
-      const listaFallback: UsuarioBD[] = [
-        { idUsuario: 1, nombre: "Alan Rodrigo", apellido: "Moreno", email: "moreno@gmail.com", rol: "Empleado", tareaActual: "Revisión LOTO y Puesta a Tierra", empresaActual: "Panda", direccionTarea: "Derqui 99", barrio: "Nueva Córdoba", horarioAsignado: "08:00 a 16:00 Hs" },
-        { idUsuario: 2, nombre: "Alan Rodrigo", apellido: "pela", email: "medina@gmail.com", rol: "Empleado", tareaActual: "Inspección de Tableros Eléctricos", empresaActual: "Angeles", direccionTarea: "Córdoba y Sarmiento", barrio: "Centro", horarioAsignado: "09:00 a 17:00 Hs" },
-        { idUsuario: 3, nombre: "jesus", apellido: "testo", email: "testeoadmin@gmail.com", rol: "Empleado", tareaActual: "Carga de ATS en Terreno", empresaActual: "Avenir", direccionTarea: "Perú", barrio: "Observatorio", horarioAsignado: "08:00 a 16:00 Hs" },
-        { idUsuario: 4, nombre: "panda", apellido: "testeoAdmin", email: "panda@gmail.com", rol: "Administrador", tareaActual: "Supervisión de Seguridad e Higiene", empresaActual: "Panda", direccionTarea: "Derqui 99", barrio: "Nueva Córdoba", horarioAsignado: "Turno Completo" },
-        { idUsuario: 5, nombre: "María angeles", apellido: "Medina", email: "shila@gmail.com", rol: "Administrador", tareaActual: "Auditoría de Parámetros IPER", empresaActual: "Sede Central", direccionTarea: "Córdoba y Sarmiento", barrio: "Centro", horarioAsignado: "08:00 a 16:00 Hs" },
-        { idUsuario: 6, nombre: "enzoq", apellido: "allende", email: "allende@gmail.com", rol: "Gerente", tareaActual: "Firma de Certificados e IPER", empresaActual: "Panda", direccionTarea: "Derqui 99", barrio: "Nueva Córdoba", horarioAsignado: "09:00 a 18:00 Hs" },
-        { idUsuario: 7, nombre: "Pedro", apellido: "Ricartti", email: "ricartii@gmai.com", rol: "Empleado", tareaActual: "Control de Registro de Horarios", empresaActual: "Angeles", direccionTarea: "Córdoba y Sarmiento", barrio: "Centro", horarioAsignado: "08:00 a 16:00 Hs" },
-        { idUsuario: 8, nombre: "pepita", apellido: "ex", email: "pepita@gmail.com", rol: "Gerente", tareaActual: "Supervisión de Normativa ISO", empresaActual: "Avenir", direccionTarea: "Perú", barrio: "Observatorio", horarioAsignado: "09:00 a 17:00 Hs" },
-        { idUsuario: 9, nombre: "ramiro", apellido: "aguero", email: "aguero@gmail.com", rol: "Empleado", tareaActual: "Toma de muestras de aire/ruido", empresaActual: "Panda", direccionTarea: "Derqui 99", barrio: "Nueva Córdoba", horarioAsignado: "08:00 a 16:00 Hs" },
-        { idUsuario: 10, nombre: "licha", apellido: "martinez", email: "licha@gmail.com", rol: "Gerente", tareaActual: "Planificación de Turnos", empresaActual: "Angeles", direccionTarea: "Córdoba y Sarmiento", barrio: "Centro", horarioAsignado: "08:00 a 16:00 Hs" },
-        { idUsuario: 11, nombre: "Juan", apellido: "Medina", email: "juanmartin@gmail.com", rol: "Gerente", tareaActual: "Carga de Inspección y Registro ATS", empresaActual: "Panda", direccionTarea: "Derqui 99", barrio: "Nueva Córdoba", horarioAsignado: "08:00 a 17:00 Hs" }
-      ];
-      setUsuarios(listaFallback);
-      setIdUsuarioSel(1);
+    }
+  };
+
+  const cargarPermisosDisponibles = async () => {
+    try {
+      const res = await api.get("/roles/permisos", obtenerHeaders());
+      setPermisosDisponibles(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Error al cargar permisos:", err);
     }
   };
 
   const obtenerRolNombre = (u: UsuarioBD) => {
     if (typeof u.tipoPersona === 'object' && u.tipoPersona?.nombre) return u.tipoPersona.nombre;
     if (typeof u.tipoPersona === 'string') return u.tipoPersona;
-    return u.rol || "Empleado";
+    return "Sin rol";
   };
 
   const usuariosFiltrados = usuarios.filter(u => {
@@ -76,86 +135,92 @@ export const GestorPermisosUsuarios: React.FC = () => {
 
   useEffect(() => {
     if (usuarioSeleccionado) {
-      setNuevaTarea(usuarioSeleccionado.tareaActual || "Revisión de Seguridad");
-      setNuevaEmpresa(usuarioSeleccionado.empresaActual || "Panda");
-      setNuevaDireccion(usuarioSeleccionado.direccionTarea || "Derqui 99");
-      setNuevoBarrio(usuarioSeleccionado.barrio || "Nueva Córdoba");
-      setNuevoHorario(usuarioSeleccionado.horarioAsignado || "08:00 a 16:00 Hs");
+      setPersonalizados(!!usuarioSeleccionado.permisosPersonalizados);
+      setPermisosSeleccionados((usuarioSeleccionado.permisosEspecificos || []).map(p => p.idPermiso));
+      setTieneHorario(!!usuarioSeleccionado.tieneHorarioAsignado);
+      setHorarioTexto(usuarioSeleccionado.horarioLaboral || "");
+      setError(""); setMensaje("");
     }
-  }, [idUsuarioSel]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuarioSeleccionado?.idUsuario]);
 
-  const handleGuardarTarea = () => {
-    setUsuarios(prev => prev.map(u => {
-      if (u.idUsuario === usuarioSeleccionado.idUsuario) {
-        return {
-          ...u,
-          tareaActual: nuevaTarea,
-          empresaActual: nuevaEmpresa,
-          direccionTarea: nuevaDireccion,
-          barrio: nuevoBarrio,
-          horarioAsignado: nuevoHorario
-        };
-      }
-      return u;
-    }));
-    alert(`¡Tarea y Ubicación actualizadas para ${usuarioSeleccionado.nombre}!`);
+  const handleCheckboxChange = (idPermiso: number) => {
+    setPermisosSeleccionados((prev) =>
+      prev.includes(idPermiso) ? prev.filter((id) => id !== idPermiso) : [...prev, idPermiso]
+    );
   };
 
-  const permisosPorRolMap: { [key: string]: string[] } = {
-    "GERENTE": [
-      "VER_USUARIOS", "CREAR_USUARIOS", "EDITAR_USUARIOS",
-      "VER_ROLES", "VER_EMPRESAS", "EDITAR_EMPRESAS",
-      "VER_HORARIOS", "REGISTRAR_HORARIOS", "APROBAR_HORARIOS",
-      "VER_CATALOGOS_IPER", "CREAR_CATALOGOS_IPER", "CREAR_ATS", "APROBAR_ATS"
-    ],
-    "EMPLEADO": [
-      "VER_EMPRESAS", "VER_HORARIOS", "REGISTRAR_HORARIOS", "CREAR_ATS", "CREAR_IPER"
-    ],
-    "ADMINISTRADOR": [
-      "VER_USUARIOS", "CREAR_USUARIOS", "EDITAR_USUARIOS", "ELIMINAR_USUARIOS",
-      "VER_ROLES", "CREAR_ROLES", "EDITAR_ROLES", "ELIMINAR_ROLES",
-      "VER_EMPRESAS", "CREAR_EMPRESAS", "EDITAR_EMPRESAS", "ELIMINAR_EMPRESAS",
-      "VER_HORARIOS", "REGISTRAR_HORARIOS", "APROBAR_HORARIOS"
-    ]
+  const handleToggleModulo = (permisosModulo: Permiso[]) => {
+    const ids = permisosModulo.map((p) => p.idPermiso);
+    const estanTodos = ids.every((id) => permisosSeleccionados.includes(id));
+    setPermisosSeleccionados((prev) =>
+      estanTodos ? prev.filter((id) => !ids.includes(id)) : [...new Set([...prev, ...ids])]
+    );
   };
 
-  const rolActual = usuarioSeleccionado ? obtenerRolNombre(usuarioSeleccionado).toUpperCase() : "EMPLEADO";
-  const permisosEficiencia = permisosPorRolMap[rolActual] || permisosPorRolMap["EMPLEADO"];
+  const handleGuardarPermisos = async () => {
+    if (!usuarioSeleccionado) return;
+    setError(""); setMensaje("");
+    try {
+      await api.put(`/usuarios/${usuarioSeleccionado.idUsuario}/permisos-especificos`, {
+        permisosPersonalizados: personalizados,
+        idsPermisos: permisosSeleccionados
+      }, obtenerHeaders());
+      setMensaje(`Permisos de ${usuarioSeleccionado.nombre} actualizados con éxito.`);
+      cargarUsuarios();
+    } catch (err: any) {
+      setError(err.response?.data || "Error al guardar los permisos.");
+    }
+  };
+
+  const handleGuardarHorario = async () => {
+    if (!usuarioSeleccionado) return;
+    setError(""); setMensaje("");
+    try {
+      await api.put(`/usuarios/${usuarioSeleccionado.idUsuario}/horario-laboral`, {
+        tieneHorarioAsignado: tieneHorario,
+        horarioLaboral: horarioTexto
+      }, obtenerHeaders());
+      setMensaje(`Horario laboral de ${usuarioSeleccionado.nombre} actualizado con éxito.`);
+      cargarUsuarios();
+    } catch (err: any) {
+      setError(err.response?.data || "Error al guardar el horario laboral.");
+    }
+  };
+
+  const modulosAgrupados = agruparPermisosPorModulo(permisosDisponibles);
+  const permisosDelRol = usuarioSeleccionado ? permisosDisponibles.length : 0;
 
   return (
-    <div style={{
-      backgroundColor: "#0B132B",
-      padding: "24px",
-      borderRadius: "12px",
-      border: "1px solid #1E293B",
-      color: "#F8FAFC",
-      boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-      maxWidth: "1000px",
-      margin: "0 auto"
-    }}>
-      <h3 style={{ color: "#38BDF8", display: "flex", alignItems: "center", gap: "8px", margin: "0 0 15px 0", fontSize: "1.3rem" }}>
-        <UserCheck size={24} color="#10B981" /> Permisos y Asignación de Actividades por Empleado
-      </h3>
+    <div className="roles-card">
+      <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <UserCheck size={22} color="#059669" /> Permisos y Horario Laboral por Empleado
+      </h2>
+      <p style={{ color: "#64748B", fontSize: "0.85rem", margin: "0 0 16px 0" }}>
+        Por defecto, un empleado tiene los permisos de su rol. Acá se puede definir un set de
+        permisos propio para un usuario puntual (por ejemplo, que solo algunos gerentes puedan
+        aprobar viáticos), y si tiene un horario laboral fijo asignado.
+      </p>
 
       {/* FILTROS Y BUSQUEDA */}
-      <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap", backgroundColor: "#0F172A", padding: "12px", borderRadius: "8px", border: "1px solid #1E293B" }}>
-        <div style={{ flex: 1, minWidth: "220px", display: "flex", alignItems: "center", backgroundColor: "#1E293B", borderRadius: "6px", padding: "0 10px", border: "1px solid #334155" }}>
+      <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap", backgroundColor: "#F8FAFC", padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0" }}>
+        <div style={{ flex: 1, minWidth: "220px", display: "flex", alignItems: "center", backgroundColor: "#FFFFFF", borderRadius: "6px", padding: "0 10px", border: "1px solid #E2E8F0" }}>
           <Search size={16} color="#94A3B8" />
           <input
             type="text"
             placeholder="Buscar por nombre o email..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            style={{ width: "100%", padding: "8px", backgroundColor: "transparent", border: "none", color: "#FFF", outline: "none", fontSize: "0.85rem" }}
+            style={{ width: "100%", padding: "8px", backgroundColor: "transparent", border: "none", color: "#0F172A", outline: "none", fontSize: "0.85rem" }}
           />
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <Filter size={16} color="#38BDF8" />
+          <Filter size={16} color="#059669" />
           <select
             value={filtroRol}
             onChange={(e) => setFiltroRol(e.target.value)}
-            style={{ backgroundColor: "#1E293B", color: "#FFF", border: "1px solid #334155", padding: "8px 12px", borderRadius: "6px", fontSize: "0.85rem", fontWeight: "bold" }}
+            style={{ backgroundColor: "#FFFFFF", color: "#0F172A", border: "1px solid #E2E8F0", padding: "8px 12px", borderRadius: "6px", fontSize: "0.85rem", fontWeight: "bold" }}
           >
             <option value="TODOS">Todos los Roles ({usuarios.length})</option>
             <option value="EMPLEADO">Rol Empleado</option>
@@ -165,57 +230,45 @@ export const GestorPermisosUsuarios: React.FC = () => {
         </div>
       </div>
 
-      {/* LISTA DE SELECCION */}
       {usuarioSeleccionado && (
         <>
-          <div style={{ marginBottom: "15px" }}>
-            <label style={{ fontSize: "0.8rem", color: "#94A3B8", fontWeight: "bold", display: "block", marginBottom: "6px" }}>
-              Seleccionar Empleado para Asignar Tarea ({usuariosFiltrados.length} encontrados):
+          <div style={{ marginBottom: "18px" }}>
+            <label style={{ fontSize: "0.8rem", color: "#64748B", fontWeight: "bold", display: "block", marginBottom: "6px" }}>
+              Seleccionar Empleado ({usuariosFiltrados.length} encontrados):
             </label>
             <select
               value={usuarioSeleccionado.idUsuario}
               onChange={(e) => setIdUsuarioSel(Number(e.target.value))}
-              style={{
-                width: "100%",
-                backgroundColor: "#1E293B",
-                color: "#F8FAFC",
-                border: "1px solid #10B981",
-                padding: "10px",
-                borderRadius: "6px",
-                fontWeight: "bold",
-                outline: "none"
-              }}
+              style={{ width: "100%", backgroundColor: "#FFFFFF", color: "#0F172A", border: "1px solid #059669", padding: "10px", borderRadius: "6px", fontWeight: "bold", outline: "none" }}
             >
               {usuariosFiltrados.map(u => (
                 <option key={u.idUsuario} value={u.idUsuario}>
-                  👤 {u.nombre} {u.apellido} — [{obtenerRolNombre(u)}] — ({u.email})
+                  {u.nombre} {u.apellido} — [{obtenerRolNombre(u)}] — ({u.email})
                 </option>
               ))}
             </select>
           </div>
 
-          {/* TARJETA DEL EMPLEADO CON ROL CORREGIDO (LEGIBLE) */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
             gap: "15px",
-            backgroundColor: "#0F172A",
+            backgroundColor: "#F8FAFC",
             padding: "16px",
             borderRadius: "8px",
-            border: "1px solid #1E293B",
+            border: "1px solid #E2E8F0",
             marginBottom: "20px"
           }}>
             <div>
-              <span style={{ fontSize: "0.75rem", color: "#94A3B8", textTransform: "uppercase", fontWeight: "bold" }}>Empleado Seleccionado</span>
-              <strong style={{ display: "block", fontSize: "1.1rem", color: "#38BDF8", marginTop: "2px" }}>
+              <span style={{ fontSize: "0.75rem", color: "#64748B", textTransform: "uppercase", fontWeight: "bold" }}>Empleado</span>
+              <strong style={{ display: "block", fontSize: "1.05rem", color: "#0F172A", marginTop: "2px" }}>
                 {usuarioSeleccionado.nombre} {usuarioSeleccionado.apellido}
               </strong>
-              <span style={{ fontSize: "0.8rem", color: "#CBD5E1" }}>{usuarioSeleccionado.email}</span>
+              <span style={{ fontSize: "0.8rem", color: "#64748B" }}>{usuarioSeleccionado.email}</span>
             </div>
 
-            {/* AHORA EL ROL SE LEE PERFECTAMENTE */}
             <div>
-              <span style={{ fontSize: "0.75rem", color: "#94A3B8", textTransform: "uppercase", fontWeight: "bold" }}>Rol del Sistema</span>
+              <span style={{ fontSize: "0.75rem", color: "#64748B", textTransform: "uppercase", fontWeight: "bold" }}>Rol del Sistema</span>
               <div style={{ marginTop: "6px" }}>
                 <span style={{ backgroundColor: "#FEF08A", color: "#854D0E", padding: "6px 12px", borderRadius: "6px", fontSize: "0.9rem", fontWeight: "bold", border: "1px solid #FACC15", display: "inline-block" }}>
                   <Shield size={14} style={{ verticalAlign: "middle", marginRight: "4px" }} /> {obtenerRolNombre(usuarioSeleccionado)}
@@ -224,117 +277,98 @@ export const GestorPermisosUsuarios: React.FC = () => {
             </div>
 
             <div>
-              <span style={{ fontSize: "0.75rem", color: "#94A3B8", textTransform: "uppercase", fontWeight: "bold" }}>Horario Laboral Asignado</span>
-              <p style={{ margin: "4px 0 0 0", fontSize: "0.9rem", color: "#38BDF8", fontWeight: "bold" }}>
-                {usuarioSeleccionado.horarioAsignado || "08:00 a 16:00 Hs"}
+              <span style={{ fontSize: "0.75rem", color: "#64748B", textTransform: "uppercase", fontWeight: "bold" }}>Fuente de sus permisos</span>
+              <p style={{ margin: "4px 0 0 0", fontSize: "0.9rem", color: personalizados ? "#B45309" : "#059669", fontWeight: "bold" }}>
+                {personalizados ? "Personalizados (override)" : `Los de su rol (${permisosDelRol} disponibles en el sistema)`}
               </p>
             </div>
           </div>
 
-          {/* FORMULARIO DE EDICIÓN DE ACTIVIDAD Y UBICACIÓN EXPRESA */}
-          <div style={{ backgroundColor: "#1E293B", padding: "16px", borderRadius: "8px", border: "1px solid #334155", marginBottom: "20px" }}>
-            <h4 style={{ margin: "0 0 12px 0", color: "#10B981", fontSize: "0.95rem", display: "flex", alignItems: "center", gap: "6px" }}>
-              <FileText size={18} /> Asignar Actividad Específica y Ubicación Geográfica
+          {error && <p className="msg-error">{error}</p>}
+          {mensaje && <p className="msg-exito">{mensaje}</p>}
+
+          {/* HORARIO LABORAL */}
+          <div style={{ backgroundColor: "#F8FAFC", padding: "16px", borderRadius: "8px", border: "1px solid #E2E8F0", marginBottom: "20px" }}>
+            <h4 style={{ margin: "0 0 12px 0", color: "#0F172A", fontSize: "0.95rem", display: "flex", alignItems: "center", gap: "6px" }}>
+              <Clock size={18} color="#059669" /> Horario Laboral Asignado
             </h4>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px", marginBottom: "12px" }}>
-              <div>
-                <label style={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: "bold" }}>Tarea / Actividad a Realizar</label>
-                <input
-                  type="text"
-                  value={nuevaTarea}
-                  onChange={(e) => setNuevaTarea(e.target.value)}
-                  placeholder="Ej: Inspección LOTO de Tablero"
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", backgroundColor: "#0F172A", border: "1px solid #334155", color: "#FFF", marginTop: "4px" }}
-                />
-              </div>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: puedeEditar ? "pointer" : "default", fontSize: "0.9rem", marginBottom: "10px" }}>
+              <input type="checkbox" checked={tieneHorario} disabled={!puedeEditar} onChange={(e) => setTieneHorario(e.target.checked)} />
+              Este empleado tiene un horario laboral fijo definido
+            </label>
 
-              <div>
-                <label style={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: "bold" }}>Sede / Empresa Destino</label>
-                <select
-                  value={nuevaEmpresa}
-                  onChange={(e) => setNuevaEmpresa(e.target.value)}
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", backgroundColor: "#0F172A", border: "1px solid #334155", color: "#FFF", marginTop: "4px" }}
-                >
-                  <option value="Panda">Panda</option>
-                  <option value="Angeles">Angeles</option>
-                  <option value="Avenir">Avenir</option>
-                </select>
-              </div>
+            {tieneHorario && (
+              <input
+                type="text"
+                className="form-input"
+                value={horarioTexto}
+                disabled={!puedeEditar}
+                onChange={(e) => setHorarioTexto(e.target.value)}
+                placeholder="Ej. Lunes a Viernes de 08:00 a 17:00"
+                style={{ marginBottom: "10px" }}
+              />
+            )}
 
-              <div>
-                <label style={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: "bold" }}>Dirección Exacta</label>
-                <input
-                  type="text"
-                  value={nuevaDireccion}
-                  onChange={(e) => setNuevaDireccion(e.target.value)}
-                  placeholder="Ej: Derqui 99"
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", backgroundColor: "#0F172A", border: "1px solid #334155", color: "#FFF", marginTop: "4px" }}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: "bold" }}>Barrio / Zona</label>
-                <input
-                  type="text"
-                  value={nuevoBarrio}
-                  onChange={(e) => setNuevoBarrio(e.target.value)}
-                  placeholder="Ej: Nueva Córdoba"
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", backgroundColor: "#0F172A", border: "1px solid #334155", color: "#FFF", marginTop: "4px" }}
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={handleGuardarTarea}
-              className="btn-interactive"
-              style={{
-                padding: "8px 16px",
-                backgroundColor: "#10B981",
-                color: "#FFFFFF",
-                border: "none",
-                borderRadius: "6px",
-                fontWeight: "bold",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px"
-              }}
-            >
-              <Save size={16} /> Guardar Asignación de Tarea
-            </button>
+            {puedeEditar && (
+              <button type="button" className="btn-primario" onClick={handleGuardarHorario} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                <Save size={14} /> Guardar Horario
+              </button>
+            )}
           </div>
 
-          {/* PERMISOS QUE TIENE HABILITADOS POR SU ROL */}
-          <h4 style={{ color: "#34D399", margin: "0 0 12px 0", fontSize: "0.95rem" }}>
-            Permisos Activos para {usuarioSeleccionado.nombre} ({permisosEficiencia.length} Permisos):
-          </h4>
+          {/* PERMISOS PERSONALIZADOS */}
+          <div style={{ backgroundColor: "#F8FAFC", padding: "16px", borderRadius: "8px", border: "1px solid #E2E8F0" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: puedeEditar ? "pointer" : "default", fontSize: "0.9rem", fontWeight: "bold", color: "#0F172A", marginBottom: "12px" }}>
+              <input type="checkbox" checked={personalizados} disabled={!puedeEditar} onChange={(e) => setPersonalizados(e.target.checked)} />
+              Usar permisos personalizados para este usuario (en vez de los de su rol)
+            </label>
 
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-            gap: "10px",
-            maxHeight: "220px",
-            overflowY: "auto",
-            paddingRight: "6px"
-          }}>
-            {permisosEficiencia.map((perm, idx) => (
-              <div
-                key={idx}
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: "6px",
-                  backgroundColor: "rgba(16, 185, 129, 0.12)",
-                  border: "1px solid #10B981",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between"
-                }}
-              >
-                <strong style={{ fontSize: "0.8rem", color: "#34D399" }}>{perm}</strong>
-                <Check size={16} color="#34D399" />
+            {personalizados ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "12px", maxHeight: "320px", overflowY: "auto", paddingRight: "4px" }}>
+                {modulosAgrupados.map((mod) => {
+                  const idsMod = mod.permisos.map((p) => p.idPermiso);
+                  const estanTodosMod = idsMod.every((id) => permisosSeleccionados.includes(id));
+                  const algunoMod = idsMod.some((id) => permisosSeleccionados.includes(id));
+
+                  return (
+                    <div key={mod.titulo} style={{ backgroundColor: "#FFFFFF", border: "1px solid", borderColor: algunoMod ? "#A7F3D0" : "#E2E8F0", borderRadius: "10px", padding: "12px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #F1F5F9", paddingBottom: "8px", marginBottom: "10px" }}>
+                        <span style={{ fontWeight: "bold", color: "#1E293B", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "6px" }}>
+                          {mod.icono} {mod.titulo}
+                        </span>
+                        {puedeEditar && (
+                          <button type="button" onClick={() => handleToggleModulo(mod.permisos)} style={{ backgroundColor: "transparent", border: "none", color: "#059669", fontSize: "0.75rem", fontWeight: "bold", cursor: "pointer" }}>
+                            {estanTodosMod ? "Desmarcar" : "Marcar todo"}
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                        {mod.permisos.map((p) => {
+                          const seleccionado = permisosSeleccionados.includes(p.idPermiso);
+                          return (
+                            <label key={p.idPermiso} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "5px 8px", borderRadius: "6px", backgroundColor: seleccionado ? "#ECFDF5" : "#F8FAFC", border: "1px solid", borderColor: seleccionado ? "#6EE7B7" : "#E2E8F0", cursor: puedeEditar ? "pointer" : "default", fontSize: "0.8rem" }}>
+                              <input type="checkbox" checked={seleccionado} disabled={!puedeEditar} onChange={() => handleCheckboxChange(p.idPermiso)} />
+                              <span style={{ fontWeight: seleccionado ? "bold" : "normal", color: seleccionado ? "#065F46" : "#475569" }}>{p.nombre}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            ) : (
+              <p style={{ fontSize: "0.85rem", color: "#64748B", margin: 0 }}>
+                Este usuario usa los permisos de su rol ({obtenerRolNombre(usuarioSeleccionado)}). Tildá la casilla de arriba para asignarle un set propio.
+              </p>
+            )}
+
+            {puedeEditar && (
+              <button type="button" className="btn-primario" onClick={handleGuardarPermisos} style={{ marginTop: "14px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                <Save size={14} /> Guardar Permisos
+              </button>
+            )}
           </div>
         </>
       )}
