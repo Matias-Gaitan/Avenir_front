@@ -5,6 +5,7 @@ import { UserPlus, LogIn, Eye, EyeOff } from "lucide-react";
 import "./registrer.css";
 import type { Usuario } from "../../interfaces/Usuario";
 import { PasswordMatrix } from "../PasswordMatrix";
+import Fondo3D from "../common/Fondo3D";
 
 const Register: React.FC = () => {
     const [nombre, setNombre] = useState("");
@@ -86,6 +87,8 @@ const Register: React.FC = () => {
     };
 
     return (
+        <div className="auth-page">
+        <Fondo3D />
         <div className="form-component">
             <form className="form" onSubmit={handleSubmit}>
                 <h1 style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
@@ -207,6 +210,7 @@ const Register: React.FC = () => {
                     <LogIn size={16} /> INICIAR SESIÓN
                 </button>
             </section>
+        </div>
         </div>
     );
 };

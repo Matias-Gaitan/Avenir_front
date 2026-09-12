@@ -1,0 +1,183 @@
+.insumos-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.insumos-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.insumos-card h1 {
+    font-size: 1.3rem;
+    color: #064e3b;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ecfdf5;
+    padding-bottom: 10px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.insumos-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.insumos-tab {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background-color: #f8fafc;
+    color: #334155;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.insumos-tab.activo {
+    background-color: #059669;
+    color: white;
+    border-color: #059669;
+}
+
+.insumos-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.insumos-form-grid .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.insumos-form-grid label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    outline: none;
+    background-color: #f8fafc;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    border-color: #10b981;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.btn-primario {
+    background-color: #22c55e;
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-primario:hover {
+    background-color: #16a34a;
+}
+
+.tabla-simetrica-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+.tabla-insumos {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.tabla-insumos th {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 10px 14px;
+    border-bottom: 1px solid #cbd5e1;
+    white-space: nowrap;
+}
+
+.tabla-insumos td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.85rem;
+    color: #334155;
+}
+
+.tabla-insumos tr:hover {
+    background-color: #f8fafc;
+}
+
+.badge-categoria {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.badge-categoria.EPP { background-color: #dbeafe; color: #1d4ed8; }
+.badge-categoria.SEÑALIZACION { background-color: #fef3c7; color: #b45309; }
+.badge-categoria.EMERGENCIA { background-color: #fee2e2; color: #b91c1c; }
+.badge-categoria.MEDICION { background-color: #ede9fe; color: #6d28d9; }
+.badge-categoria.HIGIENE { background-color: #dcfce7; color: #15803d; }
+
+.stock-bajo {
+    color: #dc2626;
+    font-weight: 800;
+}
+
+.txt-vacio {
+    text-align: center;
+    font-style: italic;
+    color: #64748b;
+    padding: 20px;
+}
+
+.msg-error {
+    color: #dc2626;
+    margin-top: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.msg-exito {
+    color: #16a34a;
+    margin-top: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}

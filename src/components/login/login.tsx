@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ShieldCheck, LogIn, UserPlus, Eye, EyeOff, Hash, Type } from "lucide-react";
 import "./login.css";
 import type { Login } from "../../interfaces/Login";
+import Fondo3D from "../common/Fondo3D";
 
 const LoginComponent: React.FC = () => {
     const [email, setEmail] = useState("");
@@ -60,6 +61,8 @@ const LoginComponent: React.FC = () => {
     };
 
     return (
+        <div className="auth-page">
+        <Fondo3D />
         <div className="form-component">
             <form className="form" onSubmit={handleSubmit}>
                 <div className="form-tittle" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -187,6 +190,7 @@ const LoginComponent: React.FC = () => {
                     <UserPlus size={16} /> REGISTRARSE
                 </button>
             </section>
+        </div>
         </div>
     );
 };

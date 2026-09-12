@@ -1,0 +1,24 @@
+.fondo3d-wrapper {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-color: #020617;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.fondo3d-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.fondo3d-canvas canvas {
+    display: block;
+}
+
+/* Oscurece el globo para que el formulario en primer plano siga siendo legible */
+.fondo3d-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(2, 6, 23, 0.35) 0%, rgba(2, 6, 23, 0.85) 100%);
+}
