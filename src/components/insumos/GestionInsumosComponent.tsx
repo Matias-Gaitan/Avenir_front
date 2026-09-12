@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Package, PackagePlus, Truck, AlertTriangle, Edit2, Ban, RotateCcw, X } from "lucide-react";
+import { Package, PackagePlus, Truck, AlertTriangle, Edit2, Ban, RotateCcw, X, Tags } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./insumos.css";
@@ -12,7 +12,11 @@ interface UsuarioOpcion {
     email: string;
 }
 
-const CATEGORIAS = ["EPP", "SEÑALIZACION", "EMERGENCIA", "MEDICION", "HIGIENE"];
+interface CategoriaInsumo {
+    id: number;
+    nombre: string;
+    activo: boolean;
+}
 
 const obtenerHeaders = () => {
     const token = localStorage.getItem("token");
@@ -30,10 +34,15 @@ const GestionInsumosComponent: React.FC = () => {
     const puedeEditar = tienePermiso("EDITAR_INSUMOS");
     const puedeEliminar = tienePermiso("ELIMINAR_INSUMOS");
 
+    // Categorías del catálogo (CRUD propio en /api/categoria-insumo)
+    const [categorias, setCategorias] = useState<CategoriaInsumo[]>([]);
+    const [mostrarCategorias, setMostrarCategorias] = useState(false);
+    const [nuevaCategoria, setNuevaCategoria] = useState("");
+
     // Formulario de alta / edición de insumo
     const [idEditando, setIdEditando] = useState<number | null>(null);
     const [nombre, setNombre] = useState("");
-    const [categoria, setCategoria] = useState(CATEGORIAS[0]);
+    const [categoria, setCategoria] = useState("");
     const [unidadMedida, setUnidadMedida] = useState("Unidad");
     const [stockActual, setStockActual] = useState<number | "">("");
     const [stockMinimo, setStockMinimo] = useState<number | "">("");
@@ -75,16 +84,50 @@ const GestionInsumosComponent: React.FC = () => {
         }
     };
 
+    const cargarCategorias = async () => {
+        try {
+            const res = await api.get("/categoria-insumo/activos", obtenerHeaders());
+            const lista: CategoriaInsumo[] = res.data;
+            setCategorias(lista);
+            setCategoria((actual) => actual || lista[0]?.nombre || "");
+        } catch (err) {
+            console.error("Error al cargar categorías de insumo", err);
+        }
+    };
+
     useEffect(() => {
         cargarInsumos();
         cargarEntregas();
         cargarUsuarios();
+        cargarCategorias();
     }, []);
 
     const limpiarFormulario = () => {
         setIdEditando(null);
-        setNombre(""); setCategoria(CATEGORIAS[0]); setUnidadMedida("Unidad");
+        setNombre(""); setCategoria(categorias[0]?.nombre || ""); setUnidadMedida("Unidad");
         setStockActual(""); setStockMinimo(""); setCostoUnitario("");
+    };
+
+    const handleAgregarCategoria = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!nuevaCategoria.trim()) return;
+        try {
+            await api.post("/categoria-insumo", { nombre: nuevaCategoria.trim().toUpperCase() }, obtenerHeaders());
+            setNuevaCategoria("");
+            cargarCategorias();
+        } catch (err: any) {
+            alert("Error al crear la categoría: " + (err.response?.data || "Error desconocido"));
+        }
+    };
+
+    const handleDarDeBajaCategoria = async (id: number) => {
+        if (!window.confirm("¿Dar de baja esta categoría? Dejará de estar disponible para nuevos insumos.")) return;
+        try {
+            await api.patch(`/categoria-insumo/${id}/desactivar`, {}, obtenerHeaders());
+            cargarCategorias();
+        } catch (err: any) {
+            alert("Error al dar de baja la categoría: " + (err.response?.data || "Error desconocido"));
+        }
     };
 
     const handleEditarClick = (ins: Insumo) => {
@@ -181,7 +224,39 @@ const GestionInsumosComponent: React.FC = () => {
                 <div className="insumos-tabs">
                     <button className={`insumos-tab ${vista === "catalogo" ? "activo" : ""}`} onClick={() => setVista("catalogo")}>Catálogo</button>
                     <button className={`insumos-tab ${vista === "entregas" ? "activo" : ""}`} onClick={() => setVista("entregas")}>Entregas a Empleados</button>
+                    {(puedeCrear || puedeEliminar) && (
+                        <button type="button" className="insumos-tab" onClick={() => setMostrarCategorias((v) => !v)} style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                            <Tags size={14} /> Categorías
+                        </button>
+                    )}
                 </div>
+
+                {mostrarCategorias && (puedeCrear || puedeEliminar) && (
+                    <div className="insumos-form-grid" style={{ borderBottom: "1px solid #e2e8f0", paddingBottom: "18px", marginBottom: "12px" }}>
+                        {puedeCrear && (
+                            <form onSubmit={handleAgregarCategoria} style={{ display: "flex", gap: "8px", alignItems: "flex-end", gridColumn: "1 / -1" }}>
+                                <div className="form-section" style={{ flex: 1 }}>
+                                    <label>Nueva categoría</label>
+                                    <input className="form-input" value={nuevaCategoria} onChange={(e) => setNuevaCategoria(e.target.value)} placeholder="Ej. VESTIMENTA" />
+                                </div>
+                                <button type="submit" className="btn-primario">Agregar</button>
+                            </form>
+                        )}
+                        <div style={{ gridColumn: "1 / -1", display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "10px" }}>
+                            {categorias.map((c) => (
+                                <span key={c.id} className="badge-categoria" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                                    {c.nombre}
+                                    {puedeEliminar && (
+                                        <button type="button" onClick={() => handleDarDeBajaCategoria(c.id)} title="Dar de baja categoría" style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", padding: 0, display: "flex" }}>
+                                            <X size={12} />
+                                        </button>
+                                    )}
+                                </span>
+                            ))}
+                            {categorias.length === 0 && <span style={{ fontSize: "0.85rem", color: "#94A3B8" }}>No hay categorías activas.</span>}
+                        </div>
+                    </div>
+                )}
 
                 {vista === "catalogo" && (
                     <>
@@ -198,8 +273,9 @@ const GestionInsumosComponent: React.FC = () => {
                                 </div>
                                 <div className="form-section">
                                     <label>Categoría</label>
-                                    <select className="form-input" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
-                                        {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+                                    <select className="form-input" value={categoria} onChange={(e) => setCategoria(e.target.value)} required>
+                                        <option value="" disabled>Seleccione una categoría</option>
+                                        {categorias.map((c) => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
                                     </select>
                                 </div>
                                 <div className="form-section">
