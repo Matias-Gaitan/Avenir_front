@@ -1,9 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ShieldAlert, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import api from "../service/api";
+import {
+  getTiposRiesgoActivos,
+  getCategoriasRiesgoActivas,
+  getCausasRiesgoActivas,
+  getProbabilidadesActivas,
+} from "../service/IperService";
+import type { TipoRiesgo, CategoriaRiesgo, CausaRiesgo, ProbabilidadPrioridad } from "../types/iper";
 
 interface Props {
   darkMode?: boolean;
+}
+
+interface EmpresaOpcion {
+  idEmpresa: number;
+  nombre: string;
 }
 
 export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
@@ -16,22 +28,51 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
     localStorage.getItem("theme") === "dark"
   );
 
+  const [empresas, setEmpresas] = useState<EmpresaOpcion[]>([]);
+  const [tiposRiesgo, setTiposRiesgo] = useState<TipoRiesgo[]>([]);
+  const [categoriasRiesgo, setCategoriasRiesgo] = useState<CategoriaRiesgo[]>([]);
+  const [causasRiesgo, setCausasRiesgo] = useState<CausaRiesgo[]>([]);
+  const [nivelesCriticidad, setNivelesCriticidad] = useState<ProbabilidadPrioridad[]>([]);
+  const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => {
+    const cargarCatalogos = async () => {
+      try {
+        const [emp, tipos, categorias, causas, niveles] = await Promise.all([
+          api.get("/empresas"),
+          getTiposRiesgoActivos(),
+          getCategoriasRiesgoActivas(),
+          getCausasRiesgoActivas(),
+          getProbabilidadesActivas(),
+        ]);
+        setEmpresas(Array.isArray(emp.data) ? emp.data.filter((e: any) => e.activo) : []);
+        setTiposRiesgo(tipos);
+        setCategoriasRiesgo(categorias);
+        setCausasRiesgo(causas);
+        setNivelesCriticidad(niveles);
+      } catch (err) {
+        console.error("Error al cargar catálogos IPER:", err);
+      }
+    };
+    cargarCatalogos();
+  }, []);
+
   const [formData, setFormData] = useState({
     idResponsable: "",
     fechaReporte: "",
     turno: "MAÑANA",
     empresa: "",
+    sectorUbicacion: "",
     tipoRiesgo: "",
     descripcionRiesgo: "",
     causaRiesgo: "",
-    sectorUbicacion: "",
     categoriaRiesgo: "",
+    probabilidadOcurrencia: "",
+    prioridadRiesgo: "",
     nivelRiesgo: "",
     existenMedidas: "SI",
     descripcionMedidas: "",
     impactoPotencial: "",
-    probabilidadOcurrencia: "",
-    prioridadRiesgo: "",
     accionesSugeridas: "",
     responsableAcciones: "",
     fechaAlternativa: "",
@@ -50,12 +91,13 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
   const handlePrev = () => setPaso(p => Math.max(p - 1, 1));
 
   const handleSubmitFinal = async () => {
+    setEnviando(true);
     try {
       const data = new FormData();
       Object.entries(formData).forEach(([key, val]) => {
         if (key === "archivo" && val) {
           data.append("archivo", val);
-        } else {
+        } else if (key !== "archivo") {
           data.append(key, String(val));
         }
       });
@@ -69,6 +111,8 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
     } catch (err) {
       console.error("Error enviando IPER:", err);
       alert("Error al enviar el reporte IPER.");
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -120,7 +164,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
           </h2>
         </div>
 
-        {/* PASO 1 */}
+        {/* PASO 1: DATOS GENERALES */}
         {paso === 1 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div>
@@ -128,22 +172,39 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
               <input type="text" value={formData.idResponsable} onChange={e => handleChange("idResponsable", e.target.value)} required style={inputStyle} placeholder="Nombre del responsable..." />
             </div>
 
-            <div>
-              <label style={labelStyle}>Fecha de Reporte</label>
-              <input type="date" value={formData.fechaReporte} onChange={e => handleChange("fechaReporte", e.target.value)} required style={inputStyle} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+              <div>
+                <label style={labelStyle}>Fecha de Reporte</label>
+                <input type="date" value={formData.fechaReporte} onChange={e => handleChange("fechaReporte", e.target.value)} required style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Turno</label>
+                <select value={formData.turno} onChange={e => handleChange("turno", e.target.value)} style={inputStyle}>
+                  <option value="MAÑANA">MAÑANA</option>
+                  <option value="TARDE">TARDE</option>
+                  <option value="NOCHE">NOCHE</option>
+                </select>
+              </div>
             </div>
 
             <div>
-              <label style={labelStyle}>Turno</label>
-              <select value={formData.turno} onChange={e => handleChange("turno", e.target.value)} style={inputStyle}>
-                <option value="MAÑANA">MAÑANA</option>
-                <option value="NOCHE">NOCHE</option>
+              <label style={labelStyle}>Empresa Auditada</label>
+              <select value={formData.empresa} onChange={e => handleChange("empresa", e.target.value)} style={inputStyle}>
+                <option value="" disabled>Seleccione una empresa</option>
+                {empresas.map(e => (
+                  <option key={e.idEmpresa} value={e.nombre}>{e.nombre}</option>
+                ))}
               </select>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Sector de Ubicación</label>
+              <input type="text" value={formData.sectorUbicacion} onChange={e => handleChange("sectorUbicacion", e.target.value)} style={inputStyle} placeholder="Ej. Depósito Central" />
             </div>
           </div>
         )}
 
-        {/* PASO 2 */}
+        {/* PASO 2: IDENTIFICACIÓN DEL RIESGO */}
         {paso === 2 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div>
@@ -151,16 +212,61 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
               <textarea value={formData.descripcionRiesgo} onChange={e => handleChange("descripcionRiesgo", e.target.value)} style={{ ...inputStyle, minHeight: "80px" }} placeholder="Describa el riesgo detectado..." />
             </div>
 
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+              <div>
+                <label style={labelStyle}>Tipo de Riesgo</label>
+                <select value={formData.tipoRiesgo} onChange={e => handleChange("tipoRiesgo", e.target.value)} style={inputStyle}>
+                  <option value="" disabled>Seleccione un tipo</option>
+                  {tiposRiesgo.map(t => <option key={t.id} value={t.nombre}>{t.nombre}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Categoría de Riesgo</label>
+                <select value={formData.categoriaRiesgo} onChange={e => handleChange("categoriaRiesgo", e.target.value)} style={inputStyle}>
+                  <option value="" disabled>Seleccione una categoría</option>
+                  {categoriasRiesgo.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
+                </select>
+              </div>
+            </div>
+
             <div>
-              <label style={labelStyle}>Sector de Ubicación del Desvío</label>
-              <input type="text" value={formData.sectorUbicacion} onChange={e => handleChange("sectorUbicacion", e.target.value)} style={inputStyle} placeholder="Ej. Depósito Central" />
+              <label style={labelStyle}>Causa de Riesgo</label>
+              <select value={formData.causaRiesgo} onChange={e => handleChange("causaRiesgo", e.target.value)} style={inputStyle}>
+                <option value="" disabled>Seleccione una causa</option>
+                {causasRiesgo.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
+              </select>
             </div>
           </div>
         )}
 
-        {/* PASO 3 */}
+        {/* PASO 3: EVALUACIÓN */}
         {paso === 3 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+              <div>
+                <label style={labelStyle}>Probabilidad de Ocurrencia</label>
+                <select value={formData.probabilidadOcurrencia} onChange={e => handleChange("probabilidadOcurrencia", e.target.value)} style={inputStyle}>
+                  <option value="" disabled>Seleccione</option>
+                  {nivelesCriticidad.map(n => <option key={n.id} value={n.nombre}>{n.nombre}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Prioridad del Riesgo</label>
+                <select value={formData.prioridadRiesgo} onChange={e => handleChange("prioridadRiesgo", e.target.value)} style={inputStyle}>
+                  <option value="" disabled>Seleccione</option>
+                  {nivelesCriticidad.map(n => <option key={n.id} value={n.nombre}>{n.nombre}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Nivel de Riesgo General</label>
+              <select value={formData.nivelRiesgo} onChange={e => handleChange("nivelRiesgo", e.target.value)} style={inputStyle}>
+                <option value="" disabled>Seleccione</option>
+                {nivelesCriticidad.map(n => <option key={n.id} value={n.nombre}>{n.nombre}</option>)}
+              </select>
+            </div>
+
             <div>
               <label style={labelStyle}>¿Existen medidas de control actuales?</label>
               <select value={formData.existenMedidas} onChange={e => handleChange("existenMedidas", e.target.value)} style={inputStyle}>
@@ -175,10 +281,15 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
                 <textarea value={formData.descripcionMedidas} onChange={e => handleChange("descripcionMedidas", e.target.value)} style={{ ...inputStyle, minHeight: "80px" }} placeholder="Detalle las medidas vigentes..." />
               </div>
             )}
+
+            <div>
+              <label style={labelStyle}>Impacto Potencial</label>
+              <textarea value={formData.impactoPotencial} onChange={e => handleChange("impactoPotencial", e.target.value)} style={{ ...inputStyle, minHeight: "60px" }} placeholder="Ej. Lesión grave, daño material..." />
+            </div>
           </div>
         )}
 
-        {/* PASO 4 */}
+        {/* PASO 4: PLAN PREVENTIVO */}
         {paso === 4 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div>
@@ -186,14 +297,20 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
               <textarea value={formData.accionesSugeridas} onChange={e => handleChange("accionesSugeridas", e.target.value)} style={{ ...inputStyle, minHeight: "80px" }} placeholder="Sugerencias de acción..." />
             </div>
 
-            <div>
-              <label style={labelStyle}>Responsable de Implementación</label>
-              <input type="text" value={formData.responsableAcciones} onChange={e => handleChange("responsableAcciones", e.target.value)} style={inputStyle} placeholder="Nombre del encargado..." />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+              <div>
+                <label style={labelStyle}>Responsable de Implementación</label>
+                <input type="text" value={formData.responsableAcciones} onChange={e => handleChange("responsableAcciones", e.target.value)} style={inputStyle} placeholder="Nombre del encargado..." />
+              </div>
+              <div>
+                <label style={labelStyle}>Fecha Alternativa de Implementación</label>
+                <input type="date" value={formData.fechaAlternativa} onChange={e => handleChange("fechaAlternativa", e.target.value)} style={inputStyle} />
+              </div>
             </div>
           </div>
         )}
 
-        {/* PASO 5 */}
+        {/* PASO 5: CIERRE */}
         {paso === 5 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div>
@@ -205,10 +322,20 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
                 <option value="EN SEGUIMIENTO">EN SEGUIMIENTO</option>
               </select>
             </div>
+
+            <div>
+              <label style={labelStyle}>Impacto Residual</label>
+              <textarea value={formData.impactoResidual} onChange={e => handleChange("impactoResidual", e.target.value)} style={{ ...inputStyle, minHeight: "60px" }} placeholder="Riesgo remanente luego de aplicar medidas..." />
+            </div>
+
+            <div>
+              <label style={labelStyle}>Comentario</label>
+              <textarea value={formData.comentarios} onChange={e => handleChange("comentarios", e.target.value)} style={{ ...inputStyle, minHeight: "60px" }} placeholder="Observaciones finales..." />
+            </div>
           </div>
         )}
 
-        {/* PASO 6 */}
+        {/* PASO 6: ARCHIVO Y CIERRE */}
         {paso === 6 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div>
@@ -236,8 +363,8 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
               Siguiente <ArrowRight size={16} />
             </button>
           ) : (
-            <button onClick={handleSubmitFinal} className="btn-interactive" style={{ padding: "10px 18px", backgroundColor: "#059669", color: "#FFF", border: "none", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", marginLeft: "auto", fontWeight: "bold" }}>
-              <CheckCircle2 size={16} /> Enviar Formulario
+            <button onClick={handleSubmitFinal} disabled={enviando} className="btn-interactive" style={{ padding: "10px 18px", backgroundColor: "#059669", color: "#FFF", border: "none", borderRadius: "6px", cursor: enviando ? "default" : "pointer", opacity: enviando ? 0.7 : 1, display: "flex", alignItems: "center", gap: "6px", marginLeft: "auto", fontWeight: "bold" }}>
+              <CheckCircle2 size={16} /> {enviando ? "Enviando..." : "Enviar Formulario"}
             </button>
           )}
         </div>

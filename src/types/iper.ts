@@ -38,7 +38,8 @@ export interface TipoRiesgo {
 
 export interface IPERFormulario {
   id?: number;
-  idresponsable: number;
+  idresponsable?: number;
+  responsableNombre?: string;
   fecha?: string;
   turno?: string;
   empresa?: string;

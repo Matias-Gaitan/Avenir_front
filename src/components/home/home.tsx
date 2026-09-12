@@ -26,7 +26,8 @@ import {
   FileText,
   Calendar,
   UserCircle2,
-  Activity
+  Activity,
+  ClipboardCheck
 } from "lucide-react";
 import api from "../../service/api";
 import logoAvenir from "../../assets/avenir-logo.png";
@@ -43,6 +44,7 @@ import { MapaGeolocalizacion } from "../mapa/MapaGeolocalizacion";
 import GestionInsumosComponent from "../insumos/GestionInsumosComponent";
 import ViaticosComponent from "../insumos/ViaticosComponent";
 import GestionDocumentosComponent from "../documentos/GestionDocumentosComponent";
+import HistorialIperComponent from "../iper/HistorialIperComponent";
 import CronogramaComponent from "../cronograma/CronogramaComponent";
 import MiPerfilComponent from "../estado/MiPerfilComponent";
 import EstadoSistemaComponent from "../estado/EstadoSistemaComponent";
@@ -59,7 +61,7 @@ interface RolBD {
 }
 
 const Home: React.FC = () => {
-    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "asistencia" | "iper" | "iper-form" | "ats" | "permisos-usuario" | "mapa" | "insumos" | "viaticos" | "documentos" | "cronograma" | "mi-perfil" | "estado-sistema">("usuarios");
+    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "asistencia" | "iper" | "iper-form" | "iper-historial" | "ats" | "permisos-usuario" | "mapa" | "insumos" | "viaticos" | "documentos" | "cronograma" | "mi-perfil" | "estado-sistema">("usuarios");
     const [rolesDisponibles, setRolesDisponibles] = useState<RolBD[]>([]);
     const [rolActivoTesting, setRolActivoTesting] = useState<string>("");
 
@@ -339,6 +341,7 @@ const Home: React.FC = () => {
                             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <button onClick={() => setVistaActiva("iper")} style={{ backgroundColor: vistaActiva === "iper" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><ShieldAlert size={18} className="icon-pulse" /> {sidebarAbierta && "Parámetros IPER"}</button>
                                 <button onClick={() => setVistaActiva("iper-form")} style={{ backgroundColor: vistaActiva === "iper-form" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><ClipboardList size={18} /> {sidebarAbierta && "Formulario IPER"}</button>
+                                <button onClick={() => setVistaActiva("iper-historial")} style={{ backgroundColor: vistaActiva === "iper-historial" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><ClipboardCheck size={18} /> {sidebarAbierta && "Historial IPER"}</button>
                                 <button onClick={() => setVistaActiva("ats")} style={{ backgroundColor: vistaActiva === "ats" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><FileCheck size={18} /> {sidebarAbierta && "ATS Campo"}</button>
                             </div>
                         )}
@@ -505,6 +508,7 @@ const Home: React.FC = () => {
                     {vistaActiva === "viaticos" && <ViaticosComponent />}
                     {vistaActiva === "iper" && <AdminCatalogosPage darkMode={darkMode} />}
                     {vistaActiva === "iper-form" && <IperFormularioWizard />}
+                    {vistaActiva === "iper-historial" && <HistorialIperComponent />}
                     {vistaActiva === "ats" && <GestionAtsComponent />}
                     {vistaActiva === "mapa" && <MapaGeolocalizacion darkMode={darkMode} puntoEnfocado={puntoEnfocadoMapa} />}
                     {vistaActiva === "documentos" && <GestionDocumentosComponent />}
