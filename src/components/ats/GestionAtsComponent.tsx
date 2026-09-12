@@ -24,6 +24,9 @@ interface ItemCat {
 interface Empresa {
   idEmpresa?: number;
   nombre: string;
+  direccion?: string;
+  barrio?: string;
+  ciudad?: string;
 }
 
 interface Props {
@@ -55,6 +58,19 @@ export const GestionAtsComponent: React.FC<Props> = ({ darkMode }) => {
   const [pasos, setPasos] = useState<PasoAts[]>([
     { paso: 1, descripcion: "", peligro: "", riesgo: "", medidaControl: "" }
   ]);
+
+  // US: al elegir la empresa, autocompletar la ubicación con la dirección ya
+  // guardada de esa empresa en vez de tener que tipearla de nuevo (evita
+  // inconsistencias entre lo que dice "Empresas" y lo que se carga en el ATS).
+  useEffect(() => {
+    if (!idEmpresa) return;
+    const empresaSeleccionada = empresas.find((e) => e.idEmpresa === idEmpresa);
+    if (empresaSeleccionada) {
+      const partes = [empresaSeleccionada.direccion, empresaSeleccionada.barrio, empresaSeleccionada.ciudad].filter(Boolean);
+      if (partes.length > 0) setUbicacion(partes.join(", "));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idEmpresa, empresas]);
 
   useEffect(() => {
     cargarParametros();
@@ -184,10 +200,12 @@ export const GestionAtsComponent: React.FC<Props> = ({ darkMode }) => {
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "0.85rem", color: theme.labelColor, fontWeight: "bold", marginBottom: "6px" }}>Ubicación / Sector de Trabajo</label>
+              <label style={{ display: "block", fontSize: "0.85rem", color: theme.labelColor, fontWeight: "bold", marginBottom: "6px" }}>
+                Ubicación (autocompletada desde la empresa)
+              </label>
               <input
                 type="text"
-                placeholder="Ej. Planta Alta - Sector B"
+                placeholder="Se completa al elegir la empresa. Podés agregar el sector puntual."
                 value={ubicacion}
                 onChange={(e) => setUbicacion(e.target.value)}
                 required

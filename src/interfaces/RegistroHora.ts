@@ -6,6 +6,7 @@ export interface RegistroHora {
     fecha: string;
     horasDedicadas: number;
     tareasRealizadas: string;
+    generadoAutomaticamente?: boolean;
 }
 
 // Esta interfaz es para enviar los datos al backend (Payload)

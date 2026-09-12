@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Clock, Calendar, CheckCircle2, XCircle, AlertCircle, Check, X } from "lucide-react";
+import { Clock, Calendar, CheckCircle2, XCircle, AlertCircle, Check, X, Zap } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./horarios.css";
@@ -136,12 +136,24 @@ const RegistroHorarioComponent: React.FC = () => {
         }
     };
 
+    const puedeCargarManual = tienePermiso("APROBAR_HORARIOS");
+
     return (
         <div className="horario-container">
+            {!puedeCargarManual && (
+                <div className="horario-card">
+                    <p style={{ display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
+                        <Zap size={16} color="#059669" />
+                        Tus horas trabajadas se calculan automáticamente al marcar el ingreso y el egreso de una visita a una empresa. Quedan pendientes hasta que un administrador las valide.
+                    </p>
+                </div>
+            )}
+
+            {puedeCargarManual && (
             <div className="horario-card">
                 <div className="horario-tittle">
                     <h1 style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
-                        <Clock size={24} color="#059669" /> REGISTRAR HORAS DE TRABAJO
+                        <Clock size={24} color="#059669" /> REGISTRAR HORAS DE TRABAJO (CARGA MANUAL)
                     </h1>
                 </div>
 
@@ -209,6 +221,7 @@ const RegistroHorarioComponent: React.FC = () => {
                     {mensaje && <p className="msg-exito">{mensaje}</p>}
                 </form>
             </div>
+            )}
 
             <div className="horario-card">
                 <div className="horario-tittle">
@@ -253,7 +266,10 @@ const RegistroHorarioComponent: React.FC = () => {
                                             <td className="txt-bold">{reg.usuario?.nombre} {reg.usuario?.apellido}</td>
                                             <td>{reg.empresa?.nombre}</td>
                                             <td style={{ textAlign: "center" }}>
-                                                <span className="badge-horas">{reg.horasDedicadas} hs</span>
+                                                <span className="badge-horas" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                                    {reg.generadoAutomaticamente && <Zap size={12} aria-label="Calculado automáticamente" />}
+                                                    {reg.horasDedicadas} hs
+                                                </span>
                                             </td>
                                             <td>{reg.tareasRealizadas}</td>
 
