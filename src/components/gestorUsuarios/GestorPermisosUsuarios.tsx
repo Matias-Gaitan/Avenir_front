@@ -31,6 +31,10 @@ interface ModuloPermisos {
   permisos: Permiso[];
 }
 
+interface Props {
+  darkMode?: boolean;
+}
+
 const obtenerHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
@@ -75,8 +79,21 @@ const agruparPermisosPorModulo = (permisosDisponibles: Permiso[]): ModuloPermiso
     .map(([titulo, v]) => ({ titulo, icono: v.icono, permisos: v.permisos }));
 };
 
-export const GestorPermisosUsuarios: React.FC = () => {
+export const GestorPermisosUsuarios: React.FC<Props> = ({ darkMode = false }) => {
   const puedeEditar = tienePermiso("EDITAR_USUARIOS");
+
+  // Paleta local: en modo oscuro usamos los mismos tonos que el resto del sistema
+  // (theme.css), para que estas tarjetas internas no queden claras sobre fondo oscuro.
+  const c = {
+    bgSuave: darkMode ? "#0D1117" : "#F8FAFC",
+    bgTarjeta: darkMode ? "#161B22" : "#FFFFFF",
+    borde: darkMode ? "#30363D" : "#E2E8F0",
+    texto: darkMode ? "#F0F6FC" : "#0F172A",
+    textoSecundario: darkMode ? "#8B949E" : "#64748B",
+    seleccionadoBg: darkMode ? "#0F3D2E" : "#ECFDF5",
+    seleccionadoBorde: darkMode ? "#238636" : "#6EE7B7",
+    seleccionadoTexto: darkMode ? "#7EE2B8" : "#065F46",
+  };
 
   const [usuarios, setUsuarios] = useState<UsuarioBD[]>([]);
   const [permisosDisponibles, setPermisosDisponibles] = useState<Permiso[]>([]);
@@ -198,22 +215,22 @@ export const GestorPermisosUsuarios: React.FC = () => {
       <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <UserCheck size={22} color="#059669" /> Permisos y Horario Laboral por Empleado
       </h2>
-      <p style={{ color: "#64748B", fontSize: "0.85rem", margin: "0 0 16px 0" }}>
+      <p style={{ color: c.textoSecundario, fontSize: "0.85rem", margin: "0 0 16px 0" }}>
         Por defecto, un empleado tiene los permisos de su rol. Acá se puede definir un set de
         permisos propio para un usuario puntual (por ejemplo, que solo algunos gerentes puedan
         aprobar viáticos), y si tiene un horario laboral fijo asignado.
       </p>
 
       {/* FILTROS Y BUSQUEDA */}
-      <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap", backgroundColor: "#F8FAFC", padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0" }}>
-        <div style={{ flex: 1, minWidth: "220px", display: "flex", alignItems: "center", backgroundColor: "#FFFFFF", borderRadius: "6px", padding: "0 10px", border: "1px solid #E2E8F0" }}>
+      <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap", backgroundColor: c.bgSuave, padding: "12px", borderRadius: "8px", border: `1px solid ${c.borde}` }}>
+        <div style={{ flex: 1, minWidth: "220px", display: "flex", alignItems: "center", backgroundColor: c.bgTarjeta, borderRadius: "6px", padding: "0 10px", border: `1px solid ${c.borde}` }}>
           <Search size={16} color="#94A3B8" />
           <input
             type="text"
             placeholder="Buscar por nombre o email..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            style={{ width: "100%", padding: "8px", backgroundColor: "transparent", border: "none", color: "#0F172A", outline: "none", fontSize: "0.85rem" }}
+            style={{ width: "100%", padding: "8px", backgroundColor: "transparent", border: "none", color: c.texto, outline: "none", fontSize: "0.85rem" }}
           />
         </div>
 
@@ -222,7 +239,7 @@ export const GestorPermisosUsuarios: React.FC = () => {
           <select
             value={filtroRol}
             onChange={(e) => setFiltroRol(e.target.value)}
-            style={{ backgroundColor: "#FFFFFF", color: "#0F172A", border: "1px solid #E2E8F0", padding: "8px 12px", borderRadius: "6px", fontSize: "0.85rem", fontWeight: "bold" }}
+            style={{ backgroundColor: c.bgTarjeta, color: c.texto, border: `1px solid ${c.borde}`, padding: "8px 12px", borderRadius: "6px", fontSize: "0.85rem", fontWeight: "bold" }}
           >
             <option value="TODOS">Todos los Roles ({usuarios.length})</option>
             <option value="EMPLEADO">Rol Empleado</option>
@@ -235,13 +252,13 @@ export const GestorPermisosUsuarios: React.FC = () => {
       {usuarioSeleccionado && (
         <>
           <div style={{ marginBottom: "18px" }}>
-            <label style={{ fontSize: "0.8rem", color: "#64748B", fontWeight: "bold", display: "block", marginBottom: "6px" }}>
+            <label style={{ fontSize: "0.8rem", color: c.textoSecundario, fontWeight: "bold", display: "block", marginBottom: "6px" }}>
               Seleccionar Empleado ({usuariosFiltrados.length} encontrados):
             </label>
             <select
               value={usuarioSeleccionado.idUsuario}
               onChange={(e) => setIdUsuarioSel(Number(e.target.value))}
-              style={{ width: "100%", backgroundColor: "#FFFFFF", color: "#0F172A", border: "1px solid #059669", padding: "10px", borderRadius: "6px", fontWeight: "bold", outline: "none" }}
+              style={{ width: "100%", backgroundColor: c.bgTarjeta, color: c.texto, border: "1px solid #059669", padding: "10px", borderRadius: "6px", fontWeight: "bold", outline: "none" }}
             >
               {usuariosFiltrados.map(u => (
                 <option key={u.idUsuario} value={u.idUsuario}>
@@ -255,22 +272,22 @@ export const GestorPermisosUsuarios: React.FC = () => {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
             gap: "15px",
-            backgroundColor: "#F8FAFC",
+            backgroundColor: c.bgSuave,
             padding: "16px",
             borderRadius: "8px",
-            border: "1px solid #E2E8F0",
+            border: `1px solid ${c.borde}`,
             marginBottom: "20px"
           }}>
             <div>
-              <span style={{ fontSize: "0.75rem", color: "#64748B", textTransform: "uppercase", fontWeight: "bold" }}>Empleado</span>
-              <strong style={{ display: "block", fontSize: "1.05rem", color: "#0F172A", marginTop: "2px" }}>
+              <span style={{ fontSize: "0.75rem", color: c.textoSecundario, textTransform: "uppercase", fontWeight: "bold" }}>Empleado</span>
+              <strong style={{ display: "block", fontSize: "1.05rem", color: c.texto, marginTop: "2px" }}>
                 {usuarioSeleccionado.nombre} {usuarioSeleccionado.apellido}
               </strong>
-              <span style={{ fontSize: "0.8rem", color: "#64748B" }}>{usuarioSeleccionado.email}</span>
+              <span style={{ fontSize: "0.8rem", color: c.textoSecundario }}>{usuarioSeleccionado.email}</span>
             </div>
 
             <div>
-              <span style={{ fontSize: "0.75rem", color: "#64748B", textTransform: "uppercase", fontWeight: "bold" }}>Rol del Sistema</span>
+              <span style={{ fontSize: "0.75rem", color: c.textoSecundario, textTransform: "uppercase", fontWeight: "bold" }}>Rol del Sistema</span>
               <div style={{ marginTop: "6px" }}>
                 <span style={{ backgroundColor: "#FEF08A", color: "#854D0E", padding: "6px 12px", borderRadius: "6px", fontSize: "0.9rem", fontWeight: "bold", border: "1px solid #FACC15", display: "inline-block" }}>
                   <Shield size={14} style={{ verticalAlign: "middle", marginRight: "4px" }} /> {obtenerRolNombre(usuarioSeleccionado)}
@@ -279,8 +296,8 @@ export const GestorPermisosUsuarios: React.FC = () => {
             </div>
 
             <div>
-              <span style={{ fontSize: "0.75rem", color: "#64748B", textTransform: "uppercase", fontWeight: "bold" }}>Fuente de sus permisos</span>
-              <p style={{ margin: "4px 0 0 0", fontSize: "0.9rem", color: personalizados ? "#B45309" : "#059669", fontWeight: "bold" }}>
+              <span style={{ fontSize: "0.75rem", color: c.textoSecundario, textTransform: "uppercase", fontWeight: "bold" }}>Fuente de sus permisos</span>
+              <p style={{ margin: "4px 0 0 0", fontSize: "0.9rem", color: personalizados ? "#D97706" : "#059669", fontWeight: "bold" }}>
                 {personalizados ? "Personalizados (override)" : `Los de su rol (${permisosDelRol} disponibles en el sistema)`}
               </p>
             </div>
@@ -290,12 +307,12 @@ export const GestorPermisosUsuarios: React.FC = () => {
           {mensaje && <p className="msg-exito">{mensaje}</p>}
 
           {/* HORARIO LABORAL */}
-          <div style={{ backgroundColor: "#F8FAFC", padding: "16px", borderRadius: "8px", border: "1px solid #E2E8F0", marginBottom: "20px" }}>
-            <h4 style={{ margin: "0 0 12px 0", color: "#0F172A", fontSize: "0.95rem", display: "flex", alignItems: "center", gap: "6px" }}>
+          <div style={{ backgroundColor: c.bgSuave, padding: "16px", borderRadius: "8px", border: `1px solid ${c.borde}`, marginBottom: "20px" }}>
+            <h4 style={{ margin: "0 0 12px 0", color: c.texto, fontSize: "0.95rem", display: "flex", alignItems: "center", gap: "6px" }}>
               <Clock size={18} color="#059669" /> Horario Laboral Asignado
             </h4>
 
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: puedeEditar ? "pointer" : "default", fontSize: "0.9rem", marginBottom: "10px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: puedeEditar ? "pointer" : "default", fontSize: "0.9rem", marginBottom: "10px", color: c.texto }}>
               <input type="checkbox" checked={tieneHorario} disabled={!puedeEditar} onChange={(e) => setTieneHorario(e.target.checked)} />
               Este empleado tiene un horario laboral fijo definido
             </label>
@@ -320,8 +337,8 @@ export const GestorPermisosUsuarios: React.FC = () => {
           </div>
 
           {/* PERMISOS PERSONALIZADOS */}
-          <div style={{ backgroundColor: "#F8FAFC", padding: "16px", borderRadius: "8px", border: "1px solid #E2E8F0" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: puedeEditar ? "pointer" : "default", fontSize: "0.9rem", fontWeight: "bold", color: "#0F172A", marginBottom: "12px" }}>
+          <div style={{ backgroundColor: c.bgSuave, padding: "16px", borderRadius: "8px", border: `1px solid ${c.borde}` }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: puedeEditar ? "pointer" : "default", fontSize: "0.9rem", fontWeight: "bold", color: c.texto, marginBottom: "12px" }}>
               <input type="checkbox" checked={personalizados} disabled={!puedeEditar} onChange={(e) => setPersonalizados(e.target.checked)} />
               Usar permisos personalizados para este usuario (en vez de los de su rol)
             </label>
@@ -334,9 +351,9 @@ export const GestorPermisosUsuarios: React.FC = () => {
                   const algunoMod = idsMod.some((id) => permisosSeleccionados.includes(id));
 
                   return (
-                    <div key={mod.titulo} style={{ backgroundColor: "#FFFFFF", border: "1px solid", borderColor: algunoMod ? "#A7F3D0" : "#E2E8F0", borderRadius: "10px", padding: "12px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #F1F5F9", paddingBottom: "8px", marginBottom: "10px" }}>
-                        <span style={{ fontWeight: "bold", color: "#1E293B", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <div key={mod.titulo} style={{ backgroundColor: c.bgTarjeta, border: "1px solid", borderColor: algunoMod ? c.seleccionadoBorde : c.borde, borderRadius: "10px", padding: "12px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${c.borde}`, paddingBottom: "8px", marginBottom: "10px" }}>
+                        <span style={{ fontWeight: "bold", color: c.texto, fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "6px" }}>
                           {mod.icono} {mod.titulo}
                         </span>
                         {puedeEditar && (
@@ -349,9 +366,9 @@ export const GestorPermisosUsuarios: React.FC = () => {
                         {mod.permisos.map((p) => {
                           const seleccionado = permisosSeleccionados.includes(p.idPermiso);
                           return (
-                            <label key={p.idPermiso} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "5px 8px", borderRadius: "6px", backgroundColor: seleccionado ? "#ECFDF5" : "#F8FAFC", border: "1px solid", borderColor: seleccionado ? "#6EE7B7" : "#E2E8F0", cursor: puedeEditar ? "pointer" : "default", fontSize: "0.8rem" }}>
+                            <label key={p.idPermiso} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "5px 8px", borderRadius: "6px", backgroundColor: seleccionado ? c.seleccionadoBg : c.bgSuave, border: "1px solid", borderColor: seleccionado ? c.seleccionadoBorde : c.borde, cursor: puedeEditar ? "pointer" : "default", fontSize: "0.8rem" }}>
                               <input type="checkbox" checked={seleccionado} disabled={!puedeEditar} onChange={() => handleCheckboxChange(p.idPermiso)} />
-                              <span style={{ fontWeight: seleccionado ? "bold" : "normal", color: seleccionado ? "#065F46" : "#475569" }}>{p.nombre}</span>
+                              <span style={{ fontWeight: seleccionado ? "bold" : "normal", color: seleccionado ? c.seleccionadoTexto : c.textoSecundario }}>{p.nombre}</span>
                             </label>
                           );
                         })}
@@ -361,7 +378,7 @@ export const GestorPermisosUsuarios: React.FC = () => {
                 })}
               </div>
             ) : (
-              <p style={{ fontSize: "0.85rem", color: "#64748B", margin: 0 }}>
+              <p style={{ fontSize: "0.85rem", color: c.textoSecundario, margin: 0 }}>
                 Este usuario usa los permisos de su rol ({obtenerRolNombre(usuarioSeleccionado)}). Tildá la casilla de arriba para asignarle un set propio.
               </p>
             )}

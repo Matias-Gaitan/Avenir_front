@@ -21,16 +21,33 @@ interface UsuarioOpcion {
     email: string;
 }
 
+interface Props {
+    darkMode?: boolean;
+}
+
 const obtenerHeaders = () => {
     const token = localStorage.getItem("token");
     return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 };
 
-const AsignacionTareasComponent: React.FC = () => {
+const AsignacionTareasComponent: React.FC<Props> = ({ darkMode = false }) => {
     const puedeCrear = tienePermiso("CREAR_TAREAS");
     const puedeVer = tienePermiso("VER_TAREAS");
     const puedeEliminar = tienePermiso("ELIMINAR_TAREAS");
     const email = localStorage.getItem("email") || "";
+
+    // Paleta local para que las secciones internas (checklist, pastillas de insumos,
+    // tarjetas de tarea) no queden claras sobre fondo oscuro.
+    const c = {
+        bgSuave: darkMode ? "#0D1117" : "#F8FAFC",
+        bgTarjeta: darkMode ? "#161B22" : "#FFFFFF",
+        borde: darkMode ? "#30363D" : "#E2E8F0",
+        texto: darkMode ? "#F0F6FC" : "#334155",
+        textoSecundario: darkMode ? "#8B949E" : "#64748B",
+        seleccionadoBg: darkMode ? "#0F3D2E" : "#ECFDF5",
+        seleccionadoBorde: darkMode ? "#238636" : "#6EE7B7",
+        seleccionadoTexto: darkMode ? "#7EE2B8" : "#059669",
+    };
 
     const [empresas, setEmpresas] = useState<Empresa[]>([]);
     const [usuarios, setUsuarios] = useState<UsuarioOpcion[]>([]);
@@ -195,12 +212,12 @@ const AsignacionTareasComponent: React.FC = () => {
 
     const renderChecklist = (tarea: TareaAsignada, esPropia: boolean) => (
         <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}>
-            {tarea.checklist.length === 0 && <span style={{ fontSize: "0.8rem", color: "#94A3B8" }}>Sin checklist cargado.</span>}
+            {tarea.checklist.length === 0 && <span style={{ fontSize: "0.8rem", color: c.textoSecundario }}>Sin checklist cargado.</span>}
             {tarea.checklist.map((item) => (
-                <label key={item.idItem} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.85rem", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", backgroundColor: item.completado ? "#ECFDF5" : "#F8FAFC" }}>
+                <label key={item.idItem} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.85rem", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", backgroundColor: item.completado ? c.seleccionadoBg : c.bgSuave }}>
                     <input type="checkbox" checked={item.completado} onChange={() => handleToggleItem(item.idItem, item.completado, esPropia)} />
                     {item.tipo === "INSUMO" ? <Package size={13} color="#7C3AED" /> : <ListChecks size={13} color="#059669" />}
-                    <span style={{ textDecoration: item.completado ? "line-through" : "none", color: item.completado ? "#059669" : "#334155" }}>{item.descripcion}</span>
+                    <span style={{ textDecoration: item.completado ? "line-through" : "none", color: item.completado ? c.seleccionadoTexto : c.texto }}>{item.descripcion}</span>
                 </label>
             ))}
         </div>
@@ -250,12 +267,12 @@ const AsignacionTareasComponent: React.FC = () => {
                             <label>Insumos requeridos para la visita</label>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "6px" }}>
                                 {insumos.map((ins) => (
-                                    <label key={ins.idInsumo} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "5px 10px", borderRadius: "16px", border: "1px solid", borderColor: insumosSeleccionados.includes(ins.nombre) ? "#6EE7B7" : "#E2E8F0", backgroundColor: insumosSeleccionados.includes(ins.nombre) ? "#ECFDF5" : "#FFFFFF", fontSize: "0.8rem", cursor: "pointer" }}>
+                                    <label key={ins.idInsumo} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "5px 10px", borderRadius: "16px", border: "1px solid", borderColor: insumosSeleccionados.includes(ins.nombre) ? c.seleccionadoBorde : c.borde, backgroundColor: insumosSeleccionados.includes(ins.nombre) ? c.seleccionadoBg : c.bgTarjeta, color: c.texto, fontSize: "0.8rem", cursor: "pointer" }}>
                                         <input type="checkbox" checked={insumosSeleccionados.includes(ins.nombre)} onChange={() => toggleInsumo(ins.nombre)} />
                                         {ins.nombre}
                                     </label>
                                 ))}
-                                {insumos.length === 0 && <span style={{ fontSize: "0.8rem", color: "#94A3B8" }}>No hay insumos cargados en el catálogo.</span>}
+                                {insumos.length === 0 && <span style={{ fontSize: "0.8rem", color: c.textoSecundario }}>No hay insumos cargados en el catálogo.</span>}
                             </div>
                         </div>
 
@@ -268,7 +285,7 @@ const AsignacionTareasComponent: React.FC = () => {
                             {pasosGenericos.length > 0 && (
                                 <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "8px" }}>
                                     {pasosGenericos.map((paso, idx) => (
-                                        <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 10px", backgroundColor: "#F8FAFC", borderRadius: "6px", fontSize: "0.85rem" }}>
+                                        <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 10px", backgroundColor: c.bgSuave, color: c.texto, borderRadius: "6px", fontSize: "0.85rem" }}>
                                             <span>{idx + 1}. {paso}</span>
                                             <button type="button" onClick={() => quitarPaso(idx)} style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", display: "flex" }}><X size={14} /></button>
                                         </div>
@@ -295,15 +312,15 @@ const AsignacionTareasComponent: React.FC = () => {
                     <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "10px" }}>
                         {tareas.length === 0 && <p className="txt-vacio">No hay tareas asignadas todavía.</p>}
                         {tareas.map((t) => (
-                            <div key={t.idTarea} style={{ border: "1px solid #E2E8F0", borderRadius: "10px", padding: "14px", opacity: t.activo === false ? 0.6 : 1 }}>
+                            <div key={t.idTarea} style={{ border: `1px solid ${c.borde}`, borderRadius: "10px", padding: "14px", opacity: t.activo === false ? 0.6 : 1, color: c.texto }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
                                     <div>
                                         <strong>{t.descripcionTarea}</strong>
-                                        <div style={{ fontSize: "0.8rem", color: "#64748B" }}>
+                                        <div style={{ fontSize: "0.8rem", color: c.textoSecundario }}>
                                             {t.usuario?.nombre} {t.usuario?.apellido} · {t.empresa?.nombre} · {t.fecha}
                                         </div>
                                         {(t.direccionExacta || t.barrioZona) && (
-                                            <div style={{ fontSize: "0.78rem", color: "#94A3B8", display: "flex", alignItems: "center", gap: "4px" }}>
+                                            <div style={{ fontSize: "0.78rem", color: c.textoSecundario, display: "flex", alignItems: "center", gap: "4px" }}>
                                                 <MapPin size={12} /> {[t.direccionExacta, t.barrioZona].filter(Boolean).join(" — ")}
                                             </div>
                                         )}
@@ -332,13 +349,13 @@ const AsignacionTareasComponent: React.FC = () => {
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "10px" }}>
                     {misTareas.length === 0 && <p className="txt-vacio">No tenés tareas asignadas por el momento.</p>}
                     {misTareas.map((t) => (
-                        <div key={t.idTarea} style={{ border: "1px solid #E2E8F0", borderRadius: "10px", padding: "14px" }}>
+                        <div key={t.idTarea} style={{ border: `1px solid ${c.borde}`, borderRadius: "10px", padding: "14px", color: c.texto }}>
                             <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
                                 <div>
                                     <strong>{t.descripcionTarea}</strong>
-                                    <div style={{ fontSize: "0.8rem", color: "#64748B" }}>{t.empresa?.nombre} · {t.fecha}</div>
+                                    <div style={{ fontSize: "0.8rem", color: c.textoSecundario }}>{t.empresa?.nombre} · {t.fecha}</div>
                                     {(t.direccionExacta || t.barrioZona) && (
-                                        <div style={{ fontSize: "0.78rem", color: "#94A3B8", display: "flex", alignItems: "center", gap: "4px" }}>
+                                        <div style={{ fontSize: "0.78rem", color: c.textoSecundario, display: "flex", alignItems: "center", gap: "4px" }}>
                                             <MapPin size={12} /> {[t.direccionExacta, t.barrioZona].filter(Boolean).join(" — ")}
                                         </div>
                                     )}

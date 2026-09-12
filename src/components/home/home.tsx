@@ -504,14 +504,14 @@ const Home: React.FC = () => {
                 {/* RENDIMIENTO DE LAS VISTAS */}
                 <main style={{ padding: "20px", flex: 1 }}>
                     {vistaActiva === "usuarios" && <GestorUsuarios onIrAlMapa={handleIrAlMapaConZoom} />}
-                    {vistaActiva === "permisos-usuario" && <GestorPermisosUsuarios />}
+                    {vistaActiva === "permisos-usuario" && <GestorPermisosUsuarios darkMode={darkMode} />}
                     {vistaActiva === "roles" && <GestorRoles />}
                     {vistaActiva === "empresas" && <EmpresaComponent onIrAlMapa={handleIrAlMapaConZoom} />}
                     {vistaActiva === "horarios" && <RegistroHorarioComponent />}
                     {vistaActiva === "asistencia" && <RegistroAsistenciaComponent />}
                     {vistaActiva === "insumos" && <GestionInsumosComponent />}
                     {vistaActiva === "viaticos" && <ViaticosComponent />}
-                    {vistaActiva === "tareas" && <AsignacionTareasComponent />}
+                    {vistaActiva === "tareas" && <AsignacionTareasComponent darkMode={darkMode} />}
                     {vistaActiva === "iper" && <AdminCatalogosPage darkMode={darkMode} />}
                     {vistaActiva === "iper-form" && <IperFormularioWizard />}
                     {vistaActiva === "iper-historial" && <HistorialIperComponent />}
