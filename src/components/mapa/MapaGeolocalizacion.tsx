@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polyline } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import Globe from "globe.gl";
 import api from "../../service/api";
 import {
   Building2,
@@ -10,14 +9,11 @@ import {
   RefreshCw,
   Compass,
   Search,
-  Globe2,
   Map as MapIcon,
   ChevronRight,
   ChevronLeft,
   Navigation,
   MapPin,
-  Flame,
-  Layers,
   Play,
   Square,
   Navigation2
@@ -107,265 +103,11 @@ const MapController: React.FC<{ punto: PuntoEnfocado | null }> = ({ punto }) => 
   return null;
 };
 
-// ☄️ GLOBO 3D ULTRA ESTABLE
-const VisorGlobo3DPro: React.FC<{ elementos: ElementoMap[]; onVolver2D: () => void }> = ({ elementos, onVolver2D }) => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const globeInstanceRef = useRef<any>(null);
-  const [filtro3D, setFiltro3D] = useState<"TODOS" | "EMPRESAS" | "EMPLEADOS">("TODOS");
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const world = Globe()(containerRef.current)
-      .globeImageUrl("//unpkg.com/three-globe/example/img/earth-night.jpg")
-      .bumpImageUrl("//unpkg.com/three-globe/example/img/earth-topology.png")
-      .backgroundImageUrl("//unpkg.com/three-globe/example/img/night-sky.png")
-      .arcStartLat((d: any) => d.startLat)
-      .arcStartLng((d: any) => d.startLng)
-      .arcEndLat((d: any) => d.endLat)
-      .arcEndLng((d: any) => d.endLng)
-      .arcColor((d: any) => d.color)
-      .arcDashLength(0.4)
-      .arcDashGap(0.2)
-      .arcDashAnimateTime(1500)
-      .arcAltitude(0.4)
-      .ringColor((d: any) => d.color)
-      .ringMaxRadius((d: any) => d.maxR)
-      .ringPropagationSpeed((d: any) => d.propagationSpeed)
-      .ringRepeatPeriod((d: any) => d.repeatPeriod)
-      .htmlElement((d: any) => {
-        const el = document.createElement("div");
-        el.title = `${d.nombre}\n📍 ${d.direccion}`;
-        el.innerHTML = `
-          <div style="
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(15, 23, 42, 0.88);
-            border: 1px solid ${d.color};
-            padding: 3px 8px;
-            border-radius: 12px;
-            color: #FFF;
-            font-size: 10px;
-            font-weight: bold;
-            box-shadow: 0 0 10px ${d.color};
-            backdrop-filter: blur(4px);
-            white-space: nowrap;
-            max-width: 140px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            transform: translate(-50%, -50%);
-            cursor: pointer;
-            transition: transform 0.2s ease;
-          " onmouseover="this.style.transform='translate(-50%, -50%) scale(1.15)'; this.style.zIndex='9999';" onmouseout="this.style.transform='translate(-50%, -50%) scale(1)';">
-            <span style="width: 6px; height: 6px; border-radius: 50%; background: ${d.color}; display: inline-block; flex-shrink: 0; box-shadow: 0 0 6px ${d.color};"></span>
-            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${d.icono} ${d.nombre}</span>
-          </div>
-        `;
-        return el;
-      });
-
-    world.controls().autoRotate = true;
-    world.controls().autoRotateSpeed = 0.6;
-    world.pointOfView({ lat: -31.4167, lng: -64.1833, altitude: 1.8 }, 2000);
-
-    globeInstanceRef.current = world;
-
-    const handleResize = () => {
-      if (containerRef.current && globeInstanceRef.current) {
-        globeInstanceRef.current.width(containerRef.current.clientWidth);
-        globeInstanceRef.current.height(containerRef.current.clientHeight);
-      }
-    };
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      if (containerRef.current) containerRef.current.innerHTML = "";
-      globeInstanceRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!globeInstanceRef.current) return;
-
-    const filtrados = elementos.filter((item) => {
-      if (filtro3D === "EMPRESAS") return item.tipo === "EMPRESA";
-      if (filtro3D === "EMPLEADOS") return item.tipo === "EMPLEADO_CAMPO";
-      return true;
-    });
-
-    const meteoritosData = filtrados.map((el) => ({
-      startLat: el.latitud + (Math.sin(el.id) * 12),
-      startLng: el.longitud + (Math.cos(el.id) * 15),
-      endLat: el.latitud,
-      endLng: el.longitud,
-      color: el.tipo === "EMPRESA" ? ["#FF4500", "#10B981"] : ["#FFA500", "#3B82F6"]
-    }));
-
-    const anillosImpactoData = filtrados.map((el) => ({
-      lat: el.latitud,
-      lng: el.longitud,
-      color: el.tipo === "EMPRESA" ? "#10B981" : "#3B82F6",
-      maxR: 10,
-      propagationSpeed: 3,
-      repeatPeriod: 1200
-    }));
-
-    const puntosGlobe = filtrados.map((el) => ({
-      lat: el.latitud,
-      lng: el.longitud,
-      color: el.tipo === "EMPRESA" ? "#10B981" : "#3B82F6",
-      nombre: el.nombre,
-      direccion: el.direccion,
-      icono: el.tipo === "EMPRESA" ? "🏢" : "👷"
-    }));
-
-    globeInstanceRef.current
-      .arcsData(meteoritosData)
-      .ringsData(anillosImpactoData)
-      .htmlElementsData(puntosGlobe);
-
-  }, [elementos, filtro3D]);
-
-  const totalFiltrados = elementos.filter((i) => {
-    if (filtro3D === "EMPRESAS") return i.tipo === "EMPRESA";
-    if (filtro3D === "EMPLEADOS") return i.tipo === "EMPLEADO_CAMPO";
-    return true;
-  }).length;
-
-  return (
-    <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: "20px", left: "20px", right: "20px", zIndex: 10, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", pointerEvents: "none" }}>
-        <button
-          onClick={onVolver2D}
-          style={{
-            pointerEvents: "auto",
-            backgroundColor: "#3B82F6",
-            color: "#FFF",
-            border: "none",
-            padding: "10px 18px",
-            borderRadius: "8px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            boxShadow: "0 4px 15px rgba(59, 130, 246, 0.5)"
-          }}
-        >
-          <MapIcon size={18} /> Volver a Mapa 2D
-        </button>
-
-        <div style={{
-          pointerEvents: "auto",
-          backgroundColor: "rgba(15, 23, 42, 0.9)",
-          border: "1px solid #334155",
-          padding: "4px",
-          borderRadius: "10px",
-          display: "flex",
-          gap: "4px",
-          backdropFilter: "blur(8px)",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.4)"
-        }}>
-          <button
-            onClick={() => setFiltro3D("TODOS")}
-            style={{
-              backgroundColor: filtro3D === "TODOS" ? "#334155" : "transparent",
-              color: "#FFF",
-              border: "none",
-              padding: "7px 14px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "0.78rem",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              transition: "all 0.2s ease"
-            }}
-          >
-            <Layers size={14} /> Todos ({elementos.length})
-          </button>
-
-          <button
-            onClick={() => setFiltro3D("EMPRESAS")}
-            style={{
-              backgroundColor: filtro3D === "EMPRESAS" ? "#059669" : "transparent",
-              color: filtro3D === "EMPRESAS" ? "#FFF" : "#34D399",
-              border: "none",
-              padding: "7px 14px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "0.78rem",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              transition: "all 0.2s ease"
-            }}
-          >
-            🏢 Empresas ({elementos.filter(e => e.tipo === "EMPRESA").length})
-          </button>
-
-          <button
-            onClick={() => setFiltro3D("EMPLEADOS")}
-            style={{
-              backgroundColor: filtro3D === "EMPLEADOS" ? "#2563EB" : "transparent",
-              color: filtro3D === "EMPLEADOS" ? "#FFF" : "#60A5FA",
-              border: "none",
-              padding: "7px 14px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "0.78rem",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              transition: "all 0.2s ease"
-            }}
-          >
-            👷 Empleados ({elementos.filter(e => e.tipo === "EMPLEADO_CAMPO").length})
-          </button>
-        </div>
-      </div>
-
-      <div style={{
-        position: "absolute",
-        bottom: "20px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 10,
-        backgroundColor: "rgba(15, 23, 42, 0.88)",
-        backdropFilter: "blur(8px)",
-        color: "#FFF",
-        padding: "8px 18px",
-        borderRadius: "30px",
-        fontSize: "0.8rem",
-        fontWeight: "bold",
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-        border: "1px solid #334155",
-        boxShadow: "0 0 20px rgba(0,0,0,0.5)"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F59E0B" }}>
-          <Flame size={16} />
-          <span>Meteoritos Visibles: <strong>{totalFiltrados}</strong></span>
-        </div>
-      </div>
-
-      <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
-    </div>
-  );
-};
-
 export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnfocado }) => {
   const [elementos, setElementos] = useState<ElementoMap[]>([]);
   const [totalEmpresas, setTotalEmpresas] = useState<number>(0);
   const [totalEmpleadosCampo, setTotalEmpleadosCampo] = useState<number>(0);
   const [cargando, setCargando] = useState<boolean>(false);
-  const [modoGlobo3D, setModoGlobo3D] = useState<boolean>(false);
 
   const [regionesDinamicas, setRegionesDinamicas] = useState<RegionDinamica[]>([]);
   const [sidebarAbierta, setSidebarAbierta] = useState<boolean>(true);
@@ -615,12 +357,6 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
 
   return (
     <div style={{ position: "relative", width: "100%", height: "calc(100vh - 120px)", borderRadius: "12px", overflow: "hidden", border: darkMode ? "1px solid #1E293B" : "1px solid #E2E8F0" }}>
-
-      {/* RENDERIZADO DEL GLOBO 3D INTERACTIVO */}
-      {modoGlobo3D ? (
-        <VisorGlobo3DPro elementos={elementos} onVolver2D={() => setModoGlobo3D(false)} />
-      ) : (
-        <>
           {/* BARRA SUPERIOR DE CONTROLES */}
           <div style={{ position: "absolute", top: "16px", left: "16px", right: sidebarAbierta ? "340px" : "60px", zIndex: 1000, display: "flex", gap: "10px", flexWrap: "wrap", pointerEvents: "none", transition: "all 0.3s ease" }}>
 
@@ -660,14 +396,6 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
                 ))}
               </select>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setModoGlobo3D(true)}
-              style={{ pointerEvents: "auto", backgroundColor: "#8B5CF6", color: "#FFF", border: "none", padding: "8px 14px", borderRadius: "8px", cursor: "pointer", fontWeight: "bold", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "6px", boxShadow: "0 4px 12px rgba(139, 92, 246, 0.4)" }}
-            >
-              <Globe2 size={16} /> Globo 3D
-            </button>
 
             <button type="button" onClick={cargarDatosGeolocalizados} disabled={cargando} style={{ pointerEvents: "auto", backgroundColor: "#1E293B", color: "#FFF", border: "1px solid #334155", padding: "8px 12px", borderRadius: "8px", cursor: "pointer", fontWeight: "bold", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "6px", marginLeft: "auto" }}>
               <RefreshCw size={15} className={cargando ? "icon-spin" : ""} />
@@ -915,8 +643,6 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
               );
             })}
           </MapContainer>
-        </>
-      )}
     </div>
   );
 };

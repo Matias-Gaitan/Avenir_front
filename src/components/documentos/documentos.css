@@ -1,0 +1,210 @@
+.documentos-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.documentos-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.documentos-card h1 {
+    font-size: 1.3rem;
+    color: #064e3b;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ecfdf5;
+    padding-bottom: 10px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.documentos-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 18px;
+}
+
+.documentos-form-grid .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.documentos-form-grid label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    outline: none;
+    background-color: #f8fafc;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    border-color: #10b981;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.btn-primario {
+    background-color: #22c55e;
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-primario:hover {
+    background-color: #16a34a;
+}
+
+.tabla-simetrica-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+.tabla-documentos {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.tabla-documentos th {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 10px 14px;
+    border-bottom: 1px solid #cbd5e1;
+    white-space: nowrap;
+}
+
+.tabla-documentos td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.85rem;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.tabla-documentos tr:hover {
+    background-color: #f8fafc;
+}
+
+.badge-vencimiento {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.badge-vencimiento.VIGENTE { background-color: #dcfce7; color: #15803d; }
+.badge-vencimiento.POR_VENCER { background-color: #fef9c3; color: #a16207; }
+.badge-vencimiento.VENCIDO { background-color: #fee2e2; color: #b91c1c; }
+.badge-vencimiento.SIN_VENCIMIENTO { background-color: #f1f5f9; color: #64748b; }
+
+.badge-categoria-doc {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background-color: #e0f2fe;
+    color: #0369a1;
+    white-space: nowrap;
+}
+
+.acciones-doc {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.btn-doc-accion {
+    background-color: #1e293b;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-doc-accion.subir { background-color: #2563eb; }
+.btn-doc-accion.descargar { background-color: #059669; }
+
+.version-historial {
+    margin-top: 6px;
+    padding: 8px 12px;
+    background-color: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.78rem;
+}
+
+.version-historial-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.version-historial-item:last-child {
+    border-bottom: none;
+}
+
+.txt-vacio {
+    text-align: center;
+    font-style: italic;
+    color: #64748b;
+    padding: 20px;
+}
+
+.msg-error {
+    color: #dc2626;
+    margin-top: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.msg-exito {
+    color: #16a34a;
+    margin-top: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}

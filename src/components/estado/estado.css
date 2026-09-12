@@ -1,0 +1,125 @@
+.estado-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.estado-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.estado-card h1 {
+    font-size: 1.3rem;
+    color: #064e3b;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ecfdf5;
+    padding-bottom: 10px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.perfil-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.perfil-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #059669;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.perfil-rol-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background-color: #ecfdf5;
+    color: #059669;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+
+.permisos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+}
+
+.permiso-chip {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.estado-resumen-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.estado-resumen-tile {
+    padding: 16px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.estado-resumen-tile .numero {
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+.estado-resumen-tile .etiqueta {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.tile-activos { background-color: #ecfdf5; color: #059669; }
+.tile-vigente { background-color: #ecfdf5; color: #059669; }
+.tile-por-vencer { background-color: #fefce8; color: #a16207; }
+.tile-vencido { background-color: #fef2f2; color: #b91c1c; }
+
+.tecnico-activo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+}
+
+.txt-vacio {
+    text-align: center;
+    font-style: italic;
+    color: #64748b;
+    padding: 20px;
+}

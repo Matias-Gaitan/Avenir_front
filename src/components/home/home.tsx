@@ -22,7 +22,11 @@ import {
   Compass,
   Timer,
   Package,
-  Fuel
+  Fuel,
+  FileText,
+  Calendar,
+  UserCircle2,
+  Activity
 } from "lucide-react";
 import api from "../../service/api";
 import GestorUsuarios from "../gestorUsuarios/gestorUsuarios";
@@ -37,6 +41,10 @@ import GestorPermisosUsuarios from "../gestorUsuarios/GestorPermisosUsuarios";
 import { MapaGeolocalizacion } from "../mapa/MapaGeolocalizacion";
 import GestionInsumosComponent from "../insumos/GestionInsumosComponent";
 import ViaticosComponent from "../insumos/ViaticosComponent";
+import GestionDocumentosComponent from "../documentos/GestionDocumentosComponent";
+import CronogramaComponent from "../cronograma/CronogramaComponent";
+import MiPerfilComponent from "../estado/MiPerfilComponent";
+import EstadoSistemaComponent from "../estado/EstadoSistemaComponent";
 
 interface PermisoBD {
     idPermiso?: number;
@@ -50,7 +58,7 @@ interface RolBD {
 }
 
 const Home: React.FC = () => {
-    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "asistencia" | "iper" | "iper-form" | "ats" | "permisos-usuario" | "mapa" | "insumos" | "viaticos">("usuarios");
+    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "asistencia" | "iper" | "iper-form" | "ats" | "permisos-usuario" | "mapa" | "insumos" | "viaticos" | "documentos" | "cronograma" | "mi-perfil" | "estado-sistema">("usuarios");
     const [rolesDisponibles, setRolesDisponibles] = useState<RolBD[]>([]);
     const [rolActivoTesting, setRolActivoTesting] = useState<string>("");
 
@@ -69,6 +77,7 @@ const Home: React.FC = () => {
     const [catSeguridad, setCatSeguridad] = useState<boolean>(true);
     const [catCampo, setCatCampo] = useState<boolean>(true);
     const [catRecursos, setCatRecursos] = useState<boolean>(true);
+    const [catDocumentacion, setCatDocumentacion] = useState<boolean>(true);
 
     const [darkMode, setDarkMode] = useState<boolean>(() => {
         return localStorage.getItem("theme") === "dark";
@@ -268,6 +277,7 @@ const Home: React.FC = () => {
                                 <button onClick={() => setVistaActiva("empresas")} style={{ backgroundColor: vistaActiva === "empresas" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Building2 size={18} /> {sidebarAbierta && "Empresas"}</button>
                                 <button onClick={() => setVistaActiva("horarios")} style={{ backgroundColor: vistaActiva === "horarios" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Clock size={18} /> {sidebarAbierta && "Horarios"}</button>
                                 <button onClick={() => setVistaActiva("asistencia")} style={{ backgroundColor: vistaActiva === "asistencia" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Timer size={18} /> {sidebarAbierta && "Ingreso y Egreso"}</button>
+                                <button onClick={() => setVistaActiva("mi-perfil")} style={{ backgroundColor: vistaActiva === "mi-perfil" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><UserCircle2 size={18} /> {sidebarAbierta && "Mi Perfil"}</button>
                             </div>
                         )}
                     </div>
@@ -288,6 +298,26 @@ const Home: React.FC = () => {
                             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <button onClick={() => setVistaActiva("insumos")} style={{ backgroundColor: vistaActiva === "insumos" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Package size={18} /> {sidebarAbierta && "Insumos"}</button>
                                 <button onClick={() => setVistaActiva("viaticos")} style={{ backgroundColor: vistaActiva === "viaticos" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Fuel size={18} /> {sidebarAbierta && "Viáticos (Pago x KM)"}</button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* CATEGORÍA DOCUMENTACIÓN: DOCUMENTOS Y CRONOGRAMA */}
+                    <div style={{ marginTop: "10px" }}>
+                        {sidebarAbierta ? (
+                            <button
+                                onClick={() => setCatDocumentacion(!catDocumentacion)}
+                                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "transparent", border: "none", color: "#94A3B8", padding: "8px", fontSize: "0.75rem", fontWeight: "bold", cursor: "pointer", textTransform: "uppercase" }}
+                            >
+                                <span>Documentación</span>
+                                {catDocumentacion ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            </button>
+                        ) : <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.1)", margin: "10px 0" }} />}
+
+                        {(catDocumentacion || !sidebarAbierta) && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                <button onClick={() => setVistaActiva("documentos")} style={{ backgroundColor: vistaActiva === "documentos" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><FileText size={18} /> {sidebarAbierta && "Documentos"}</button>
+                                <button onClick={() => setVistaActiva("cronograma")} style={{ backgroundColor: vistaActiva === "cronograma" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Calendar size={18} /> {sidebarAbierta && "Cronograma"}</button>
                             </div>
                         )}
                     </div>
@@ -326,7 +356,10 @@ const Home: React.FC = () => {
                         ) : <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.1)", margin: "10px 0" }} />}
 
                         {(catCampo || !sidebarAbierta) && (
-                            <button onClick={() => { setPuntoEnfocadoMapa(null); setVistaActiva("mapa"); }} style={{ backgroundColor: vistaActiva === "mapa" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Compass size={18} /> {sidebarAbierta && "Mapa 2D"}</button>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                <button onClick={() => { setPuntoEnfocadoMapa(null); setVistaActiva("mapa"); }} style={{ backgroundColor: vistaActiva === "mapa" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Compass size={18} /> {sidebarAbierta && "Mapa 2D"}</button>
+                                <button onClick={() => setVistaActiva("estado-sistema")} style={{ backgroundColor: vistaActiva === "estado-sistema" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Activity size={18} /> {sidebarAbierta && "Estado del Sistema"}</button>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -473,6 +506,10 @@ const Home: React.FC = () => {
                     {vistaActiva === "iper-form" && <IperFormularioWizard />}
                     {vistaActiva === "ats" && <GestionAtsComponent />}
                     {vistaActiva === "mapa" && <MapaGeolocalizacion darkMode={darkMode} puntoEnfocado={puntoEnfocadoMapa} />}
+                    {vistaActiva === "documentos" && <GestionDocumentosComponent />}
+                    {vistaActiva === "cronograma" && <CronogramaComponent />}
+                    {vistaActiva === "mi-perfil" && <MiPerfilComponent />}
+                    {vistaActiva === "estado-sistema" && <EstadoSistemaComponent />}
                 </main>
             </div>
         </div>

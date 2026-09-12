@@ -1,0 +1,225 @@
+.cronograma-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.cronograma-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.cronograma-card h1 {
+    font-size: 1.3rem;
+    color: #064e3b;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ecfdf5;
+    padding-bottom: 10px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.cronograma-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 900px) {
+    .cronograma-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cronograma-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.cronograma-nav h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #064e3b;
+    text-transform: capitalize;
+}
+
+.cronograma-nav button {
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.cronograma-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.cronograma-dia-header {
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    padding: 4px 0;
+    text-transform: uppercase;
+}
+
+.cronograma-dia {
+    min-height: 70px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    background-color: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cronograma-dia.fuera-de-mes {
+    opacity: 0.35;
+}
+
+.cronograma-dia.hoy {
+    border-color: #10b981;
+    box-shadow: 0 0 0 1px #10b981;
+}
+
+.cronograma-dia.seleccionado {
+    background-color: #ecfdf5;
+    border-color: #059669;
+}
+
+.cronograma-dia-numero {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.cronograma-evento-punto {
+    font-size: 0.65rem;
+    padding: 1px 4px;
+    border-radius: 4px;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.evento-tipo-AUDITORIA { background-color: #2563eb; }
+.evento-tipo-CAPACITACION { background-color: #059669; }
+.evento-tipo-REUNION { background-color: #7c3aed; }
+.evento-tipo-MANTENIMIENTO { background-color: #d97706; }
+.evento-tipo-OTRO { background-color: #64748b; }
+
+.cronograma-lista-dia {
+    margin-top: 16px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 12px;
+}
+
+.cronograma-evento-item {
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+}
+
+.cronograma-evento-item strong {
+    color: #0f172a;
+}
+
+.form-input {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    outline: none;
+    background-color: #f8fafc;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    border-color: #10b981;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.form-section label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.btn-primario {
+    background-color: #22c55e;
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    width: 100%;
+}
+
+.btn-primario:hover {
+    background-color: #16a34a;
+}
+
+.recordatorio-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.8rem;
+}
+
+.txt-vacio {
+    text-align: center;
+    font-style: italic;
+    color: #64748b;
+    padding: 12px;
+    font-size: 0.85rem;
+}
+
+.msg-error {
+    color: #dc2626;
+    margin-top: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.msg-exito {
+    color: #16a34a;
+    margin-top: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
