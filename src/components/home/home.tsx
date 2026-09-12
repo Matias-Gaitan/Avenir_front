@@ -75,7 +75,7 @@ const Home: React.FC = () => {
     const [puntoEnfocadoMapa, setPuntoEnfocadoMapa] = useState<{ lat: number; lng: number; titulo?: string; timestamp?: number } | null>(null);
 
     // Estado del Menú Lateral Colapsable
-    const [sidebarAbierta, setSidebarAbierta] = useState<boolean>(true);
+    const [sidebarAbierta, setSidebarAbierta] = useState<boolean>(() => window.innerWidth > 768);
     const [catAdministracion, setCatAdministracion] = useState<boolean>(true);
     const [catSeguridad, setCatSeguridad] = useState<boolean>(true);
     const [catCampo, setCatCampo] = useState<boolean>(true);
@@ -222,6 +222,8 @@ const Home: React.FC = () => {
             {/* 🌟 BARRA LATERAL DESPLEGABLE / CATEGORIZADA */}
             <aside style={{
                 width: sidebarAbierta ? "260px" : "70px",
+                minWidth: sidebarAbierta ? "260px" : "70px",
+                flexShrink: 0,
                 backgroundColor: darkMode ? "#0B132B" : "#064E3B",
                 color: "#FFFFFF",
                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
