@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { LifeBuoy, X, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
+import { LifeBuoy, X, ChevronDown, ChevronUp, ArrowRight, MessageCircle } from "lucide-react";
 import { articulosAyuda } from "./contenidoAyuda";
+import ReportarProblemaModal from "./ReportarProblemaModal";
 
 interface Props {
     moduloActual: string | null;
@@ -10,6 +11,7 @@ interface Props {
 
 const AyudaFlotante: React.FC<Props> = ({ moduloActual, darkMode = false, onVerTodos }) => {
     const [abierto, setAbierto] = useState(false);
+    const [reporteAbierto, setReporteAbierto] = useState(false);
     const [expandido, setExpandido] = useState<Set<number>>(new Set());
 
     // Al cambiar de módulo, arrancamos con el panel colapsado de nuevo
@@ -38,41 +40,69 @@ const AyudaFlotante: React.FC<Props> = ({ moduloActual, darkMode = false, onVerT
         });
     };
 
-    if (!moduloActual) return null;
-
     return (
         <>
+            {/* Botón para reportar errores/sugerencias por WhatsApp: visible en toda pantalla,
+                lo use el cliente o cualquier empleado, para ir perfeccionando el sistema. */}
             <button
                 type="button"
-                onClick={() => setAbierto((v) => !v)}
-                aria-label="Ayuda de este módulo"
-                title="Ayuda de este módulo"
+                onClick={() => setReporteAbierto(true)}
+                aria-label="Reportar un problema o sugerencia"
+                title="Reportar un problema o sugerencia"
                 style={{
                     position: "fixed",
-                    bottom: "24px",
+                    bottom: moduloActual ? "88px" : "24px",
                     right: "24px",
                     zIndex: 900,
-                    width: "52px",
-                    height: "52px",
+                    width: "48px",
+                    height: "48px",
                     borderRadius: "50%",
                     border: "none",
-                    background: "#0F6B45",
+                    background: "#25D366",
                     color: "#FFFFFF",
-                    boxShadow: "0 10px 24px -6px rgba(15,107,69,0.55)",
+                    boxShadow: "0 10px 24px -6px rgba(37,211,102,0.55)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     cursor: "pointer"
                 }}
             >
-                {abierto ? <X size={22} /> : <LifeBuoy size={22} />}
+                <MessageCircle size={20} />
             </button>
 
-            {abierto && (
+            {moduloActual && (
+                <button
+                    type="button"
+                    onClick={() => setAbierto((v) => !v)}
+                    aria-label="Ayuda de este módulo"
+                    title="Ayuda de este módulo"
+                    style={{
+                        position: "fixed",
+                        bottom: "24px",
+                        right: "24px",
+                        zIndex: 900,
+                        width: "52px",
+                        height: "52px",
+                        borderRadius: "50%",
+                        border: "none",
+                        background: "#0F6B45",
+                        color: "#FFFFFF",
+                        boxShadow: "0 10px 24px -6px rgba(15,107,69,0.55)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer"
+                    }}
+                >
+                    {abierto ? <X size={22} /> : <LifeBuoy size={22} />}
+                </button>
+            )}
+
+            {abierto && moduloActual && (
                 <div
                     style={{
                         position: "fixed",
-                        bottom: "88px",
+                        bottom: "148px",
                         right: "24px",
                         zIndex: 900,
                         width: "min(360px, calc(100vw - 48px))",
@@ -129,6 +159,12 @@ const AyudaFlotante: React.FC<Props> = ({ moduloActual, darkMode = false, onVerT
                     </button>
                 </div>
             )}
+
+            <ReportarProblemaModal
+                abierto={reporteAbierto}
+                onCerrar={() => setReporteAbierto(false)}
+                moduloActual={moduloActual}
+            />
         </>
     );
 };
