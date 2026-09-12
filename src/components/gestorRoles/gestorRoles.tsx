@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Key, ShieldCheck, Users, Building2, Clock, ShieldAlert, Settings, FileCheck, Timer, Package, Fuel, FileText, Calendar, ClipboardList } from "lucide-react";
+import { Key, ShieldCheck, Users, Building2, Clock, ShieldAlert, Settings, FileCheck, Timer, Package, Fuel, FileText, Calendar, ClipboardList, Radio } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./gestorRoles.css";
@@ -66,6 +66,7 @@ const GestorRoles: React.FC = () => {
             "DOCUMENTOS": { icono: <FileText size={18} color="#0369A1" />, permisos: [] },
             "CRONOGRAMA": { icono: <Calendar size={18} color="#DB2777" />, permisos: [] },
             "TAREAS": { icono: <ClipboardList size={18} color="#0F766E" />, permisos: [] },
+            "PRESENCIA": { icono: <Radio size={18} color="#0891B2" />, permisos: [] },
             "OTROS": { icono: <Settings size={18} className="icon-spin-hover" />, permisos: [] }
         };
 
@@ -95,6 +96,8 @@ const GestorRoles: React.FC = () => {
                 modulosMap["CRONOGRAMA"].permisos.push(p);
             } else if (nombre.includes("TAREA")) {
                 modulosMap["TAREAS"].permisos.push(p);
+            } else if (nombre.includes("PRESENCIA")) {
+                modulosMap["PRESENCIA"].permisos.push(p);
             } else {
                 modulosMap["OTROS"].permisos.push(p);
             }

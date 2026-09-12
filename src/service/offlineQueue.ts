@@ -50,3 +50,13 @@ export function contarPendientes(): number {
 export function esErrorDeRed(err: any): boolean {
     return !!err?.request && !err?.response;
 }
+
+// El backend guarda las horas con LocalDateTime (hora local del servidor, sin huso
+// horario). Date.toISOString() siempre da UTC, así que mandar eso desfasaría la hora
+// real del fichaje según el huso horario del dispositivo. Esta función arma el mismo
+// formato "YYYY-MM-DDTHH:mm:ss" pero a partir de los componentes LOCALES de la fecha,
+// para que coincida con lo que el servidor espera.
+export function formatearFechaLocalISO(fecha: Date): string {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${fecha.getFullYear()}-${pad(fecha.getMonth() + 1)}-${pad(fecha.getDate())}T${pad(fecha.getHours())}:${pad(fecha.getMinutes())}:${pad(fecha.getSeconds())}`;
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   UserCheck, Shield, Search, Filter, Save, Clock,
-  Users, Key, Building2, ShieldAlert, FileCheck, Timer, Package, Fuel, FileText, Calendar, Settings, ClipboardList
+  Users, Key, Building2, ShieldAlert, FileCheck, Timer, Package, Fuel, FileText, Calendar, Settings, ClipboardList, Radio
 } from 'lucide-react';
 import api from '../../service/api';
 import { tienePermiso } from '../../service/authHelper';
@@ -54,6 +54,7 @@ const agruparPermisosPorModulo = (permisosDisponibles: Permiso[]): ModuloPermiso
     "DOCUMENTOS": { icono: <FileText size={16} color="#0369A1" />, permisos: [] },
     "CRONOGRAMA": { icono: <Calendar size={16} color="#DB2777" />, permisos: [] },
     "TAREAS": { icono: <ClipboardList size={16} color="#0F766E" />, permisos: [] },
+    "PRESENCIA": { icono: <Radio size={16} color="#0891B2" />, permisos: [] },
     "OTROS": { icono: <Settings size={16} />, permisos: [] }
   };
 
@@ -71,6 +72,7 @@ const agruparPermisosPorModulo = (permisosDisponibles: Permiso[]): ModuloPermiso
     else if (nombre.includes("DOCUMENTO")) modulosMap["DOCUMENTOS"].permisos.push(p);
     else if (nombre.includes("EVENTO")) modulosMap["CRONOGRAMA"].permisos.push(p);
     else if (nombre.includes("TAREA")) modulosMap["TAREAS"].permisos.push(p);
+    else if (nombre.includes("PRESENCIA")) modulosMap["PRESENCIA"].permisos.push(p);
     else modulosMap["OTROS"].permisos.push(p);
   });
 

@@ -30,6 +30,7 @@ import {
   ClipboardCheck,
   ListChecks,
   LifeBuoy,
+  Radio,
   Sparkles
 } from "lucide-react";
 import api from "../../service/api";
@@ -51,6 +52,8 @@ import CentroAyudaComponent from "../ayuda/CentroAyudaComponent";
 import BienvenidaModal from "../ayuda/BienvenidaModal";
 import AyudaFlotante from "../ayuda/AyudaFlotante";
 import ConectividadIndicador from "./ConectividadIndicador";
+import PresenciaHeartbeat from "./PresenciaHeartbeat";
+import PanelPresenciaComponent from "../presencia/PanelPresenciaComponent";
 import { vistaAModulo } from "../ayuda/contenidoAyuda";
 import GestionDocumentosComponent from "../documentos/GestionDocumentosComponent";
 import HistorialIperComponent from "../iper/HistorialIperComponent";
@@ -70,7 +73,7 @@ interface RolBD {
 }
 
 const Home: React.FC = () => {
-    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "asistencia" | "iper" | "iper-form" | "iper-historial" | "ats" | "permisos-usuario" | "mapa" | "insumos" | "viaticos" | "tareas" | "documentos" | "cronograma" | "mi-perfil" | "estado-sistema" | "ayuda">("usuarios");
+    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "asistencia" | "iper" | "iper-form" | "iper-historial" | "ats" | "permisos-usuario" | "mapa" | "insumos" | "viaticos" | "tareas" | "documentos" | "cronograma" | "mi-perfil" | "estado-sistema" | "ayuda" | "presencia">("usuarios");
     const [rolesDisponibles, setRolesDisponibles] = useState<RolBD[]>([]);
     const [rolActivoTesting, setRolActivoTesting] = useState<string>("");
 
@@ -387,6 +390,7 @@ const Home: React.FC = () => {
                             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <button onClick={() => { setPuntoEnfocadoMapa(null); setVistaActiva("mapa"); }} style={{ backgroundColor: vistaActiva === "mapa" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Compass size={18} /> {sidebarAbierta && "Mapa 2D"}</button>
                                 <button onClick={() => setVistaActiva("estado-sistema")} style={{ backgroundColor: vistaActiva === "estado-sistema" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Activity size={18} /> {sidebarAbierta && "Estado del Sistema"}</button>
+                                <button onClick={() => setVistaActiva("presencia")} style={{ backgroundColor: vistaActiva === "presencia" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Radio size={18} /> {sidebarAbierta && "Usuarios Conectados"}</button>
                                 <button onClick={() => setVistaActiva("ayuda")} style={{ backgroundColor: vistaActiva === "ayuda" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><LifeBuoy size={18} /> {sidebarAbierta && "Centro de Ayuda"}</button>
                             </div>
                         )}
@@ -553,8 +557,11 @@ const Home: React.FC = () => {
                     {vistaActiva === "cronograma" && <CronogramaComponent />}
                     {vistaActiva === "mi-perfil" && <MiPerfilComponent />}
                     {vistaActiva === "estado-sistema" && <EstadoSistemaComponent />}
+                    {vistaActiva === "presencia" && <PanelPresenciaComponent darkMode={darkMode} />}
                 </main>
             </div>
+
+            <PresenciaHeartbeat />
 
             <BienvenidaModal
                 abierto={mostrarBienvenida}

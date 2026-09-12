@@ -24,7 +24,8 @@ export const vistaAModulo: Record<string, string> = {
     "ats": "ATS",
     "mapa": "Mapa 2D",
     "mi-perfil": "Mi Perfil",
-    "estado-sistema": "Estado del Sistema"
+    "estado-sistema": "Estado del Sistema",
+    "presencia": "Usuarios Conectados"
 };
 
 export const articulosAyuda: ArticuloAyuda[] = [
@@ -311,6 +312,17 @@ export const articulosAyuda: ArticuloAyuda[] = [
         titulo: "Qué muestra esta pantalla",
         pasos: [
             "Es un panel informativo con el estado general del sistema, útil para verificar rápidamente que todo esté funcionando antes de una jornada de trabajo."
+        ]
+    },
+
+    // ───────────────────────── USUARIOS CONECTADOS ─────────────────────────
+    {
+        modulo: "Usuarios Conectados",
+        titulo: "Para qué sirve y qué límite real tiene",
+        pasos: [
+            "Muestra quién tiene la app abierta ahora mismo (celular o PC), avisando cada tanto \"sigo acá\" en segundo plano.",
+            "Cuando alguien deja de avisar por más de 40 segundos, se lo marca como desconectado y aparece un aviso arriba.",
+            "Importante: mientras un dispositivo esté realmente sin señal, no hay forma de saber en vivo qué está haciendo. Esto solo puede notar la AUSENCIA de aviso, no ver a alguien offline en tiempo real; recién se actualiza cuando ese dispositivo recupera conexión."
         ]
     }
 ];

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { LogIn, LogOut, Clock, Calendar, Timer, Building2, WifiOff, RefreshCw } from "lucide-react";
+import { LogIn, LogOut, Clock, Calendar, Timer, Building2, WifiOff, RefreshCw, CloudOff } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./asistencia.css";
 import type { RegistroAsistencia } from "../../interfaces/RegistroAsistencia";
 import type { Empresa } from "../../interfaces/Empresa";
-import { encolarFichaje, obtenerPendientes, quitarPendiente, esErrorDeRed } from "../../service/offlineQueue";
+import { encolarFichaje, obtenerPendientes, quitarPendiente, esErrorDeRed, formatearFechaLocalISO } from "../../service/offlineQueue";
 
 const obtenerHeaders = () => {
     const token = localStorage.getItem("token");
@@ -38,6 +38,18 @@ const calcularDuracion = (ingreso: string, egreso: string | null) => {
     const horas = Math.floor(ms / 3600000);
     const minutos = Math.floor((ms % 3600000) / 60000);
     return `${horas}h ${minutos}m`;
+};
+
+// US: cuanto tardo en subirse un fichaje hecho sin señal, para que quede trazable
+// que la hora registrada es la real del dispositivo y no la de la sincronización.
+const calcularDemoraSync = (horaReal: string, fechaSync: string | null | undefined) => {
+    if (!fechaSync) return null;
+    const ms = new Date(fechaSync).getTime() - new Date(horaReal).getTime();
+    if (ms < 60000) return "menos de 1 min";
+    const minutos = Math.round(ms / 60000);
+    if (minutos < 60) return `${minutos} min`;
+    const horas = Math.floor(minutos / 60);
+    return `${horas}h ${minutos % 60}m`;
 };
 
 const RegistroAsistenciaComponent: React.FC = () => {
@@ -166,7 +178,10 @@ const RegistroAsistenciaComponent: React.FC = () => {
             if (tienePermiso("VER_ASISTENCIA")) buscarRegistrosDia(fechaFiltro);
         } catch (err: any) {
             if (esErrorDeRed(err)) {
-                encolarFichaje("ingreso", payload);
+                // La hora real del fichaje es AHORA (el momento del click), no la hora en la
+                // que esto termine sincronizando; se la mandamos al backend para que no
+                // registre la hora de sincronización como si fuera la hora del fichaje.
+                encolarFichaje("ingreso", { ...payload, horaRealDispositivo: formatearFechaLocalISO(new Date()) });
                 setPendientes(obtenerPendientes().length);
                 setEnLinea(false);
                 setRegistroAbierto({
@@ -204,7 +219,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
             if (tienePermiso("VER_ASISTENCIA")) buscarRegistrosDia(fechaFiltro);
         } catch (err: any) {
             if (esErrorDeRed(err)) {
-                encolarFichaje("egreso", payload);
+                encolarFichaje("egreso", { ...payload, horaRealDispositivo: formatearFechaLocalISO(new Date()) });
                 setPendientes(obtenerPendientes().length);
                 setEnLinea(false);
                 setIdEmpresaVisita("");
@@ -314,12 +329,13 @@ const RegistroAsistenciaComponent: React.FC = () => {
                         <table className="tabla-horarios">
                             <thead>
                                 <tr>
-                                    <th style={{ width: "22%" }}>Empleado</th>
-                                    <th style={{ width: "18%" }}>Empresa Visitada</th>
-                                    <th style={{ width: "13%", textAlign: "center" }}>Ingreso</th>
-                                    <th style={{ width: "13%", textAlign: "center" }}>Egreso</th>
-                                    <th style={{ width: "12%", textAlign: "center" }}>Duración</th>
-                                    <th style={{ width: "12%", textAlign: "center" }}>Estado</th>
+                                    <th style={{ width: "20%" }}>Empleado</th>
+                                    <th style={{ width: "16%" }}>Empresa Visitada</th>
+                                    <th style={{ width: "12%", textAlign: "center" }}>Ingreso</th>
+                                    <th style={{ width: "12%", textAlign: "center" }}>Egreso</th>
+                                    <th style={{ width: "11%", textAlign: "center" }}>Duración</th>
+                                    <th style={{ width: "11%", textAlign: "center" }}>Estado</th>
+                                    <th style={{ width: "18%", textAlign: "center" }}>Origen</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -336,11 +352,20 @@ const RegistroAsistenciaComponent: React.FC = () => {
                                                     {reg.horaEgreso ? "Completo" : "En curso"}
                                                 </span>
                                             </td>
+                                            <td style={{ textAlign: "center" }}>
+                                                {reg.generadoOffline ? (
+                                                    <span title={`Se sincronizó ${calcularDemoraSync(reg.horaIngreso, reg.fechaSincronizacion) || ""} después de pasar en el dispositivo`} style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", color: "#B45309", fontWeight: 700 }}>
+                                                        <CloudOff size={12} /> Offline{calcularDemoraSync(reg.horaIngreso, reg.fechaSincronizacion) && ` (+${calcularDemoraSync(reg.horaIngreso, reg.fechaSincronizacion)})`}
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ fontSize: "0.75rem", color: "#94A3B8" }}>En línea</span>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={6} className="txt-vacio">No hay fichajes registrados para esta fecha.</td>
+                                        <td colSpan={7} className="txt-vacio">No hay fichajes registrados para esta fecha.</td>
                                     </tr>
                                 )}
                             </tbody>

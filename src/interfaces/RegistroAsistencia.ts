@@ -10,4 +10,6 @@ export interface RegistroAsistencia {
     latitudEgreso?: number | null;
     longitudEgreso?: number | null;
     observaciones?: string;
+    generadoOffline?: boolean;
+    fechaSincronizacion?: string | null;
 }
