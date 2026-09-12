@@ -27,7 +27,8 @@ import {
   Calendar,
   UserCircle2,
   Activity,
-  ClipboardCheck
+  ClipboardCheck,
+  ListChecks
 } from "lucide-react";
 import api from "../../service/api";
 import logoAvenir from "../../assets/avenir-logo.png";
@@ -43,6 +44,7 @@ import GestorPermisosUsuarios from "../gestorUsuarios/GestorPermisosUsuarios";
 import { MapaGeolocalizacion } from "../mapa/MapaGeolocalizacion";
 import GestionInsumosComponent from "../insumos/GestionInsumosComponent";
 import ViaticosComponent from "../insumos/ViaticosComponent";
+import AsignacionTareasComponent from "../tareas/AsignacionTareasComponent";
 import GestionDocumentosComponent from "../documentos/GestionDocumentosComponent";
 import HistorialIperComponent from "../iper/HistorialIperComponent";
 import CronogramaComponent from "../cronograma/CronogramaComponent";
@@ -303,6 +305,7 @@ const Home: React.FC = () => {
                             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <button onClick={() => setVistaActiva("insumos")} style={{ backgroundColor: vistaActiva === "insumos" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Package size={18} /> {sidebarAbierta && "Insumos"}</button>
                                 <button onClick={() => setVistaActiva("viaticos")} style={{ backgroundColor: vistaActiva === "viaticos" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Fuel size={18} /> {sidebarAbierta && "Viáticos (Pago x KM)"}</button>
+                                <button onClick={() => setVistaActiva("tareas")} style={{ backgroundColor: vistaActiva === "tareas" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><ListChecks size={18} /> {sidebarAbierta && "Asignación de Tareas"}</button>
                             </div>
                         )}
                     </div>
@@ -508,6 +511,7 @@ const Home: React.FC = () => {
                     {vistaActiva === "asistencia" && <RegistroAsistenciaComponent />}
                     {vistaActiva === "insumos" && <GestionInsumosComponent />}
                     {vistaActiva === "viaticos" && <ViaticosComponent />}
+                    {vistaActiva === "tareas" && <AsignacionTareasComponent />}
                     {vistaActiva === "iper" && <AdminCatalogosPage darkMode={darkMode} />}
                     {vistaActiva === "iper-form" && <IperFormularioWizard />}
                     {vistaActiva === "iper-historial" && <HistorialIperComponent />}
