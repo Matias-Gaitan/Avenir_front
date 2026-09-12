@@ -14,7 +14,10 @@ const Fondo3D: React.FC = () => {
         const contenedor = containerRef.current;
         if (!contenedor) return;
 
-        const world = Globe()(contenedor)
+        // El .d.ts de globe.gl declara el export como si necesitara "new", pero la API
+        // real de la librería es esta forma de fábrica (Globe()(dom)); se castea a any
+        // solo para esquivar ese desajuste de tipos sin cambiar el comportamiento real.
+        const world = (Globe as any)()(contenedor)
             .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-night.jpg")
             .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
             .backgroundColor("rgba(0,0,0,0)")

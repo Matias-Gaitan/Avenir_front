@@ -7,13 +7,13 @@ import {
   Building2
 } from "lucide-react";
 import api from "../../service/api";
-import { guardarAts, type PasoAts, type AtsDTO } from "../../service/atsService";
+import { guardarAts, type PasoAts, type AtsDTO } from "../../service/AtsService";
 import {
   getTiposRiesgoActivos,
   getCategoriasRiesgoActivas,
   getCausasRiesgoActivas,
   getProbabilidadesActivas
-} from "../../service/iperService";
+} from "../../service/IperService";
 
 interface ItemCat {
   id?: number;

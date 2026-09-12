@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, X, Hash, Type } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
 interface Props {
   contrasena: string;
@@ -41,7 +41,6 @@ export const PasswordMatrix: React.FC<Props> = ({ contrasena }) => {
         {contrasena.split("").map((char, index) => {
           const esNumero = /\d/.test(char);
           const esMayus = /[A-Z]/.test(char);
-          const esMinus = /[a-z]/.test(char);
 
           // 💡 Regla de validez del carácter:
           // Es válido si es número, mayúscula, o si ya se alcanzaron los 6 caracteres.

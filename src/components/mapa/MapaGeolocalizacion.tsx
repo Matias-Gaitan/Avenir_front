@@ -9,7 +9,6 @@ import {
   RefreshCw,
   Compass,
   Search,
-  Map as MapIcon,
   ChevronRight,
   ChevronLeft,
   Navigation,
@@ -621,7 +620,7 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
               return (
                 <Marker
                   key={key}
-                  ref={(ref) => (markerRefs.current[key] = ref)}
+                  ref={(ref) => { markerRefs.current[key] = ref; }}
                   position={[item.latitud, item.longitud]}
                   icon={item.tipo === "EMPRESA" ? iconoEmpresa : iconoEmpleado}
                   eventHandlers={{

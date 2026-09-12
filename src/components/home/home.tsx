@@ -50,6 +50,7 @@ import AsignacionTareasComponent from "../tareas/AsignacionTareasComponent";
 import CentroAyudaComponent from "../ayuda/CentroAyudaComponent";
 import BienvenidaModal from "../ayuda/BienvenidaModal";
 import AyudaFlotante from "../ayuda/AyudaFlotante";
+import ConectividadIndicador from "./ConectividadIndicador";
 import { vistaAModulo } from "../ayuda/contenidoAyuda";
 import GestionDocumentosComponent from "../documentos/GestionDocumentosComponent";
 import HistorialIperComponent from "../iper/HistorialIperComponent";
@@ -69,7 +70,7 @@ interface RolBD {
 }
 
 const Home: React.FC = () => {
-    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "asistencia" | "iper" | "iper-form" | "iper-historial" | "ats" | "permisos-usuario" | "mapa" | "insumos" | "viaticos" | "documentos" | "cronograma" | "mi-perfil" | "estado-sistema">("usuarios");
+    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "asistencia" | "iper" | "iper-form" | "iper-historial" | "ats" | "permisos-usuario" | "mapa" | "insumos" | "viaticos" | "tareas" | "documentos" | "cronograma" | "mi-perfil" | "estado-sistema" | "ayuda">("usuarios");
     const [rolesDisponibles, setRolesDisponibles] = useState<RolBD[]>([]);
     const [rolActivoTesting, setRolActivoTesting] = useState<string>("");
 
@@ -483,6 +484,8 @@ const Home: React.FC = () => {
                             </div>
                         </div>
 
+                        <ConectividadIndicador />
+
                         {esAdminReal && (
                             <div className="simulador-card" style={{
                                 backgroundColor: darkMode ? "#1F2937" : "#065F46",
@@ -555,13 +558,11 @@ const Home: React.FC = () => {
                 darkMode={darkMode}
             />
 
-            {vistaActiva !== "ayuda" && (
-                <AyudaFlotante
-                    moduloActual={vistaAModulo[vistaActiva] || null}
-                    darkMode={darkMode}
-                    onVerTodos={() => setVistaActiva("ayuda")}
-                />
-            )}
+            <AyudaFlotante
+                moduloActual={vistaActiva !== "ayuda" ? (vistaAModulo[vistaActiva] || null) : null}
+                darkMode={darkMode}
+                onVerTodos={() => setVistaActiva("ayuda")}
+            />
         </div>
     );
 };

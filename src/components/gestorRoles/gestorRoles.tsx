@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Key, ShieldCheck, Users, Building2, Clock, ShieldAlert, Settings, FileCheck, CheckSquare, Square, Trash2, Edit2, Timer, Package, Fuel, FileText, Calendar, ClipboardList } from "lucide-react";
+import { Key, ShieldCheck, Users, Building2, Clock, ShieldAlert, Settings, FileCheck, Timer, Package, Fuel, FileText, Calendar, ClipboardList } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./gestorRoles.css";

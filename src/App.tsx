@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Importaciones del Sprint 1
-import LoginComponent from "./components/login/Login";
+import LoginComponent from "./components/login/login";
 import Register from "./components/registrer/registrer";
 import Home from "./components/home/home";
 

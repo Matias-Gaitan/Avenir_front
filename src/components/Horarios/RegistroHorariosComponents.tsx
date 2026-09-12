@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Clock, Calendar, CheckCircle2, XCircle, AlertCircle, Check, X, Zap } from "lucide-react";
+import { Clock, Calendar, CheckCircle2, XCircle, Check, X, Zap } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./horarios.css";

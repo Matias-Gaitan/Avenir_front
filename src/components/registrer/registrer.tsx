@@ -3,7 +3,6 @@ import api from "../../service/api";
 import { useNavigate } from "react-router-dom";
 import { UserPlus, LogIn, Eye, EyeOff } from "lucide-react";
 import "./registrer.css";
-import type { Usuario } from "../../interfaces/Usuario";
 import { PasswordMatrix } from "../PasswordMatrix";
 import Fondo3D from "../common/Fondo3D";
 import logoAvenir from "../../assets/avenir-logo.png";
@@ -40,7 +39,7 @@ const Register: React.FC = () => {
             return;
         }
 
-        const nuevoUsuario: Usuario = {
+        const nuevoUsuario = {
             nombre,
             apellido,
             email,

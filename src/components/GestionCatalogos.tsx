@@ -3,7 +3,6 @@ import {
   ShieldAlert,
   Plus,
   Edit3,
-  Trash2,
   X,
   CheckCircle2,
   Gauge
@@ -14,7 +13,7 @@ import {
   getCausasRiesgoActivas,
   getEstadosActivos,
   getProbabilidadesActivas
-} from '../service/iperService';
+} from '../service/IperService';
 import api from '../service/api';
 
 interface ItemCat {

@@ -1,0 +1,22 @@
+import axios from "axios";
+
+
+export const API_BASE_URL = "http://192.168.1.3:8082/api";
+
+const api = axios.create({
+    baseURL: API_BASE_URL,
+});
+
+// Interceptor: Agrega el Bearer Token automáticamente
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem("token");
+        if (token && token !== "undefined" && token !== "null") {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+export default api;
