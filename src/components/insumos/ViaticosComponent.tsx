@@ -28,7 +28,10 @@ const ViaticosComponent: React.FC = () => {
 
     const email = localStorage.getItem("email") || "";
     const puedeAprobar = tienePermiso("APROBAR_VIATICOS");
-    const puedeEditar = tienePermiso("REGISTRAR_VIATICOS");
+    // La carga y edición manual de kilómetros queda reservada a quien aprueba viáticos:
+    // el flujo normal de un empleado genera el viático solo, por geolocalización al
+    // marcar ingreso a una empresa, para evitar que cargue kilómetros falsos.
+    const puedeEditar = puedeAprobar;
     const puedeAdministrarTarifas = tienePermiso("EDITAR_USUARIOS");
 
     const [idEditando, setIdEditando] = useState<number | null>(null);
@@ -193,9 +196,19 @@ const ViaticosComponent: React.FC = () => {
                 </div>
             )}
 
+            {!puedeAprobar && (
+                <div className="insumos-card">
+                    <p style={{ display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
+                        <Zap size={16} color="#059669" />
+                        Tus kilómetros recorridos se calculan automáticamente por geolocalización al marcar el ingreso a una empresa. Quedan pendientes hasta que un administrador los valide.
+                    </p>
+                </div>
+            )}
+
+            {puedeAprobar && (
             <div className="insumos-card">
                 <h1 style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
-                    <Fuel size={24} color="#059669" /> {idEditando ? "EDITAR VIÁTICO" : "REGISTRAR KILÓMETROS RECORRIDOS"}
+                    <Fuel size={24} color="#059669" /> {idEditando ? "EDITAR VIÁTICO" : "REGISTRAR KILÓMETROS (CARGA MANUAL)"}
                 </h1>
 
                 <form onSubmit={handleGuardar} className="insumos-form-grid">
@@ -233,6 +246,7 @@ const ViaticosComponent: React.FC = () => {
                 {error && <p className="msg-error">{error}</p>}
                 {mensaje && <p className="msg-exito">{mensaje}</p>}
             </div>
+            )}
 
             <div className="insumos-card">
                 <h1 style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
