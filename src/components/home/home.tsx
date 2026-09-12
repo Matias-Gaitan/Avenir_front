@@ -49,6 +49,8 @@ import ViaticosComponent from "../insumos/ViaticosComponent";
 import AsignacionTareasComponent from "../tareas/AsignacionTareasComponent";
 import CentroAyudaComponent from "../ayuda/CentroAyudaComponent";
 import BienvenidaModal from "../ayuda/BienvenidaModal";
+import AyudaFlotante from "../ayuda/AyudaFlotante";
+import { vistaAModulo } from "../ayuda/contenidoAyuda";
 import GestionDocumentosComponent from "../documentos/GestionDocumentosComponent";
 import HistorialIperComponent from "../iper/HistorialIperComponent";
 import CronogramaComponent from "../cronograma/CronogramaComponent";
@@ -552,6 +554,14 @@ const Home: React.FC = () => {
                 onCerrar={() => setMostrarBienvenida(false)}
                 darkMode={darkMode}
             />
+
+            {vistaActiva !== "ayuda" && (
+                <AyudaFlotante
+                    moduloActual={vistaAModulo[vistaActiva] || null}
+                    darkMode={darkMode}
+                    onVerTodos={() => setVistaActiva("ayuda")}
+                />
+            )}
         </div>
     );
 };
