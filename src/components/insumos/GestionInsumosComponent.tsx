@@ -234,12 +234,12 @@ const GestionInsumosComponent: React.FC = () => {
                 {mostrarCategorias && (puedeCrear || puedeEliminar) && (
                     <div className="insumos-form-grid" style={{ borderBottom: "1px solid #e2e8f0", paddingBottom: "18px", marginBottom: "12px" }}>
                         {puedeCrear && (
-                            <form onSubmit={handleAgregarCategoria} style={{ display: "flex", gap: "8px", alignItems: "flex-end", gridColumn: "1 / -1" }}>
-                                <div className="form-section" style={{ flex: 1 }}>
-                                    <label>Nueva categoría</label>
-                                    <input className="form-input" value={nuevaCategoria} onChange={(e) => setNuevaCategoria(e.target.value)} placeholder="Ej. VESTIMENTA" />
+                            <form onSubmit={handleAgregarCategoria} style={{ gridColumn: "1 / -1" }}>
+                                <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>Nueva categoría</label>
+                                <div style={{ display: "flex", gap: "8px" }}>
+                                    <input className="form-input" style={{ flex: 1 }} value={nuevaCategoria} onChange={(e) => setNuevaCategoria(e.target.value)} placeholder="Ej. VESTIMENTA" />
+                                    <button type="submit" className="btn-doc-accion subir" style={{ flexShrink: 0, padding: "0 16px" }}><Tags size={12} /> Agregar</button>
                                 </div>
-                                <button type="submit" className="btn-primario">Agregar</button>
                             </form>
                         )}
                         <div style={{ gridColumn: "1 / -1", display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "10px" }}>

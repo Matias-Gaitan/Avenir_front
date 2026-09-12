@@ -234,14 +234,14 @@ const AsignacionTareasComponent: React.FC<Props> = ({ darkMode = false }) => {
                     <form onSubmit={handleAsignar} className="insumos-form-grid">
                         <div className="form-section">
                             <label>Empleado</label>
-                            <select className="form-input" value={idUsuario} onChange={(e) => setIdUsuario(e.target.value as unknown as number)} required>
+                            <select className="form-input" value={idUsuario} onChange={(e) => setIdUsuario(Number(e.target.value))} required>
                                 <option value="" disabled>Seleccione un empleado</option>
                                 {usuarios.map((u) => <option key={u.idUsuario} value={u.idUsuario}>{u.nombre} {u.apellido}</option>)}
                             </select>
                         </div>
                         <div className="form-section">
                             <label>Empresa</label>
-                            <select className="form-input" value={idEmpresa} onChange={(e) => setIdEmpresa(e.target.value as unknown as number)} required>
+                            <select className="form-input" value={idEmpresa} onChange={(e) => setIdEmpresa(Number(e.target.value))} required>
                                 <option value="" disabled>Seleccione una empresa</option>
                                 {empresas.map((emp) => <option key={emp.idEmpresa} value={emp.idEmpresa}>{emp.nombre}</option>)}
                             </select>
@@ -254,7 +254,7 @@ const AsignacionTareasComponent: React.FC<Props> = ({ darkMode = false }) => {
                             <label>Descripción de la tarea</label>
                             <input className="form-input" value={descripcionTarea} onChange={(e) => setDescripcionTarea(e.target.value)} placeholder="Ej. Inspección LOTO de Tablero" required />
                         </div>
-                        <div className="form-section">
+                        <div className="form-section" style={{ gridColumn: "span 2" }}>
                             <label><MapPin size={12} style={{ verticalAlign: "middle" }} /> Dirección (autocompletada)</label>
                             <input className="form-input" value={direccionExacta} onChange={(e) => setDireccionExacta(e.target.value)} placeholder="Se completa al elegir la empresa" />
                         </div>
