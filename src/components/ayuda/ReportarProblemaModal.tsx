@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { X, Bug, Lightbulb, HelpCircle, MessageCircle } from "lucide-react";
 
-// ⚠️ Reemplazar por el número real de WhatsApp de soporte de Avenir antes de publicar
-// (formato internacional sin "+" ni espacios, ej. 5493511234567).
-const NUMERO_WHATSAPP_SOPORTE = "5493510000000";
+// Número de soporte de Avenir: 3541-204059 (Argentina), en formato internacional para WhatsApp.
+const NUMERO_WHATSAPP_SOPORTE = "5493541204059";
 
 interface Props {
     abierto: boolean;

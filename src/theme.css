@@ -7,6 +7,43 @@
     --border-color: #E2E8F0;
 }
 
+/* 📱 Evita el scroll horizontal de toda la pagina en pantallas chicas (celular).
+   Las tablas/anchos grandes ya tienen su propio overflow-x:auto en su contenedor,
+   asi que esto no les saca el scroll a ellas, solo al body entero. */
+html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+/* Los "|" separadores del header de usuario no aportan nada en una linea angosta
+   de celular; se ocultan ahi y el wrap ya alcanza para leer todo igual. */
+@media (max-width: 480px) {
+    .header-separador {
+        display: none;
+    }
+}
+
+/* 📱 RED DE SEGURIDAD RESPONSIVE: muchas tarjetas/formularios del sistema fueron
+   armados pensando solo en escritorio, con anchos minimos fijos en su propio CSS
+   que en celular empujan el contenido fuera de pantalla. En vez de tocar cada
+   estilo suelto de cada modulo, se fuerza que dentro del contenido principal nada
+   pueda ser mas ancho que la pantalla disponible. Las tablas anchas siguen
+   scrolleando bien porque ya tienen su propio overflow-x:auto en su wrapper. */
+@media (max-width: 768px) {
+    main {
+        min-width: 0;
+    }
+    main * {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    main input,
+    main select,
+    main textarea {
+        min-width: 0;
+    }
+}
+
 /* 🌙 MODO OSCURO GLOBAL ABSOLUTO (Pisa cualquier CSS de componentes) */
 body.dark-mode {
     background-color: #0D1117 !important;

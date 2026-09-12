@@ -430,7 +430,7 @@ const Home: React.FC = () => {
             </aside>
 
             {/* CONTENEDOR PRINCIPAL */}
-            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
 
                 {/* NAV INFORMATIVO SUPERIOR */}
                 <nav style={{
@@ -467,18 +467,18 @@ const Home: React.FC = () => {
                             borderRadius: "6px",
                             border: darkMode ? "1px solid #38BDF8" : "1px solid #14B8A6"
                         }}>
-                            <div style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "0.8rem" }}>
+                            <div style={{ display: "flex", flexWrap: "wrap", rowGap: "2px", gap: "8px", alignItems: "center", fontSize: "0.8rem", maxWidth: "min(70vw, 480px)" }}>
                                 <span style={{ color: darkMode ? "#38BDF8" : "#A7F3D0", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>
                                     <User size={13} /> {usuarioData.nombre} {usuarioData.apellido}
                                 </span>
-                                <span style={{ color: "#6EE7B7" }}>|</span>
-                                <span style={{ color: darkMode ? "#E2E8F0" : "#A7F3D0", display: "flex", alignItems: "center", gap: "4px" }}>
+                                <span style={{ color: "#6EE7B7" }} className="header-separador">|</span>
+                                <span style={{ color: darkMode ? "#E2E8F0" : "#A7F3D0", display: "flex", alignItems: "center", gap: "4px", wordBreak: "break-all" }}>
                                     <Mail size={13} /> {usuarioData.email}
                                 </span>
-                                <span style={{ color: "#6EE7B7" }}>|</span>
+                                <span style={{ color: "#6EE7B7" }} className="header-separador">|</span>
                                 <span style={{ color: "#FDE047", fontWeight: "bold" }}>Rol: {usuarioData.rol}</span>
                             </div>
-                            <div style={{ display: "flex", gap: "12px", alignItems: "center", fontSize: "0.75rem", color: "#E2E8F0" }}>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center", fontSize: "0.75rem", color: "#E2E8F0" }}>
                                 <span>Ingreso: <strong>{horaInicioSesion}</strong></span>
                                 <span>Actual: <strong>{horaActual}</strong></span>
                             </div>
@@ -494,6 +494,9 @@ const Home: React.FC = () => {
                                 display: "flex",
                                 alignItems: "center",
                                 gap: "6px",
+                                flexWrap: "wrap",
+                                minWidth: 0,
+                                maxWidth: "100%",
                                 border: darkMode ? "1px solid #10B981" : "1px dashed #34D399"
                             }}>
                                 <span style={{ color: darkMode ? "#10B981" : "#99F6E4", fontSize: "0.75rem", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}>
@@ -511,7 +514,8 @@ const Home: React.FC = () => {
                                         cursor: "pointer",
                                         fontWeight: "bold",
                                         fontSize: "0.75rem",
-                                        outline: "none"
+                                        outline: "none",
+                                        maxWidth: "min(220px, 60vw)"
                                     }}
                                 >
                                     <option value="ADMINISTRADOR">ADMINISTRADOR (Todo Habilitado)</option>
@@ -529,7 +533,7 @@ const Home: React.FC = () => {
                 </nav>
 
                 {/* RENDIMIENTO DE LAS VISTAS */}
-                <main style={{ padding: "20px", flex: 1 }}>
+                <main style={{ padding: "20px", paddingBottom: "110px", flex: 1, minWidth: 0 }}>
                     {vistaActiva === "usuarios" && <GestorUsuarios onIrAlMapa={handleIrAlMapaConZoom} />}
                     {vistaActiva === "permisos-usuario" && <GestorPermisosUsuarios darkMode={darkMode} />}
                     {vistaActiva === "roles" && <GestorRoles />}
