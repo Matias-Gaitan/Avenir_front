@@ -28,7 +28,9 @@ import {
   UserCircle2,
   Activity,
   ClipboardCheck,
-  ListChecks
+  ListChecks,
+  LifeBuoy,
+  Sparkles
 } from "lucide-react";
 import api from "../../service/api";
 import logoAvenir from "../../assets/avenir-logo.png";
@@ -45,6 +47,8 @@ import { MapaGeolocalizacion } from "../mapa/MapaGeolocalizacion";
 import GestionInsumosComponent from "../insumos/GestionInsumosComponent";
 import ViaticosComponent from "../insumos/ViaticosComponent";
 import AsignacionTareasComponent from "../tareas/AsignacionTareasComponent";
+import CentroAyudaComponent from "../ayuda/CentroAyudaComponent";
+import BienvenidaModal from "../ayuda/BienvenidaModal";
 import GestionDocumentosComponent from "../documentos/GestionDocumentosComponent";
 import HistorialIperComponent from "../iper/HistorialIperComponent";
 import CronogramaComponent from "../cronograma/CronogramaComponent";
@@ -101,6 +105,18 @@ const Home: React.FC = () => {
     const toggleDarkMode = () => {
         setDarkMode((prev) => !prev);
     };
+
+    const [mostrarBienvenida, setMostrarBienvenida] = useState(false);
+
+    useEffect(() => {
+        const email = localStorage.getItem("email");
+        if (!email) return;
+        const clave = `bienvenida_vista_${email}`;
+        if (!localStorage.getItem(clave)) {
+            setMostrarBienvenida(true);
+            localStorage.setItem(clave, "true");
+        }
+    }, []);
 
     const cargarListaRoles = async () => {
         try {
@@ -368,6 +384,7 @@ const Home: React.FC = () => {
                             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <button onClick={() => { setPuntoEnfocadoMapa(null); setVistaActiva("mapa"); }} style={{ backgroundColor: vistaActiva === "mapa" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Compass size={18} /> {sidebarAbierta && "Mapa 2D"}</button>
                                 <button onClick={() => setVistaActiva("estado-sistema")} style={{ backgroundColor: vistaActiva === "estado-sistema" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Activity size={18} /> {sidebarAbierta && "Estado del Sistema"}</button>
+                                <button onClick={() => setVistaActiva("ayuda")} style={{ backgroundColor: vistaActiva === "ayuda" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><LifeBuoy size={18} /> {sidebarAbierta && "Centro de Ayuda"}</button>
                             </div>
                         )}
                     </div>
@@ -375,6 +392,11 @@ const Home: React.FC = () => {
 
                 {/* Footer del Menú */}
                 <div style={{ padding: "12px", borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <button type="button" className="theme-toggle-btn btn-interactive" onClick={() => setMostrarBienvenida(true)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px", fontSize: "0.8rem", width: "100%", justifyContent: sidebarAbierta ? "flex-start" : "center" }}>
+                        <Sparkles size={16} />
+                        {sidebarAbierta && "¿Cómo funciona?"}
+                    </button>
+
                     <button type="button" className="theme-toggle-btn btn-interactive" onClick={toggleDarkMode} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px", fontSize: "0.8rem", width: "100%", justifyContent: sidebarAbierta ? "flex-start" : "center" }}>
                         {darkMode ? <Moon size={16} /> : <Sun size={16} />}
                         {sidebarAbierta && (darkMode ? "Oscuro" : "Claro")}
@@ -512,6 +534,7 @@ const Home: React.FC = () => {
                     {vistaActiva === "insumos" && <GestionInsumosComponent />}
                     {vistaActiva === "viaticos" && <ViaticosComponent />}
                     {vistaActiva === "tareas" && <AsignacionTareasComponent darkMode={darkMode} />}
+                    {vistaActiva === "ayuda" && <CentroAyudaComponent darkMode={darkMode} />}
                     {vistaActiva === "iper" && <AdminCatalogosPage darkMode={darkMode} />}
                     {vistaActiva === "iper-form" && <IperFormularioWizard />}
                     {vistaActiva === "iper-historial" && <HistorialIperComponent />}
@@ -523,6 +546,12 @@ const Home: React.FC = () => {
                     {vistaActiva === "estado-sistema" && <EstadoSistemaComponent />}
                 </main>
             </div>
+
+            <BienvenidaModal
+                abierto={mostrarBienvenida}
+                onCerrar={() => setMostrarBienvenida(false)}
+                darkMode={darkMode}
+            />
         </div>
     );
 };

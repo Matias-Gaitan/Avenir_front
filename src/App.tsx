@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Importaciones del Sprint 1
 import LoginComponent from "./components/login/Login";
@@ -19,12 +19,15 @@ import { GestionAtsComponent } from "./components/ats/GestionAtsComponent";
 // 🌟 Importación Gestor de Permisos Unitarios de Usuario
 import GestorPermisosUsuarios from "./components/gestorUsuarios/GestorPermisosUsuarios";
 
+// 🌟 Landing page pública del cliente (Avenir - Consultora de H&S)
+import LandingPageComponent from "./components/landing/LandingPageComponent";
+
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        {/* Redirige la raíz "/" hacia "/login" */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* Landing page pública de presentación de la consultora */}
+        <Route path="/" element={<LandingPageComponent />} />
 
         {/* Pantallas principales - Sprint 1 */}
         <Route path="/login" element={<LoginComponent />} />
