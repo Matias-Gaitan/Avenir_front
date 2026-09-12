@@ -50,7 +50,23 @@ const LoginComponent: React.FC = () => {
                     permisos: response.data.permisos || []
                 }));
 
-                window.location.href = "/home";
+                // 📍 Punto de ingreso al sistema: sirve como origen para calcular
+                // automáticamente los km de viáticos cuando el empleado marca su
+                // ingreso a una empresa (ver módulo Ingreso y Egreso).
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            localStorage.setItem("loginLat", String(pos.coords.latitude));
+                            localStorage.setItem("loginLng", String(pos.coords.longitude));
+                            window.location.href = "/home";
+                        },
+                        () => { window.location.href = "/home"; },
+                        { timeout: 4000 }
+                    );
+                } else {
+                    window.location.href = "/home";
+                }
+                return;
             } else {
                 setError("Credenciales inválidas o cuenta no aprobada.");
             }

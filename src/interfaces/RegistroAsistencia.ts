@@ -1,6 +1,7 @@
 export interface RegistroAsistencia {
     idAsistencia?: number;
     usuario: { idUsuario: number; nombre: string; apellido: string; email: string };
+    empresa?: { idEmpresa: number; nombre: string } | null;
     fecha: string;
     horaIngreso: string;
     horaEgreso: string | null;

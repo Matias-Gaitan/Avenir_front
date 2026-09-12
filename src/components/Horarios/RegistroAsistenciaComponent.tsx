@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { LogIn, LogOut, Clock, Calendar, Timer } from "lucide-react";
+import { LogIn, LogOut, Clock, Calendar, Timer, Building2 } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./asistencia.css";
 import type { RegistroAsistencia } from "../../interfaces/RegistroAsistencia";
+import type { Empresa } from "../../interfaces/Empresa";
 
 const obtenerHeaders = () => {
     const token = localStorage.getItem("token");
@@ -45,6 +46,9 @@ const RegistroAsistenciaComponent: React.FC = () => {
     const [error, setError] = useState("");
     const [mensaje, setMensaje] = useState("");
 
+    const [empresas, setEmpresas] = useState<Empresa[]>([]);
+    const [idEmpresaVisita, setIdEmpresaVisita] = useState<number | "">("");
+
     const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split("T")[0]);
     const [registrosDia, setRegistrosDia] = useState<RegistroAsistencia[]>([]);
 
@@ -54,6 +58,15 @@ const RegistroAsistenciaComponent: React.FC = () => {
         const intervalo = setInterval(() => setHoraActual(new Date()), 1000);
         return () => clearInterval(intervalo);
     }, []);
+
+    const cargarEmpresas = async () => {
+        try {
+            const res = await api.get("/empresas", obtenerHeaders());
+            setEmpresas(Array.isArray(res.data) ? res.data.filter((e: Empresa) => e.activo) : []);
+        } catch (err) {
+            console.error("Error al cargar empresas", err);
+        }
+    };
 
     const consultarEstado = async () => {
         if (!email) return;
@@ -77,6 +90,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
 
     useEffect(() => {
         consultarEstado();
+        cargarEmpresas();
         if (tienePermiso("VER_ASISTENCIA")) {
             buscarRegistrosDia(fechaFiltro);
         }
@@ -89,8 +103,23 @@ const RegistroAsistenciaComponent: React.FC = () => {
         setMensaje("");
         try {
             const { latitud, longitud } = await obtenerCoordenadas();
-            await api.post("/asistencia/ingreso", { emailUsuario: email, latitud, longitud }, obtenerHeaders());
-            setMensaje("Ingreso registrado con éxito.");
+            const loginLatitud = localStorage.getItem("loginLat");
+            const loginLongitud = localStorage.getItem("loginLng");
+
+            await api.post("/asistencia/ingreso", {
+                emailUsuario: email,
+                latitud,
+                longitud,
+                idEmpresa: idEmpresaVisita || null,
+                loginLatitud,
+                loginLongitud
+            }, obtenerHeaders());
+
+            setMensaje(
+                idEmpresaVisita
+                    ? "Ingreso registrado con éxito. Se generó automáticamente el viático estimado para su aprobación."
+                    : "Ingreso registrado con éxito."
+            );
             await consultarEstado();
             if (tienePermiso("VER_ASISTENCIA")) buscarRegistrosDia(fechaFiltro);
         } catch (err: any) {
@@ -108,6 +137,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
             const { latitud, longitud } = await obtenerCoordenadas();
             await api.post("/asistencia/egreso", { emailUsuario: email, latitud, longitud }, obtenerHeaders());
             setMensaje("Egreso registrado con éxito.");
+            setIdEmpresaVisita("");
             await consultarEstado();
             if (tienePermiso("VER_ASISTENCIA")) buscarRegistrosDia(fechaFiltro);
         } catch (err: any) {
@@ -133,11 +163,31 @@ const RegistroAsistenciaComponent: React.FC = () => {
                     {registroAbierto ? (
                         <span className="asistencia-badge trabajando">
                             <Clock size={16} /> En turno desde las {formatearHora(registroAbierto.horaIngreso)}
+                            {registroAbierto.empresa && <> — <Building2 size={14} style={{ verticalAlign: "middle" }} /> {registroAbierto.empresa.nombre}</>}
                         </span>
                     ) : (
                         <span className="asistencia-badge libre">Sin ingreso registrado</span>
                     )}
                 </div>
+
+                {!registroAbierto && (
+                    <div style={{ maxWidth: "360px", margin: "0 auto 16px auto" }}>
+                        <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#1e293b", display: "block", marginBottom: "6px" }}>
+                            Empresa a visitar (opcional)
+                        </label>
+                        <select
+                            className="input-filtro-fecha"
+                            style={{ width: "100%" }}
+                            value={idEmpresaVisita}
+                            onChange={(e) => setIdEmpresaVisita(e.target.value ? Number(e.target.value) : "")}
+                        >
+                            <option value="">Sin visita a empresa (ingreso a oficina)</option>
+                            {empresas.map((emp) => (
+                                <option key={emp.idEmpresa} value={emp.idEmpresa}>{emp.nombre}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
 
                 <div className="asistencia-botones">
                     <button
@@ -185,11 +235,12 @@ const RegistroAsistenciaComponent: React.FC = () => {
                         <table className="tabla-horarios">
                             <thead>
                                 <tr>
-                                    <th style={{ width: "25%" }}>Empleado</th>
-                                    <th style={{ width: "15%", textAlign: "center" }}>Ingreso</th>
-                                    <th style={{ width: "15%", textAlign: "center" }}>Egreso</th>
-                                    <th style={{ width: "15%", textAlign: "center" }}>Duración</th>
-                                    <th style={{ width: "15%", textAlign: "center" }}>Estado</th>
+                                    <th style={{ width: "22%" }}>Empleado</th>
+                                    <th style={{ width: "18%" }}>Empresa Visitada</th>
+                                    <th style={{ width: "13%", textAlign: "center" }}>Ingreso</th>
+                                    <th style={{ width: "13%", textAlign: "center" }}>Egreso</th>
+                                    <th style={{ width: "12%", textAlign: "center" }}>Duración</th>
+                                    <th style={{ width: "12%", textAlign: "center" }}>Estado</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -197,6 +248,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
                                     registrosDia.map((reg) => (
                                         <tr key={reg.idAsistencia}>
                                             <td className="txt-bold">{reg.usuario?.nombre} {reg.usuario?.apellido}</td>
+                                            <td>{reg.empresa?.nombre || "-"}</td>
                                             <td style={{ textAlign: "center" }}>{formatearHora(reg.horaIngreso)}</td>
                                             <td style={{ textAlign: "center" }}>{formatearHora(reg.horaEgreso)}</td>
                                             <td style={{ textAlign: "center" }}>{calcularDuracion(reg.horaIngreso, reg.horaEgreso)}</td>
@@ -209,7 +261,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={5} className="txt-vacio">No hay fichajes registrados para esta fecha.</td>
+                                        <td colSpan={6} className="txt-vacio">No hay fichajes registrados para esta fecha.</td>
                                     </tr>
                                 )}
                             </tbody>

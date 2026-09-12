@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Package, PackagePlus, Truck, AlertTriangle } from "lucide-react";
+import { Package, PackagePlus, Truck, AlertTriangle, Edit2, Ban, RotateCcw, X } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./insumos.css";
@@ -24,10 +24,14 @@ const GestionInsumosComponent: React.FC = () => {
     const [insumos, setInsumos] = useState<Insumo[]>([]);
     const [entregas, setEntregas] = useState<EntregaInsumo[]>([]);
     const [usuarios, setUsuarios] = useState<UsuarioOpcion[]>([]);
+    const [filtroEstado, setFiltroEstado] = useState<"ACTIVOS" | "BAJAS" | "TODOS">("ACTIVOS");
 
     const puedeCrear = tienePermiso("CREAR_INSUMOS");
+    const puedeEditar = tienePermiso("EDITAR_INSUMOS");
+    const puedeEliminar = tienePermiso("ELIMINAR_INSUMOS");
 
-    // Formulario de alta de insumo
+    // Formulario de alta / edición de insumo
+    const [idEditando, setIdEditando] = useState<number | null>(null);
     const [nombre, setNombre] = useState("");
     const [categoria, setCategoria] = useState(CATEGORIAS[0]);
     const [unidadMedida, setUnidadMedida] = useState("Unidad");
@@ -77,25 +81,66 @@ const GestionInsumosComponent: React.FC = () => {
         cargarUsuarios();
     }, []);
 
-    const handleCrearInsumo = async (e: React.FormEvent) => {
+    const limpiarFormulario = () => {
+        setIdEditando(null);
+        setNombre(""); setCategoria(CATEGORIAS[0]); setUnidadMedida("Unidad");
+        setStockActual(""); setStockMinimo(""); setCostoUnitario("");
+    };
+
+    const handleEditarClick = (ins: Insumo) => {
+        setIdEditando(ins.idInsumo!);
+        setNombre(ins.nombre);
+        setCategoria(ins.categoria);
+        setUnidadMedida(ins.unidadMedida);
+        setStockActual(ins.stockActual);
+        setStockMinimo(ins.stockMinimo);
+        setCostoUnitario(ins.costoUnitario);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const handleGuardarInsumo = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
         setMensaje("");
         try {
-            await api.post("/insumos", {
-                nombre,
-                categoria,
-                unidadMedida,
+            const payload = {
+                nombre, categoria, unidadMedida,
                 stockActual: Number(stockActual),
                 stockMinimo: Number(stockMinimo),
                 costoUnitario: Number(costoUnitario)
-            }, obtenerHeaders());
+            };
 
-            setMensaje("Insumo cargado con éxito al catálogo.");
-            setNombre(""); setStockActual(""); setStockMinimo(""); setCostoUnitario("");
+            if (idEditando) {
+                await api.put(`/insumos/${idEditando}`, payload, obtenerHeaders());
+                setMensaje("Insumo actualizado con éxito.");
+            } else {
+                await api.post("/insumos", payload, obtenerHeaders());
+                setMensaje("Insumo cargado con éxito al catálogo.");
+            }
+
+            limpiarFormulario();
             cargarInsumos();
         } catch (err: any) {
-            setError(err.response?.data || "Error al cargar el insumo.");
+            setError(err.response?.data || "Error al guardar el insumo.");
+        }
+    };
+
+    const handleDarDeBaja = async (id: number) => {
+        if (!window.confirm("¿Dar de baja este insumo? Dejará de estar disponible para nuevas entregas.")) return;
+        try {
+            await api.delete(`/insumos/${id}`, obtenerHeaders());
+            cargarInsumos();
+        } catch (err: any) {
+            alert("Error al dar de baja: " + (err.response?.data || "Error desconocido"));
+        }
+    };
+
+    const handleReactivar = async (id: number) => {
+        try {
+            await api.patch(`/insumos/${id}/reactivar`, {}, obtenerHeaders());
+            cargarInsumos();
+        } catch (err: any) {
+            alert("Error al reactivar: " + (err.response?.data || "Error desconocido"));
         }
     };
 
@@ -120,6 +165,12 @@ const GestionInsumosComponent: React.FC = () => {
         }
     };
 
+    const insumosFiltrados = insumos.filter((ins) => {
+        if (filtroEstado === "ACTIVOS") return ins.activo !== false;
+        if (filtroEstado === "BAJAS") return ins.activo === false;
+        return true;
+    });
+
     return (
         <div className="insumos-container">
             <div className="insumos-card">
@@ -134,8 +185,13 @@ const GestionInsumosComponent: React.FC = () => {
 
                 {vista === "catalogo" && (
                     <>
-                        {puedeCrear && (
-                            <form onSubmit={handleCrearInsumo} className="insumos-form-grid" style={{ borderBottom: "1px solid #e2e8f0", paddingBottom: "18px" }}>
+                        {(puedeCrear || puedeEditar) && (
+                            <form onSubmit={handleGuardarInsumo} className="insumos-form-grid" style={{ borderBottom: "1px solid #e2e8f0", paddingBottom: "18px" }}>
+                                {idEditando && (
+                                    <div className="form-section" style={{ gridColumn: "1 / -1" }}>
+                                        <span style={{ color: "#2563eb", fontWeight: 700, fontSize: "0.85rem" }}>✏️ Editando insumo #{idEditando}</span>
+                                    </div>
+                                )}
                                 <div className="form-section" style={{ gridColumn: "span 2" }}>
                                     <label>Nombre del insumo</label>
                                     <input className="form-input" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Casco de seguridad" required />
@@ -151,7 +207,7 @@ const GestionInsumosComponent: React.FC = () => {
                                     <input className="form-input" value={unidadMedida} onChange={(e) => setUnidadMedida(e.target.value)} placeholder="Unidad, Par, Caja..." required />
                                 </div>
                                 <div className="form-section">
-                                    <label>Stock inicial</label>
+                                    <label>{idEditando ? "Stock actual" : "Stock inicial"}</label>
                                     <input type="number" className="form-input" value={stockActual} onChange={(e) => setStockActual(e.target.value as unknown as number)} required />
                                 </div>
                                 <div className="form-section">
@@ -162,8 +218,13 @@ const GestionInsumosComponent: React.FC = () => {
                                     <label>Costo unitario ($)</label>
                                     <input type="number" step="0.01" className="form-input" value={costoUnitario} onChange={(e) => setCostoUnitario(e.target.value as unknown as number)} required />
                                 </div>
-                                <div className="form-section" style={{ justifyContent: "flex-end" }}>
-                                    <button type="submit" className="btn-primario"><PackagePlus size={16} style={{ marginRight: "6px", verticalAlign: "middle" }} />Agregar al Catálogo</button>
+                                <div className="form-section" style={{ justifyContent: "flex-end", flexDirection: "row", gap: "8px" }}>
+                                    {idEditando && (
+                                        <button type="button" className="btn-doc-accion" onClick={limpiarFormulario}><X size={14} /> Cancelar</button>
+                                    )}
+                                    <button type="submit" className="btn-primario">
+                                        {idEditando ? <><Edit2 size={16} style={{ marginRight: "6px", verticalAlign: "middle" }} />Guardar Cambios</> : <><PackagePlus size={16} style={{ marginRight: "6px", verticalAlign: "middle" }} />Agregar al Catálogo</>}
+                                    </button>
                                 </div>
                             </form>
                         )}
@@ -171,7 +232,13 @@ const GestionInsumosComponent: React.FC = () => {
                         {error && <p className="msg-error">{error}</p>}
                         {mensaje && <p className="msg-exito">{mensaje}</p>}
 
-                        <div className="tabla-simetrica-wrapper" style={{ marginTop: "18px" }}>
+                        <div className="insumos-tabs" style={{ marginTop: "16px" }}>
+                            <button className={`insumos-tab ${filtroEstado === "ACTIVOS" ? "activo" : ""}`} onClick={() => setFiltroEstado("ACTIVOS")}>Activos</button>
+                            <button className={`insumos-tab ${filtroEstado === "BAJAS" ? "activo" : ""}`} onClick={() => setFiltroEstado("BAJAS")}>Dados de Baja</button>
+                            <button className={`insumos-tab ${filtroEstado === "TODOS" ? "activo" : ""}`} onClick={() => setFiltroEstado("TODOS")}>Todos</button>
+                        </div>
+
+                        <div className="tabla-simetrica-wrapper" style={{ marginTop: "12px" }}>
                             <table className="tabla-insumos">
                                 <thead>
                                     <tr>
@@ -181,11 +248,12 @@ const GestionInsumosComponent: React.FC = () => {
                                         <th style={{ textAlign: "center" }}>Stock</th>
                                         <th style={{ textAlign: "center" }}>Stock Mín.</th>
                                         <th style={{ textAlign: "right" }}>Costo Unit.</th>
+                                        {(puedeEditar || puedeEliminar) && <th>Acciones</th>}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {insumos.length > 0 ? insumos.map((ins) => (
-                                        <tr key={ins.idInsumo}>
+                                    {insumosFiltrados.length > 0 ? insumosFiltrados.map((ins) => (
+                                        <tr key={ins.idInsumo} style={{ opacity: ins.activo === false ? 0.6 : 1 }}>
                                             <td>{ins.nombre}</td>
                                             <td><span className={`badge-categoria ${ins.categoria}`}>{ins.categoria}</span></td>
                                             <td>{ins.unidadMedida}</td>
@@ -194,9 +262,24 @@ const GestionInsumosComponent: React.FC = () => {
                                             </td>
                                             <td style={{ textAlign: "center" }}>{ins.stockMinimo}</td>
                                             <td style={{ textAlign: "right" }}>${ins.costoUnitario.toLocaleString()}</td>
+                                            {(puedeEditar || puedeEliminar) && (
+                                                <td>
+                                                    <div className="acciones-doc">
+                                                        {puedeEditar && (
+                                                            <button type="button" className="btn-doc-accion subir" onClick={() => handleEditarClick(ins)}><Edit2 size={12} /> Editar</button>
+                                                        )}
+                                                        {puedeEliminar && ins.activo !== false && (
+                                                            <button type="button" className="btn-doc-accion" style={{ backgroundColor: "#dc2626" }} onClick={() => handleDarDeBaja(ins.idInsumo!)}><Ban size={12} /> Dar de Baja</button>
+                                                        )}
+                                                        {puedeEliminar && ins.activo === false && (
+                                                            <button type="button" className="btn-doc-accion descargar" onClick={() => handleReactivar(ins.idInsumo!)}><RotateCcw size={12} /> Reactivar</button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            )}
                                         </tr>
                                     )) : (
-                                        <tr><td colSpan={6} className="txt-vacio">No hay insumos cargados en el catálogo.</td></tr>
+                                        <tr><td colSpan={7} className="txt-vacio">No hay insumos para este filtro.</td></tr>
                                     )}
                                 </tbody>
                             </table>

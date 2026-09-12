@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Fuel, Check, X, Wallet } from "lucide-react";
+import { Fuel, Check, X, Wallet, Edit2, Ban, RotateCcw, Zap } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./insumos.css";
@@ -24,11 +24,14 @@ const ViaticosComponent: React.FC = () => {
     const [empresas, setEmpresas] = useState<Empresa[]>([]);
     const [registros, setRegistros] = useState<RegistroViatico[]>([]);
     const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split("T")[0]);
+    const [filtroEstado, setFiltroEstado] = useState<"ACTIVOS" | "BAJAS" | "TODOS">("ACTIVOS");
 
     const email = localStorage.getItem("email") || "";
     const puedeAprobar = tienePermiso("APROBAR_VIATICOS");
+    const puedeEditar = tienePermiso("REGISTRAR_VIATICOS");
     const puedeAdministrarTarifas = tienePermiso("EDITAR_USUARIOS");
 
+    const [idEditando, setIdEditando] = useState<number | null>(null);
     const [idEmpresa, setIdEmpresa] = useState<number | "">("");
     const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
     const [kilometros, setKilometros] = useState<number | "">("");
@@ -54,9 +57,11 @@ const ViaticosComponent: React.FC = () => {
         } catch (err) { console.error("Error al cargar empresas", err); }
     };
 
-    const buscarRegistros = async (f: string) => {
+    const buscarRegistros = async (f: string, filtro: "ACTIVOS" | "BAJAS" | "TODOS" = filtroEstado) => {
         try {
-            const res = await api.get(`/viaticos/calendario?fecha=${f}`, obtenerHeaders());
+            const activoParam = filtro === "ACTIVOS" ? "true" : filtro === "BAJAS" ? "false" : "";
+            const url = activoParam ? `/viaticos/calendario?fecha=${f}&activo=${activoParam}` : `/viaticos/calendario?fecha=${f}`;
+            const res = await api.get(url, obtenerHeaders());
             setRegistros(res.data);
         } catch (err) {
             setRegistros([]);
@@ -66,30 +71,55 @@ const ViaticosComponent: React.FC = () => {
     useEffect(() => {
         cargarUsuarios();
         cargarEmpresas();
-        buscarRegistros(fechaFiltro);
+        buscarRegistros(fechaFiltro, filtroEstado);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const tarifaEmpleadoActual = usuarios.find((u) => u.email === email)?.tarifaPorKm ?? 0;
     const montoEstimado = typeof kilometros === "number" ? Math.round(kilometros * tarifaEmpleadoActual * 100) / 100 : 0;
 
-    const handleRegistrar = async (e: React.FormEvent) => {
+    const limpiarFormulario = () => {
+        setIdEditando(null);
+        setIdEmpresa(""); setFecha(new Date().toISOString().split("T")[0]);
+        setKilometros(""); setObservaciones("");
+    };
+
+    const handleEditarClick = (r: RegistroViatico) => {
+        setIdEditando(r.idViatico!);
+        setIdEmpresa(r.empresa?.idEmpresa || "");
+        setFecha(r.fecha);
+        setKilometros(r.kilometros);
+        setObservaciones(r.observaciones || "");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const handleGuardar = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(""); setMensaje("");
         try {
-            await api.post("/viaticos/registrar", {
-                emailUsuario: email,
-                idEmpresa: idEmpresa || null,
-                fecha,
-                kilometros: Number(kilometros),
-                observaciones
-            }, obtenerHeaders());
+            if (idEditando) {
+                await api.put(`/viaticos/${idEditando}`, {
+                    idEmpresa: idEmpresa || null,
+                    fecha,
+                    kilometros: Number(kilometros),
+                    observaciones
+                }, obtenerHeaders());
+                setMensaje("Viático actualizado con éxito.");
+            } else {
+                await api.post("/viaticos/registrar", {
+                    emailUsuario: email,
+                    idEmpresa: idEmpresa || null,
+                    fecha,
+                    kilometros: Number(kilometros),
+                    observaciones
+                }, obtenerHeaders());
+                setMensaje("Viático registrado con éxito. Queda pendiente de aprobación.");
+            }
 
-            setMensaje("Viático registrado con éxito. Queda pendiente de aprobación.");
-            setKilometros(""); setObservaciones("");
-            buscarRegistros(fechaFiltro);
+            limpiarFormulario();
+            buscarRegistros(fechaFiltro, filtroEstado);
         } catch (err: any) {
-            setError(err.response?.data || "Error al registrar el viático.");
+            setError(err.response?.data || "Error al guardar el viático.");
         }
     };
 
@@ -97,9 +127,28 @@ const ViaticosComponent: React.FC = () => {
         if (!id) return;
         try {
             await api.put(`/viaticos/${id}/estado`, { estado: nuevoEstado }, obtenerHeaders());
-            buscarRegistros(fechaFiltro);
+            buscarRegistros(fechaFiltro, filtroEstado);
         } catch (err: any) {
             alert("No se pudo cambiar el estado: " + (err.response?.data || "Error desconocido"));
+        }
+    };
+
+    const handleDarDeBaja = async (id: number) => {
+        if (!window.confirm("¿Dar de baja este registro de viático?")) return;
+        try {
+            await api.delete(`/viaticos/${id}`, obtenerHeaders());
+            buscarRegistros(fechaFiltro, filtroEstado);
+        } catch (err: any) {
+            alert("Error al dar de baja: " + (err.response?.data || "Error desconocido"));
+        }
+    };
+
+    const handleReactivar = async (id: number) => {
+        try {
+            await api.patch(`/viaticos/${id}/reactivar`, {}, obtenerHeaders());
+            buscarRegistros(fechaFiltro, filtroEstado);
+        } catch (err: any) {
+            alert("Error al reactivar: " + (err.response?.data || "Error desconocido"));
         }
     };
 
@@ -146,10 +195,10 @@ const ViaticosComponent: React.FC = () => {
 
             <div className="insumos-card">
                 <h1 style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
-                    <Fuel size={24} color="#059669" /> REGISTRAR KILÓMETROS RECORRIDOS
+                    <Fuel size={24} color="#059669" /> {idEditando ? "EDITAR VIÁTICO" : "REGISTRAR KILÓMETROS RECORRIDOS"}
                 </h1>
 
-                <form onSubmit={handleRegistrar} className="insumos-form-grid">
+                <form onSubmit={handleGuardar} className="insumos-form-grid">
                     <div className="form-section">
                         <label>Empresa / Sede visitada</label>
                         <select className="form-input" value={idEmpresa} onChange={(e) => setIdEmpresa(e.target.value as unknown as number)}>
@@ -173,8 +222,11 @@ const ViaticosComponent: React.FC = () => {
                         <label>Monto estimado</label>
                         <div style={{ fontWeight: 800, color: "#059669", fontSize: "1.1rem" }}>${montoEstimado.toLocaleString()}</div>
                     </div>
-                    <div className="form-section" style={{ gridColumn: "1 / -1", justifyContent: "flex-end", flexDirection: "row" }}>
-                        <button type="submit" className="btn-primario">Registrar Viático</button>
+                    <div className="form-section" style={{ gridColumn: "1 / -1", justifyContent: "flex-end", flexDirection: "row", gap: "8px" }}>
+                        {idEditando && (
+                            <button type="button" className="btn-doc-accion" onClick={limpiarFormulario}><X size={14} /> Cancelar</button>
+                        )}
+                        <button type="submit" className="btn-primario">{idEditando ? "Guardar Cambios" : "Registrar Viático"}</button>
                     </div>
                 </form>
 
@@ -189,10 +241,16 @@ const ViaticosComponent: React.FC = () => {
 
                 <div className="insumos-tabs">
                     <input type="date" className="form-input" style={{ maxWidth: "200px" }} value={fechaFiltro} onChange={(e) => setFechaFiltro(e.target.value)} />
-                    <button className="insumos-tab" onClick={() => buscarRegistros(fechaFiltro)}>Buscar</button>
+                    <button className="insumos-tab" onClick={() => buscarRegistros(fechaFiltro, filtroEstado)}>Buscar</button>
                 </div>
 
-                <div className="tabla-simetrica-wrapper">
+                <div className="insumos-tabs" style={{ marginTop: "10px" }}>
+                    <button className={`insumos-tab ${filtroEstado === "ACTIVOS" ? "activo" : ""}`} onClick={() => { setFiltroEstado("ACTIVOS"); buscarRegistros(fechaFiltro, "ACTIVOS"); }}>Activos</button>
+                    <button className={`insumos-tab ${filtroEstado === "BAJAS" ? "activo" : ""}`} onClick={() => { setFiltroEstado("BAJAS"); buscarRegistros(fechaFiltro, "BAJAS"); }}>Dados de Baja</button>
+                    <button className={`insumos-tab ${filtroEstado === "TODOS" ? "activo" : ""}`} onClick={() => { setFiltroEstado("TODOS"); buscarRegistros(fechaFiltro, "TODOS"); }}>Todos</button>
+                </div>
+
+                <div className="tabla-simetrica-wrapper" style={{ marginTop: "12px" }}>
                     <table className="tabla-insumos">
                         <thead>
                             <tr>
@@ -202,27 +260,32 @@ const ViaticosComponent: React.FC = () => {
                                 <th style={{ textAlign: "center" }}>Tarifa</th>
                                 <th style={{ textAlign: "right" }}>Monto</th>
                                 <th style={{ textAlign: "center" }}>Estado</th>
-                                {puedeAprobar && <th style={{ textAlign: "center" }}>Acciones</th>}
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {registros.length > 0 ? registros.map((r) => (
-                                <tr key={r.idViatico}>
+                                <tr key={r.idViatico} style={{ opacity: r.activo === false ? 0.6 : 1 }}>
                                     <td>{r.usuario?.nombre} {r.usuario?.apellido}</td>
                                     <td>{r.empresa?.nombre || "-"}</td>
-                                    <td style={{ textAlign: "center" }}>{r.kilometros}</td>
+                                    <td style={{ textAlign: "center" }}>
+                                        {r.kilometros} {r.generadoAutomaticamente && <Zap size={12} color="#f59e0b" style={{ verticalAlign: "middle" }} aria-label="Generado automáticamente por geolocalización" />}
+                                    </td>
                                     <td style={{ textAlign: "center" }}>${r.tarifaPorKmAplicada}</td>
                                     <td style={{ textAlign: "right" }}>${r.montoAPagar.toLocaleString()}</td>
                                     <td style={{ textAlign: "center" }}>{r.estado}</td>
-                                    {puedeAprobar && (
-                                        <td style={{ textAlign: "center", display: "flex", gap: "6px", justifyContent: "center" }}>
-                                            {r.estado !== "APROBADO" && <button className="btn-primario" style={{ padding: "4px 8px" }} onClick={() => handleCambiarEstado(r.idViatico, "APROBADO")}><Check size={13} /></button>}
-                                            {r.estado !== "RECHAZADO" && <button className="btn-primario" style={{ padding: "4px 8px", backgroundColor: "#dc2626" }} onClick={() => handleCambiarEstado(r.idViatico, "RECHAZADO")}><X size={13} /></button>}
-                                        </td>
-                                    )}
+                                    <td>
+                                        <div className="acciones-doc">
+                                            {puedeAprobar && r.activo !== false && r.estado !== "APROBADO" && <button className="btn-doc-accion descargar" onClick={() => handleCambiarEstado(r.idViatico, "APROBADO")}><Check size={12} /></button>}
+                                            {puedeAprobar && r.activo !== false && r.estado !== "RECHAZADO" && <button className="btn-doc-accion" style={{ backgroundColor: "#dc2626" }} onClick={() => handleCambiarEstado(r.idViatico, "RECHAZADO")}><X size={12} /></button>}
+                                            {puedeEditar && r.activo !== false && <button className="btn-doc-accion subir" onClick={() => handleEditarClick(r)}><Edit2 size={12} /></button>}
+                                            {puedeAprobar && r.activo !== false && <button className="btn-doc-accion" style={{ backgroundColor: "#64748b" }} onClick={() => handleDarDeBaja(r.idViatico!)}><Ban size={12} /></button>}
+                                            {puedeAprobar && r.activo === false && <button className="btn-doc-accion descargar" onClick={() => handleReactivar(r.idViatico!)}><RotateCcw size={12} /></button>}
+                                        </div>
+                                    </td>
                                 </tr>
                             )) : (
-                                <tr><td colSpan={puedeAprobar ? 7 : 6} className="txt-vacio">No hay viáticos registrados para esta fecha.</td></tr>
+                                <tr><td colSpan={7} className="txt-vacio">No hay viáticos registrados para este filtro.</td></tr>
                             )}
                         </tbody>
                     </table>

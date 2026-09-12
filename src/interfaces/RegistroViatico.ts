@@ -8,4 +8,6 @@ export interface RegistroViatico {
     montoAPagar: number;
     observaciones?: string;
     estado?: "PENDIENTE" | "APROBADO" | "RECHAZADO" | "PAGADO" | string;
+    activo?: boolean;
+    generadoAutomaticamente?: boolean;
 }

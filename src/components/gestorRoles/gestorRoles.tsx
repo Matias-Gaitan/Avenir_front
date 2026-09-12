@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Key, ShieldCheck, Users, Building2, Clock, ShieldAlert, Settings, FileCheck, CheckSquare, Square, Trash2, Edit2 } from "lucide-react";
+import { Key, ShieldCheck, Users, Building2, Clock, ShieldAlert, Settings, FileCheck, CheckSquare, Square, Trash2, Edit2, Timer, Package, Fuel, FileText, Calendar } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./gestorRoles.css";
@@ -60,6 +60,11 @@ const GestorRoles: React.FC = () => {
             "HORARIOS": { icono: <Clock size={18} />, permisos: [] },
             "IPER": { icono: <ShieldAlert size={18} className="icon-pulse" color="#059669" />, permisos: [] },
             "ATS": { icono: <FileCheck size={18} color="#10B981" />, permisos: [] },
+            "ASISTENCIA": { icono: <Timer size={18} color="#0EA5E9" />, permisos: [] },
+            "INSUMOS": { icono: <Package size={18} color="#7C3AED" />, permisos: [] },
+            "VIATICOS": { icono: <Fuel size={18} color="#D97706" />, permisos: [] },
+            "DOCUMENTOS": { icono: <FileText size={18} color="#0369A1" />, permisos: [] },
+            "CRONOGRAMA": { icono: <Calendar size={18} color="#DB2777" />, permisos: [] },
             "OTROS": { icono: <Settings size={18} className="icon-spin-hover" />, permisos: [] }
         };
 
@@ -71,12 +76,22 @@ const GestorRoles: React.FC = () => {
                 modulosMap["ROLES"].permisos.push(p);
             } else if (nombre.includes("EMPRESA")) {
                 modulosMap["EMPRESAS"].permisos.push(p);
+            } else if (nombre.includes("ASISTENCIA")) {
+                modulosMap["ASISTENCIA"].permisos.push(p);
             } else if (nombre.includes("HORARIO")) {
                 modulosMap["HORARIOS"].permisos.push(p);
             } else if (nombre.includes("IPER") || nombre.includes("RIESGO") || nombre.includes("CATALOGO")) {
                 modulosMap["IPER"].permisos.push(p);
             } else if (nombre.includes("ATS")) {
                 modulosMap["ATS"].permisos.push(p);
+            } else if (nombre.includes("INSUMO")) {
+                modulosMap["INSUMOS"].permisos.push(p);
+            } else if (nombre.includes("VIATICO")) {
+                modulosMap["VIATICOS"].permisos.push(p);
+            } else if (nombre.includes("DOCUMENTO")) {
+                modulosMap["DOCUMENTOS"].permisos.push(p);
+            } else if (nombre.includes("EVENTO")) {
+                modulosMap["CRONOGRAMA"].permisos.push(p);
             } else {
                 modulosMap["OTROS"].permisos.push(p);
             }
