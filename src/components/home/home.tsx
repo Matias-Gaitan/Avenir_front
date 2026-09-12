@@ -29,6 +29,7 @@ import {
   Activity
 } from "lucide-react";
 import api from "../../service/api";
+import logoAvenir from "../../assets/avenir-logo.png";
 import GestorUsuarios from "../gestorUsuarios/gestorUsuarios";
 import GestorRoles from "../gestorRoles/gestorRoles";
 import EmpresaComponent from "../empresa/EmpresaComponent";
@@ -241,9 +242,9 @@ const Home: React.FC = () => {
                     borderBottom: "1px solid rgba(255,255,255,0.1)"
                 }}>
                     {sidebarAbierta && (
-                        <h2 style={{ margin: 0, fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "8px", color: darkMode ? "#38BDF8" : "#A7F3D0" }}>
-                            <ShieldCheck size={22} color="#10B981" /> Panel General
-                        </h2>
+                        <div style={{ backgroundColor: "#FFFFFF", borderRadius: "8px", padding: "4px 10px", display: "flex", alignItems: "center" }}>
+                            <img src={logoAvenir} alt="Avenir" style={{ height: "30px" }} />
+                        </div>
                     )}
                     <button
                         onClick={() => setSidebarAbierta(!sidebarAbierta)}

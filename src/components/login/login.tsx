@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import api from "../../service/api";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, LogIn, UserPlus, Eye, EyeOff, Hash, Type } from "lucide-react";
+import { LogIn, UserPlus, Eye, EyeOff, Hash, Type } from "lucide-react";
 import "./login.css";
 import type { Login } from "../../interfaces/Login";
 import Fondo3D from "../common/Fondo3D";
+import logoAvenir from "../../assets/avenir-logo.png";
 
 const LoginComponent: React.FC = () => {
     const [email, setEmail] = useState("");
@@ -66,7 +67,7 @@ const LoginComponent: React.FC = () => {
         <div className="form-component">
             <form className="form" onSubmit={handleSubmit}>
                 <div className="form-tittle" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <ShieldCheck size={42} color="#059669" className="icon-pulse" style={{ marginBottom: "10px" }} />
+                    <img src={logoAvenir} alt="Avenir - Seguridad e Higiene Laboral" style={{ height: "72px", marginBottom: "6px" }} />
                     <h1>INICIO DE SESIÓN</h1>
                     <p>Ingrese sus credenciales para continuar</p>
                 </div>

@@ -6,6 +6,7 @@ import "./registrer.css";
 import type { Usuario } from "../../interfaces/Usuario";
 import { PasswordMatrix } from "../PasswordMatrix";
 import Fondo3D from "../common/Fondo3D";
+import logoAvenir from "../../assets/avenir-logo.png";
 
 const Register: React.FC = () => {
     const [nombre, setNombre] = useState("");
@@ -91,9 +92,12 @@ const Register: React.FC = () => {
         <Fondo3D />
         <div className="form-component">
             <form className="form" onSubmit={handleSubmit}>
-                <h1 style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
-                    <UserPlus size={26} color="#059669" /> CREAR CUENTA NUEVA
-                </h1>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <img src={logoAvenir} alt="Avenir - Seguridad e Higiene Laboral" style={{ height: "64px", marginBottom: "6px" }} />
+                    <h1 style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+                        <UserPlus size={22} color="#059669" /> CREAR CUENTA NUEVA
+                    </h1>
+                </div>
 
                 <div className="form-nombres">
                     <div className="nombre">
