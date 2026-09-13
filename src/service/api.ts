@@ -1,7 +1,10 @@
 import axios from "axios";
 
 
-export const API_BASE_URL = "http://192.168.1.3:8082/api";
+// En producción (Vercel) se define VITE_API_BASE_URL apuntando al backend de Railway.
+// En desarrollo local, si no está definida, usa la IP de la red local para poder
+// probar desde el celular.
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://192.168.1.3:8082/api";
 
 const api = axios.create({
     baseURL: API_BASE_URL,
