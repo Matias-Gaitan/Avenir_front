@@ -31,7 +31,9 @@ import {
   ListChecks,
   LifeBuoy,
   Radio,
-  Sparkles
+  Sparkles,
+  BarChart3,
+  Camera
 } from "lucide-react";
 import api from "../../service/api";
 import logoAvenir from "../../assets/avenir-logo.png";
@@ -52,11 +54,14 @@ import CentroAyudaComponent from "../ayuda/CentroAyudaComponent";
 import BienvenidaModal from "../ayuda/BienvenidaModal";
 import AyudaFlotante from "../ayuda/AyudaFlotante";
 import ConectividadIndicador from "./ConectividadIndicador";
+import InstalarAppBoton from "../pwa/InstalarAppBoton";
 import PresenciaHeartbeat from "./PresenciaHeartbeat";
 import PanelPresenciaComponent from "../presencia/PanelPresenciaComponent";
 import { vistaAModulo } from "../ayuda/contenidoAyuda";
 import GestionDocumentosComponent from "../documentos/GestionDocumentosComponent";
 import HistorialIperComponent from "../iper/HistorialIperComponent";
+import EstadisticasComponent from "../estadisticas/EstadisticasComponent";
+import RelevamientosComponent from "../relevamientos/RelevamientosComponent";
 import CronogramaComponent from "../cronograma/CronogramaComponent";
 import MiPerfilComponent from "../estado/MiPerfilComponent";
 import EstadoSistemaComponent from "../estado/EstadoSistemaComponent";
@@ -73,7 +78,7 @@ interface RolBD {
 }
 
 const Home: React.FC = () => {
-    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "asistencia" | "iper" | "iper-form" | "iper-historial" | "ats" | "permisos-usuario" | "mapa" | "insumos" | "viaticos" | "tareas" | "documentos" | "cronograma" | "mi-perfil" | "estado-sistema" | "ayuda" | "presencia">("usuarios");
+    const [vistaActiva, setVistaActiva] = useState<"usuarios" | "roles" | "empresas" | "horarios" | "asistencia" | "iper" | "iper-form" | "iper-historial" | "ats" | "permisos-usuario" | "mapa" | "insumos" | "viaticos" | "tareas" | "documentos" | "cronograma" | "mi-perfil" | "estado-sistema" | "ayuda" | "presencia" | "estadisticas" | "relevamientos">("usuarios");
     const [rolesDisponibles, setRolesDisponibles] = useState<RolBD[]>([]);
     const [rolActivoTesting, setRolActivoTesting] = useState<string>("");
 
@@ -327,6 +332,8 @@ const Home: React.FC = () => {
                             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <button onClick={() => setVistaActiva("insumos")} style={{ backgroundColor: vistaActiva === "insumos" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Package size={18} /> {sidebarAbierta && "Insumos"}</button>
                                 <button onClick={() => setVistaActiva("viaticos")} style={{ backgroundColor: vistaActiva === "viaticos" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Fuel size={18} /> {sidebarAbierta && "Viáticos (Pago x KM)"}</button>
+                                <button onClick={() => setVistaActiva("relevamientos")} style={{ backgroundColor: vistaActiva === "relevamientos" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><Camera size={18} /> {sidebarAbierta && "Relevamientos"}</button>
+                                <button onClick={() => setVistaActiva("estadisticas")} style={{ backgroundColor: vistaActiva === "estadisticas" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><BarChart3 size={18} /> {sidebarAbierta && "Estadísticas"}</button>
                                 <button onClick={() => setVistaActiva("tareas")} style={{ backgroundColor: vistaActiva === "tareas" ? "#059669" : "transparent", color: "#FFFFFF", border: "none", padding: "8px 10px", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left" }} className="btn-interactive"><ListChecks size={18} /> {sidebarAbierta && "Asignación de Tareas"}</button>
                             </div>
                         )}
@@ -489,6 +496,7 @@ const Home: React.FC = () => {
                         </div>
 
                         <ConectividadIndicador />
+                        <InstalarAppBoton darkMode={darkMode} />
 
                         {esAdminReal && (
                             <div className="simulador-card" style={{
@@ -546,6 +554,8 @@ const Home: React.FC = () => {
                     {vistaActiva === "asistencia" && <RegistroAsistenciaComponent />}
                     {vistaActiva === "insumos" && <GestionInsumosComponent />}
                     {vistaActiva === "viaticos" && <ViaticosComponent />}
+                    {vistaActiva === "relevamientos" && <RelevamientosComponent />}
+                    {vistaActiva === "estadisticas" && <EstadisticasComponent />}
                     {vistaActiva === "tareas" && <AsignacionTareasComponent darkMode={darkMode} />}
                     {vistaActiva === "ayuda" && <CentroAyudaComponent darkMode={darkMode} />}
                     {vistaActiva === "iper" && <AdminCatalogosPage darkMode={darkMode} />}
