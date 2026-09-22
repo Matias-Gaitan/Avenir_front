@@ -85,3 +85,68 @@
     box-sizing: border-box;
     overflow-x: hidden;
 }
+
+.btn-menu-movil {
+    display: none;
+}
+
+.backdrop-sidebar-movil {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* El sidebar pasa a ser un panel deslizante que tapa la pantalla,
+       en vez de una columna angosta que le come ~130px fijos al celular. */
+    .sidebar-app {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 78vw !important;
+        max-width: 300px;
+        min-width: 0 !important;
+        height: 100dvh !important;
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        z-index: 2100 !important;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.45) !important;
+    }
+
+    .sidebar-app.sidebar-movil-abierta {
+        transform: translateX(0);
+    }
+
+    .btn-menu-movil {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .backdrop-sidebar-movil {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(3, 10, 8, 0.55);
+        backdrop-filter: blur(1px);
+        z-index: 2050;
+    }
+
+    .main-content {
+        padding: 10px;
+    }
+
+    /* Centra las tarjetas/formularios como en el login, en vez de
+       dejarlos pegados al borde. */
+    .main-content > div,
+    main > div {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .main-content h1,
+    .main-content h2,
+    main h1,
+    main h2 {
+        font-size: 1.35rem !important;
+        line-height: 1.3 !important;
+    }
+}

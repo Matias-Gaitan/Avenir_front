@@ -65,6 +65,7 @@ import RelevamientosComponent from "../relevamientos/RelevamientosComponent";
 import CronogramaComponent from "../cronograma/CronogramaComponent";
 import MiPerfilComponent from "../estado/MiPerfilComponent";
 import EstadoSistemaComponent from "../estado/EstadoSistemaComponent";
+import "./home.css";
 
 interface PermisoBD {
     idPermiso?: number;
@@ -259,7 +260,17 @@ const Home: React.FC = () => {
         <div style={{ display: "flex", minHeight: "100vh" }}>
 
             {}
-            <aside style={{
+            {sidebarAbierta && (
+                <div
+                    className="backdrop-sidebar-movil"
+                    onClick={() => setSidebarAbierta(false)}
+                />
+            )}
+
+            {}
+            <aside
+                className={sidebarAbierta ? "sidebar-app sidebar-movil-abierta" : "sidebar-app"}
+                style={{
                 width: sidebarAbierta ? "260px" : "70px",
                 minWidth: sidebarAbierta ? "260px" : "70px",
                 flexShrink: 0,
@@ -467,6 +478,13 @@ const Home: React.FC = () => {
                     transition: "all 0.3s ease"
                 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap" }}>
+                        <button
+                            onClick={() => setSidebarAbierta(true)}
+                            className="btn-menu-movil"
+                            style={{ backgroundColor: "transparent", border: "none", color: "#FFF", cursor: "pointer", padding: "4px" }}
+                        >
+                            <Menu size={22} />
+                        </button>
                         <h2 style={{
                             color: darkMode ? "#38BDF8" : "#FFFFFF",
                             margin: 0,
