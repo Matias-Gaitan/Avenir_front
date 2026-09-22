@@ -210,7 +210,7 @@ const RelevamientosComponent: React.FC = () => {
                     <ClipboardList size={24} color="#059669" /> RELEVAMIENTOS
                 </h1>
                 <div className="tabla-simetrica-wrapper">
-                    <table className="tabla-insumos">
+                    <table className="tabla-insumos tabla-tarjetas-movil">
                         <thead>
                             <tr>
                                 <th>Empresa</th>
@@ -226,12 +226,12 @@ const RelevamientosComponent: React.FC = () => {
                                 const resueltos = r.hallazgos.filter((h) => h.estado === "RESUELTO").length;
                                 return (
                                     <tr key={r.idRelevamiento}>
-                                        <td>{r.empresa?.nombre}</td>
-                                        <td>{r.fecha}</td>
-                                        <td>{r.tecnico ? `${r.tecnico.nombre} ${r.tecnico.apellido}` : "-"}</td>
-                                        <td style={{ textAlign: "center" }}>{resueltos}/{r.hallazgos.length} resueltos</td>
-                                        <td style={{ textAlign: "center" }}>{r.estado}</td>
-                                        <td>
+                                        <td data-label="Empresa">{r.empresa?.nombre}</td>
+                                        <td data-label="Fecha">{r.fecha}</td>
+                                        <td data-label="Técnico">{r.tecnico ? `${r.tecnico.nombre} ${r.tecnico.apellido}` : "-"}</td>
+                                        <td style={{ textAlign: "center" }} data-label="Hallazgos">{resueltos}/{r.hallazgos.length} resueltos</td>
+                                        <td style={{ textAlign: "center" }} data-label="Estado">{r.estado}</td>
+                                        <td data-label="Acciones">
                                             <div className="acciones-doc">
                                                 <button className="btn-doc-accion subir" onClick={() => setSeleccionado(r)}>Ver Detalle</button>
                                                 {puedeEditar && r.estado !== "CERRADO" && (

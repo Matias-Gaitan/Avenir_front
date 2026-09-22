@@ -245,7 +245,7 @@ const EmpresaComponent: React.FC<Props> = ({ onIrAlMapa }) => {
                     </div>
 
                     <div className="tabla-simetrica-wrapper" style={{ width: "100%", marginTop: "15px", border: "1px solid #E2E8F0", borderRadius: "8px", overflowX: "auto" }}>
-                        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                        <table className="tabla-tarjetas-movil" style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
                             <thead>
                                 <tr style={{ backgroundColor: "#F1F5F9", color: "#0F172A", fontSize: "0.85rem", borderBottom: "1px solid #CBD5E1" }}>
                                     <th style={{ width: "18%", padding: "12px 16px", textAlign: "left" }}>CUIT</th>
@@ -260,16 +260,16 @@ const EmpresaComponent: React.FC<Props> = ({ onIrAlMapa }) => {
                                     const esActivo = obtenerEstadoBoolean(emp);
                                     return (
                                         <tr key={emp.idEmpresa || emp.id} style={{ borderBottom: "1px solid #F1F5F9", fontSize: "0.9rem", color: "#334155" }}>
-                                            <td style={{ padding: "12px 16px", fontWeight: "bold", textAlign: "left" }}>{emp.cuit}</td>
-                                            <td style={{ padding: "12px 16px", textAlign: "left" }}>{emp.nombre}</td>
-                                            <td style={{ padding: "12px 16px", textAlign: "left" }}>{emp.direccion}</td>
-                                            <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                                            <td data-label="CUIT" style={{ padding: "12px 16px", fontWeight: "bold", textAlign: "left" }}>{emp.cuit}</td>
+                                            <td data-label="Nombre" style={{ padding: "12px 16px", textAlign: "left" }}>{emp.nombre}</td>
+                                            <td data-label="Dirección" style={{ padding: "12px 16px", textAlign: "left" }}>{emp.direccion}</td>
+                                            <td data-label="Estado" style={{ padding: "12px 16px", textAlign: "center" }}>
                                                 <span className={`badge ${esActivo ? "badge-activo" : "badge-inactivo"}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
                                                     {esActivo ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
                                                     {esActivo ? "Activo" : "Inactivo"}
                                                 </span>
                                             </td>
-                                            <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                                            <td data-label="Acciones" style={{ padding: "12px 16px", textAlign: "center" }}>
                                                 <div className="acciones-group" style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
                                                     <button
                                                         type="button"

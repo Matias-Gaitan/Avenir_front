@@ -221,7 +221,7 @@ const GestionDocumentosComponent: React.FC = () => {
                 {mensaje && <p className="msg-exito">{mensaje}</p>}
 
                 <div className="tabla-simetrica-wrapper">
-                    <table className="tabla-documentos">
+                    <table className="tabla-documentos tabla-tarjetas-movil">
                         <thead>
                             <tr>
                                 <th>Nombre</th>
@@ -238,16 +238,16 @@ const GestionDocumentosComponent: React.FC = () => {
                                 return (
                                     <React.Fragment key={doc.idDocumento}>
                                         <tr>
-                                            <td>{doc.nombre}</td>
-                                            <td><span className="badge-categoria-doc">{CATEGORIAS.find((c) => c.valor === doc.categoria)?.etiqueta || doc.categoria}</span></td>
-                                            <td>{doc.usuario ? `${doc.usuario.nombre} ${doc.usuario.apellido}` : doc.empresa ? doc.empresa.nombre : "-"}</td>
-                                            <td style={{ textAlign: "center" }}>
+                                            <td data-label="Nombre">{doc.nombre}</td>
+                                            <td data-label="Categoría"><span className="badge-categoria-doc">{CATEGORIAS.find((c) => c.valor === doc.categoria)?.etiqueta || doc.categoria}</span></td>
+                                            <td data-label="Asignado a">{doc.usuario ? `${doc.usuario.nombre} ${doc.usuario.apellido}` : doc.empresa ? doc.empresa.nombre : "-"}</td>
+                                            <td style={{ textAlign: "center" }} data-label="Vencimiento">
                                                 <span className={`badge-vencimiento ${doc.estadoVencimiento}`}>
                                                     {badge.icono} {doc.fechaVencimiento ? `${doc.fechaVencimiento} · ${badge.texto}` : badge.texto}
                                                 </span>
                                             </td>
-                                            <td style={{ textAlign: "center" }}>v{doc.versionActual}</td>
-                                            <td>
+                                            <td style={{ textAlign: "center" }} data-label="Versión">v{doc.versionActual}</td>
+                                            <td data-label="Acciones">
                                                 <div className="acciones-doc">
                                                     <button type="button" className="btn-doc-accion" onClick={() => verVersiones(doc.idDocumento!)}>
                                                         <History size={12} /> Historial

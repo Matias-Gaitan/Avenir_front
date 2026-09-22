@@ -342,7 +342,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
                     </div>
 
                     <div className="tabla-simetrica-wrapper">
-                        <table className="tabla-horarios">
+                        <table className="tabla-horarios tabla-tarjetas-movil">
                             <thead>
                                 <tr>
                                     <th style={{ width: "20%" }}>Empleado</th>
@@ -358,17 +358,17 @@ const RegistroAsistenciaComponent: React.FC = () => {
                                 {registrosDiaPagina.length > 0 ? (
                                     registrosDiaPagina.map((reg) => (
                                         <tr key={reg.idAsistencia}>
-                                            <td className="txt-bold">{reg.usuario?.nombre} {reg.usuario?.apellido}</td>
-                                            <td>{reg.empresa?.nombre || "-"}</td>
-                                            <td style={{ textAlign: "center" }}>{formatearHora(reg.horaIngreso)}</td>
-                                            <td style={{ textAlign: "center" }}>{formatearHora(reg.horaEgreso)}</td>
-                                            <td style={{ textAlign: "center" }}>{calcularDuracion(reg.horaIngreso, reg.horaEgreso)}</td>
-                                            <td style={{ textAlign: "center" }}>
+                                            <td data-label="Empleado" className="txt-bold">{reg.usuario?.nombre} {reg.usuario?.apellido}</td>
+                                            <td data-label="Empresa Visitada">{reg.empresa?.nombre || "-"}</td>
+                                            <td data-label="Ingreso" style={{ textAlign: "center" }}>{formatearHora(reg.horaIngreso)}</td>
+                                            <td data-label="Egreso" style={{ textAlign: "center" }}>{formatearHora(reg.horaEgreso)}</td>
+                                            <td data-label="Duración" style={{ textAlign: "center" }}>{calcularDuracion(reg.horaIngreso, reg.horaEgreso)}</td>
+                                            <td data-label="Estado" style={{ textAlign: "center" }}>
                                                 <span className={`badge-estado-asistencia ${reg.horaEgreso ? "cerrado" : "abierto"}`}>
                                                     {reg.horaEgreso ? "Completo" : "En curso"}
                                                 </span>
                                             </td>
-                                            <td style={{ textAlign: "center" }}>
+                                            <td data-label="Origen" style={{ textAlign: "center" }}>
                                                 {reg.generadoOffline ? (
                                                     <span title={`Se sincronizó ${calcularDemoraSync(reg.horaIngreso, reg.fechaSincronizacion) || ""} después de pasar en el dispositivo`} style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", color: "#B45309", fontWeight: 700 }}>
                                                         <CloudOff size={12} /> Offline{calcularDemoraSync(reg.horaIngreso, reg.fechaSincronizacion) && ` (+${calcularDemoraSync(reg.horaIngreso, reg.fechaSincronizacion)})`}

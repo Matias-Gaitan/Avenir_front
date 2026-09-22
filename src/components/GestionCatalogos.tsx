@@ -318,7 +318,7 @@ export const GestionCatalogos: React.FC<Props> = ({ modulo, titulo, darkMode = f
         </p>
       ) : (
         <div style={{ overflowX: 'auto' }}>
-          <table style={estilos.tabla}>
+          <table className="tabla-tarjetas-movil" style={estilos.tabla}>
             <thead>
               <tr>
                 <th style={{ ...estilos.th, width: '70px' }}>ID</th>
@@ -331,14 +331,14 @@ export const GestionCatalogos: React.FC<Props> = ({ modulo, titulo, darkMode = f
             <tbody>
               {itemsPagina.map((item) => (
                 <tr key={item.id}>
-                  <td style={{ ...estilos.td, fontWeight: 'bold' }}>#{item.id}</td>
-                  <td style={{ ...estilos.td, fontWeight: '500' }}>{item.nombre}</td>
+                  <td style={{ ...estilos.td, fontWeight: 'bold' }} data-label="ID">#{item.id}</td>
+                  <td style={{ ...estilos.td, fontWeight: '500' }} data-label="Descripción">{item.nombre}</td>
                   {esProbabilidad && (
-                    <td style={{ ...estilos.td, textAlign: 'center' }}>
+                    <td style={{ ...estilos.td, textAlign: 'center' }} data-label="Nivel Criticidad">
                       {renderBadgeNivel(item.nivel ?? item.valor ?? 1)}
                     </td>
                   )}
-                  <td style={{ ...estilos.td, textAlign: 'center' }}>
+                  <td style={{ ...estilos.td, textAlign: 'center' }} data-label="Estado">
                     <span style={{
                       backgroundColor: darkMode ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5',
                       color: darkMode ? '#34D399' : '#047857',
@@ -354,7 +354,7 @@ export const GestionCatalogos: React.FC<Props> = ({ modulo, titulo, darkMode = f
                       <CheckCircle2 size={13} /> Activo
                     </span>
                   </td>
-                  <td style={{ ...estilos.td, textAlign: 'center' }}>
+                  <td style={{ ...estilos.td, textAlign: 'center' }} data-label="Acciones">
                     <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
                       <button
                         onClick={() => handleEditar(item)}

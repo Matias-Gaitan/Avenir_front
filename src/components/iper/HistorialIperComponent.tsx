@@ -76,7 +76,7 @@ const HistorialIperComponent: React.FC = () => {
                 {error && <p className="msg-error">{error}</p>}
 
                 <div className="tabla-simetrica-wrapper">
-                    <table className="tabla-documentos">
+                    <table className="tabla-documentos tabla-tarjetas-movil">
                         <thead>
                             <tr>
                                 <th>Fecha</th>
@@ -93,17 +93,17 @@ const HistorialIperComponent: React.FC = () => {
                                 const badge = badgeNivel(f.nivelRiesgo);
                                 return (
                                     <tr key={f.id}>
-                                        <td>{f.fecha || "-"}</td>
-                                        <td>{f.empresa || "-"}</td>
-                                        <td>{f.sector || "-"}</td>
-                                        <td>{f.tipoRiesgo || "-"}</td>
-                                        <td style={{ textAlign: "center" }}>
+                                        <td data-label="Fecha">{f.fecha || "-"}</td>
+                                        <td data-label="Empresa">{f.empresa || "-"}</td>
+                                        <td data-label="Sector">{f.sector || "-"}</td>
+                                        <td data-label="Tipo de Riesgo">{f.tipoRiesgo || "-"}</td>
+                                        <td style={{ textAlign: "center" }} data-label="Nivel">
                                             <span className="badge-vencimiento" style={{ backgroundColor: badge.bg, color: badge.color }}>
                                                 {f.nivelRiesgo || "-"}
                                             </span>
                                         </td>
-                                        <td style={{ textAlign: "center" }}>{f.estado || "-"}</td>
-                                        <td>
+                                        <td style={{ textAlign: "center" }} data-label="Estado">{f.estado || "-"}</td>
+                                        <td data-label="Reporte">
                                             <button type="button" className="btn-doc-accion descargar" onClick={() => descargarPdf(f.id!)}>
                                                 <FileDown size={12} /> Descargar PDF
                                             </button>

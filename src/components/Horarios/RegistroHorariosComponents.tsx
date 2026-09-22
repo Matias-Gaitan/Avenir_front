@@ -247,7 +247,7 @@ const RegistroHorarioComponent: React.FC = () => {
                 </div>
 
                 <div className="tabla-simetrica-wrapper">
-                    <table className="tabla-horarios">
+                    <table className="tabla-horarios tabla-tarjetas-movil">
                         <thead>
                             <tr>
                                 <th style={{ width: "20%" }}>Técnico</th>
@@ -266,17 +266,17 @@ const RegistroHorarioComponent: React.FC = () => {
 
                                     return (
                                         <tr key={idKey}>
-                                            <td className="txt-bold">{reg.usuario?.nombre} {reg.usuario?.apellido}</td>
-                                            <td>{reg.empresa?.nombre}</td>
-                                            <td style={{ textAlign: "center" }}>
+                                            <td className="txt-bold" data-label="Técnico">{reg.usuario?.nombre} {reg.usuario?.apellido}</td>
+                                            <td data-label="Empresa">{reg.empresa?.nombre}</td>
+                                            <td style={{ textAlign: "center" }} data-label="Horas">
                                                 <span className="badge-horas" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
                                                     {reg.generadoAutomaticamente && <Zap size={12} aria-label="Calculado automáticamente" />}
                                                     {reg.horasDedicadas} hs
                                                 </span>
                                             </td>
-                                            <td>{reg.tareasRealizadas}</td>
+                                            <td data-label="Tareas">{reg.tareasRealizadas}</td>
 
-                                            <td style={{ textAlign: "center" }}>
+                                            <td style={{ textAlign: "center" }} data-label="Estado">
                                                 {estadoActual === "PENDIENTE" && (
                                                     <span className="badge-estado badge-pendiente" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
                                                         <Clock size={12} /> Pendiente
@@ -294,7 +294,7 @@ const RegistroHorarioComponent: React.FC = () => {
                                                 )}
                                             </td>
 
-                                            <td style={{ textAlign: "center" }}>
+                                            <td style={{ textAlign: "center" }} data-label="Acciones">
                                                 {tienePermiso("APROBAR_HORARIOS") ? (
                                                     <div className="acciones-group" style={{ justifyContent: "center" }}>
                                                         {estadoActual !== "APROBADO" && (

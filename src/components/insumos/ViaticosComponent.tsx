@@ -267,7 +267,7 @@ const ViaticosComponent: React.FC = () => {
                 </div>
 
                 <div className="tabla-simetrica-wrapper" style={{ marginTop: "12px" }}>
-                    <table className="tabla-insumos">
+                    <table className="tabla-insumos tabla-tarjetas-movil">
                         <thead>
                             <tr>
                                 <th>Empleado</th>
@@ -282,15 +282,15 @@ const ViaticosComponent: React.FC = () => {
                         <tbody>
                             {registrosPagina.length > 0 ? registrosPagina.map((r) => (
                                 <tr key={r.idViatico} style={{ opacity: r.activo === false ? 0.6 : 1 }}>
-                                    <td>{r.usuario?.nombre} {r.usuario?.apellido}</td>
-                                    <td>{r.empresa?.nombre || "-"}</td>
-                                    <td style={{ textAlign: "center" }}>
+                                    <td data-label="Empleado">{r.usuario?.nombre} {r.usuario?.apellido}</td>
+                                    <td data-label="Empresa">{r.empresa?.nombre || "-"}</td>
+                                    <td data-label="Km" style={{ textAlign: "center" }}>
                                         {r.kilometros} {r.generadoAutomaticamente && <Zap size={12} color="#f59e0b" style={{ verticalAlign: "middle" }} aria-label="Generado automáticamente por geolocalización" />}
                                     </td>
-                                    <td style={{ textAlign: "center" }}>${r.tarifaPorKmAplicada}</td>
-                                    <td style={{ textAlign: "right" }}>${r.montoAPagar.toLocaleString()}</td>
-                                    <td style={{ textAlign: "center" }}>{r.estado}</td>
-                                    <td>
+                                    <td data-label="Tarifa" style={{ textAlign: "center" }}>${r.tarifaPorKmAplicada}</td>
+                                    <td data-label="Monto" style={{ textAlign: "right" }}>${r.montoAPagar.toLocaleString()}</td>
+                                    <td data-label="Estado" style={{ textAlign: "center" }}>{r.estado}</td>
+                                    <td data-label="Acciones">
                                         <div className="acciones-doc">
                                             {puedeAprobar && r.activo !== false && r.estado !== "APROBADO" && <button className="btn-doc-accion descargar" onClick={() => handleCambiarEstado(r.idViatico, "APROBADO")}><Check size={12} /></button>}
                                             {puedeAprobar && r.activo !== false && r.estado !== "RECHAZADO" && <button className="btn-doc-accion" style={{ backgroundColor: "#dc2626" }} onClick={() => handleCambiarEstado(r.idViatico, "RECHAZADO")}><X size={12} /></button>}
