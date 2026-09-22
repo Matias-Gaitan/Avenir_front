@@ -5,5 +5,5 @@ export interface Usuario {
     email: string,
     contrasena: string,
     activo: boolean,
-    tipoPersona: { idTipoPersona: number } // <-- ESTE ES EL CAMBIO
+    tipoPersona: { idTipoPersona: number }
 }

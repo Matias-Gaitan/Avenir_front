@@ -34,12 +34,10 @@ const GestionInsumosComponent: React.FC = () => {
     const puedeEditar = tienePermiso("EDITAR_INSUMOS");
     const puedeEliminar = tienePermiso("ELIMINAR_INSUMOS");
 
-    // Categorías del catálogo (CRUD propio en /api/categoria-insumo)
     const [categorias, setCategorias] = useState<CategoriaInsumo[]>([]);
     const [mostrarCategorias, setMostrarCategorias] = useState(false);
     const [nuevaCategoria, setNuevaCategoria] = useState("");
 
-    // Formulario de alta / edición de insumo
     const [idEditando, setIdEditando] = useState<number | null>(null);
     const [nombre, setNombre] = useState("");
     const [categoria, setCategoria] = useState("");
@@ -48,7 +46,6 @@ const GestionInsumosComponent: React.FC = () => {
     const [stockMinimo, setStockMinimo] = useState<number | "">("");
     const [costoUnitario, setCostoUnitario] = useState<number | "">("");
 
-    // Formulario de entrega
     const [idUsuarioEntrega, setIdUsuarioEntrega] = useState<number | "">("");
     const [idInsumoEntrega, setIdInsumoEntrega] = useState<number | "">("");
     const [cantidadEntrega, setCantidadEntrega] = useState<number | "">("");

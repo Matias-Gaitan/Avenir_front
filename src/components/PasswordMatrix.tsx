@@ -28,7 +28,7 @@ export const PasswordMatrix: React.FC<Props> = ({ contrasena }) => {
         width: "100%"
       }}
     >
-      {/* 🌟 Casillas de Validación Individual por Carácter */}
+      {}
       <div style={{
         display: "flex",
         gap: "6px",
@@ -42,8 +42,6 @@ export const PasswordMatrix: React.FC<Props> = ({ contrasena }) => {
           const esNumero = /\d/.test(char);
           const esMayus = /[A-Z]/.test(char);
 
-          // 💡 Regla de validez del carácter:
-          // Es válido si es número, mayúscula, o si ya se alcanzaron los 6 caracteres.
           const esCaracterValido = esNumero || esMayus || tieneMinimo;
 
           return (
@@ -74,7 +72,7 @@ export const PasswordMatrix: React.FC<Props> = ({ contrasena }) => {
         })}
       </div>
 
-      {/* 📊 Resumen Global de Reglas */}
+      {}
       <div style={{
         display: "flex",
         justifyContent: "space-between",

@@ -11,9 +11,6 @@ const obtenerHeaders = () => {
     return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 };
 
-// US: Digitalizar los relevamientos en empresas cliente para reemplazar el papel -
-// el cliente puede cargar documentacion de una visita aunque no se haya podido
-// coordinar con el tecnico, y este consulta despues que se encontro y que se resolvio.
 const RelevamientosComponent: React.FC = () => {
     const [relevamientos, setRelevamientos] = useState<Relevamiento[]>([]);
     const [empresas, setEmpresas] = useState<Empresa[]>([]);
@@ -65,7 +62,7 @@ const RelevamientosComponent: React.FC = () => {
         cargarRelevamientos();
         cargarEmpresas();
         cargarTiposRiesgo();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     const refrescarSeleccionado = async (id: number) => {

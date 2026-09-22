@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MapPin, Loader2 } from "lucide-react";
 
-// 🌟 Nombre sin acentos para evitar el SyntaxError
 export interface UbicacionSeleccionada {
   direccionCompleta: string;
   pais: string;

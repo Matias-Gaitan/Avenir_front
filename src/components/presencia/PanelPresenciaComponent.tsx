@@ -14,9 +14,6 @@ interface Presencia {
     plataforma?: string;
 }
 
-// Un usuario se considera "en línea" si mandó un heartbeat en los últimos 40s
-// (el frontend los manda cada 20s, así que 40s tolera perder uno solo por una
-// red lenta antes de darlo por desconectado).
 const SEGUNDOS_EN_LINEA = 40;
 
 interface Props {
@@ -60,7 +57,6 @@ const PanelPresenciaComponent: React.FC<Props> = ({ darkMode = false }) => {
                 datos.filter((p) => segundosDesde(p.ultimoHeartbeat) <= SEGUNDOS_EN_LINEA).map((p) => p.idUsuario)
             );
 
-            // Comparamos contra la foto anterior: quien estaba en línea y ya no está, se avisa.
             const nuevasAlertas: string[] = [];
             enLineaAnterior.current.forEach((id) => {
                 if (!enLineaAhora.has(id)) {
@@ -85,7 +81,7 @@ const PanelPresenciaComponent: React.FC<Props> = ({ darkMode = false }) => {
         cargar();
         const intervalo = setInterval(cargar, 10000);
         return () => clearInterval(intervalo);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     const enLinea = lista.filter((p) => segundosDesde(p.ultimoHeartbeat) <= SEGUNDOS_EN_LINEA);

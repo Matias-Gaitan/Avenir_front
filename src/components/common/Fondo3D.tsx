@@ -2,11 +2,6 @@ import React, { useEffect, useRef } from "react";
 import Globe from "globe.gl";
 import "./Fondo3D.css";
 
-// 🌐 Fondo en 3D para las pantallas de Login y Registro.
-// Es el mismo Globo 3D (globe.gl) que se usaba en Mapa 2D, pero limpio:
-// sin datos de empresas/empleados y sin arcos/anillos animados, solo el
-// globo girando lentamente. Cuando llegue el modelo 3D propio, este es el
-// lugar para reemplazar globeImageUrl/bumpImageUrl por ese asset.
 const Fondo3D: React.FC = () => {
     const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -14,9 +9,6 @@ const Fondo3D: React.FC = () => {
         const contenedor = containerRef.current;
         if (!contenedor) return;
 
-        // El .d.ts de globe.gl declara el export como si necesitara "new", pero la API
-        // real de la librería es esta forma de fábrica (Globe()(dom)); se castea a any
-        // solo para esquivar ese desajuste de tipos sin cambiar el comportamiento real.
         const world = (Globe as any)()(contenedor)
             .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-night.jpg")
             .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")

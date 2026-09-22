@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Configuración de íconos vectoriales para la mapoteca 2D
 const iconoEmpresa = new L.Icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/484/484167.png',
   iconSize: [32, 32],
@@ -30,7 +29,7 @@ interface Props {
 }
 
 export const MapaUbicaciones2D: React.FC<Props> = ({ puntos }) => {
-  // Centro inicial por defecto (ej: Argentina)
+
   const centroInicial: [number, number] = puntos.length > 0
     ? [puntos[0].lat, puntos[0].lng]
     : [-31.4135, -64.1810];

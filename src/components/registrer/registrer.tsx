@@ -177,7 +177,7 @@ const Register: React.FC = () => {
                         </button>
                     </div>
 
-                    {/* 🌟 Matriz de Tipeo Animada e Interactiva */}
+                    {}
                     <PasswordMatrix contrasena={contrasena} />
                 </div>
 

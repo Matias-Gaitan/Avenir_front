@@ -1,6 +1,3 @@
-// ==========================================
-// INTERFACES PARA PARÁMETROS / CATÁLOGOS
-// ==========================================
 
 export interface CategoriaRiesgo {
   id?: number;
@@ -31,10 +28,6 @@ export interface TipoRiesgo {
   nombre: string;
   activo?: boolean;
 }
-
-// ==========================================
-// INTERFAZ PRINCIPAL FORMULARIO IPER
-// ==========================================
 
 export interface IPERFormulario {
   id?: number;

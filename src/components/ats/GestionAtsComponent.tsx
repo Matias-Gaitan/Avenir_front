@@ -40,7 +40,6 @@ export const GestionAtsComponent: React.FC<Props> = ({ darkMode }) => {
   const [causasRiesgo, setCausasRiesgo] = useState<ItemCat[]>([]);
   const [probabilidades, setProbabilidades] = useState<ItemCat[]>([]);
 
-  // 🌟 SI NO LLEGA LA PROP, DETECTAMOS SI EL TEMA ES OSCURO DIRECTO DE LA CLASE O LOCALSTORAGE
   const isDark = darkMode ?? (
     document.documentElement.classList.contains("dark") ||
     document.body.classList.contains("dark") ||
@@ -59,9 +58,6 @@ export const GestionAtsComponent: React.FC<Props> = ({ darkMode }) => {
     { paso: 1, descripcion: "", peligro: "", riesgo: "", medidaControl: "" }
   ]);
 
-  // US: al elegir la empresa, autocompletar la ubicación con la dirección ya
-  // guardada de esa empresa en vez de tener que tipearla de nuevo (evita
-  // inconsistencias entre lo que dice "Empresas" y lo que se carga en el ATS).
   useEffect(() => {
     if (!idEmpresa) return;
     const empresaSeleccionada = empresas.find((e) => e.idEmpresa === idEmpresa);
@@ -69,7 +65,7 @@ export const GestionAtsComponent: React.FC<Props> = ({ darkMode }) => {
       const partes = [empresaSeleccionada.direccion, empresaSeleccionada.barrio, empresaSeleccionada.ciudad].filter(Boolean);
       if (partes.length > 0) setUbicacion(partes.join(", "));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [idEmpresa, empresas]);
 
   useEffect(() => {
@@ -180,7 +176,7 @@ export const GestionAtsComponent: React.FC<Props> = ({ darkMode }) => {
         </h2>
 
         <form onSubmit={handleSubmit}>
-          {/* Bloque 1 */}
+          {}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", marginBottom: "20px" }}>
             <div>
               <label style={{ display: "block", fontSize: "0.85rem", color: theme.labelColor, fontWeight: "bold", marginBottom: "6px" }}>
@@ -226,7 +222,7 @@ export const GestionAtsComponent: React.FC<Props> = ({ darkMode }) => {
             </div>
           </div>
 
-          {/* Bloque 2 */}
+          {}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: "25px", backgroundColor: theme.blockBg, padding: "16px", borderRadius: "8px", border: theme.border }}>
             <div>
               <label style={{ display: "block", fontSize: "0.8rem", color: theme.headerColor, fontWeight: "bold", marginBottom: "6px" }}>Tipo de Riesgo (IPER)</label>
@@ -269,7 +265,7 @@ export const GestionAtsComponent: React.FC<Props> = ({ darkMode }) => {
             </div>
           </div>
 
-          {/* Bloque 3 */}
+          {}
           <div style={{ marginBottom: "25px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
               <h4 style={{ margin: 0, color: "#10B981", fontSize: "1rem", fontWeight: "bold" }}>Secuencia de Pasos y Medidas Preventivas</h4>

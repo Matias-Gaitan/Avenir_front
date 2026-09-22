@@ -31,7 +31,7 @@ export const AdminCatalogosPage: React.FC<Props> = ({ darkMode = false }) => {
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '10px' }}>
-      {/* Cabecera sin emojis */}
+      {}
       <div style={{ textAlign: 'center', marginBottom: '25px' }}>
         <h2 style={{
           fontSize: '1.5rem',
@@ -51,7 +51,7 @@ export const AdminCatalogosPage: React.FC<Props> = ({ darkMode = false }) => {
         </p>
       </div>
 
-      {/* Pestañas estilo Pilled */}
+      {}
       <div style={{
         display: 'flex',
         gap: '8px',
@@ -92,7 +92,7 @@ export const AdminCatalogosPage: React.FC<Props> = ({ darkMode = false }) => {
         })}
       </div>
 
-      {/* Componente de Gestión */}
+      {}
       <GestionCatalogos modulo={moduloActivo} titulo={getTitulo()} darkMode={darkMode} />
     </div>
   );

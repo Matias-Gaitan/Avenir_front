@@ -27,6 +27,6 @@ export interface Empresa extends UbicacionGeografica {
   id?: number;
   cuit: string;
   nombre: string;
-  direccion: string; // Se mantiene para fallback/compatibilidad
+  direccion: string;
   activo?: boolean;
 }

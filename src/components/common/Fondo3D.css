@@ -16,7 +16,6 @@
     display: block;
 }
 
-/* Oscurece el globo para que el formulario en primer plano siga siendo legible */
 .fondo3d-overlay {
     position: absolute;
     inset: 0;

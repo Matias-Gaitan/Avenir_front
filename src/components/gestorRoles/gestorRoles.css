@@ -142,7 +142,7 @@
 .btn-eliminar:hover {
     background-color: #dc2626;
 }
-/* Estilos para la creación dinámica de permisos */
+
 .header-permisos {
     display: flex;
     justify-content: space-between;

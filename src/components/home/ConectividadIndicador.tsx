@@ -2,10 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Wifi, WifiOff, RefreshCw } from "lucide-react";
 import { obtenerPendientes } from "../../service/offlineQueue";
 
-// Muestra el estado de conexión de ESTE dispositivo/usuario únicamente. No hay forma
-// de saber en tiempo real qué está haciendo un dispositivo que está realmente sin
-// señal (por eso no existe algo así para "otros" usuarios) — esto es honesto sobre esa
-// limitación y solo informa el propio estado del que está mirando la pantalla.
 const ConectividadIndicador: React.FC = () => {
     const [enLinea, setEnLinea] = useState(navigator.onLine);
     const [pendientes, setPendientes] = useState(() => obtenerPendientes().length);
@@ -17,7 +13,7 @@ const ConectividadIndicador: React.FC = () => {
 
         window.addEventListener("online", alConectar);
         window.addEventListener("offline", alDesconectar);
-        // Revisa la cola periódicamente por si otro componente la modificó
+
         const intervalo = setInterval(actualizarPendientes, 3000);
 
         return () => {

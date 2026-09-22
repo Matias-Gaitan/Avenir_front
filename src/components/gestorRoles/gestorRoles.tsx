@@ -103,7 +103,6 @@ const GestorRoles: React.FC = () => {
             }
         });
 
-        // Aseguramos valores por defecto si la base de datos no retornó los módulos nuevos aún
         if (modulosMap["IPER"].permisos.length === 0) {
             modulosMap["IPER"].permisos = [
                 { idPermiso: 901, nombre: "VER_CATALOGOS_IPER" },

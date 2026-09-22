@@ -70,12 +70,10 @@ const EmpresaComponent: React.FC<Props> = ({ onIrAlMapa }) => {
         setGeoData(data);
     };
 
-    // ⚡ NAVEGACIÓN DIRECTA AL MAPA CON BÚSQUEDA SILENCIOSA
     const irAlMapaConValidacion = async (entidad: { id?: number; direccion: string; latitud?: number; longitud?: number; nombre: string }) => {
         let lat = entidad.latitud;
         let lng = entidad.longitud;
 
-        // Si no tiene coordenadas guardadas en la BD, buscamos en segundo plano silenciosamente
         if (!lat || !lng) {
             if (!entidad.direccion || entidad.direccion.trim() === "") {
                 alert(`Error: La empresa "${entidad.nombre}" no posee una dirección registrada.`);

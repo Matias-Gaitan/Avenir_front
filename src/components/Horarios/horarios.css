@@ -1,4 +1,4 @@
-/* Contenedor principal alineado con las tarjetas del Dashboard */
+
 .horario-container {
     display: flex;
     flex-direction: column;
@@ -10,7 +10,6 @@
     box-sizing: border-box;
 }
 
-/* Tarjeta contenedora principal */
 .horario-card {
     background-color: #ffffff;
     border-radius: 12px;
@@ -31,7 +30,6 @@
     text-align: center;
 }
 
-/* Formulario - Grid simétrico de 3 columnas */
 .form-grid-3 {
     display: grid;
     grid-template-columns: 2fr 1.2fr 1fr;
@@ -98,7 +96,6 @@
     background-color: #16a34a;
 }
 
-/* Mensajes */
 .msg-error {
     color: #dc2626;
     margin-top: 12px;
@@ -115,7 +112,6 @@
     font-size: 0.9rem;
 }
 
-/* Barra de Filtro Alineada y Limpia */
 .filtros-bar {
     display: flex;
     align-items: center;
@@ -161,7 +157,6 @@
     background-color: #042f2e;
 }
 
-/* 🌟 TABLA 100% SIMÉTRICA Y ALINEADA */
 .tabla-simetrica-wrapper {
     width: 100%;
     overflow-x: auto;
@@ -173,7 +168,7 @@
 .tabla-horarios {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed; /* Mantiene la simetría exacta de las columnas */
+    table-layout: fixed;
     text-align: left;
 }
 

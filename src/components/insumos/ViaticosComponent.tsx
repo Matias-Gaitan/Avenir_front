@@ -28,9 +28,7 @@ const ViaticosComponent: React.FC = () => {
 
     const email = localStorage.getItem("email") || "";
     const puedeAprobar = tienePermiso("APROBAR_VIATICOS");
-    // La carga y edición manual de kilómetros queda reservada a quien aprueba viáticos:
-    // el flujo normal de un empleado genera el viático solo, por geolocalización al
-    // marcar ingreso a una empresa, para evitar que cargue kilómetros falsos.
+
     const puedeEditar = puedeAprobar;
     const puedeAdministrarTarifas = tienePermiso("EDITAR_USUARIOS");
 
@@ -75,7 +73,7 @@ const ViaticosComponent: React.FC = () => {
         cargarUsuarios();
         cargarEmpresas();
         buscarRegistros(fechaFiltro, filtroEstado);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     const tarifaEmpleadoActual = usuarios.find((u) => u.email === email)?.tarifaPorKm ?? 0;

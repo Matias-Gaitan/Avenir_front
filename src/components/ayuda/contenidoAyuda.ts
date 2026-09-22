@@ -4,8 +4,6 @@ export interface ArticuloAyuda {
     pasos: string[];
 }
 
-// Relaciona cada pantalla del sistema (vistaActiva en home.tsx) con su nombre de
-// módulo en el Centro de Ayuda, para poder mostrar la ayuda contextual correcta.
 export const vistaAModulo: Record<string, string> = {
     "usuarios": "Usuarios",
     "permisos-usuario": "Permisos Empleado",
@@ -29,7 +27,7 @@ export const vistaAModulo: Record<string, string> = {
 };
 
 export const articulosAyuda: ArticuloAyuda[] = [
-    // ───────────────────────── USUARIOS ─────────────────────────
+
     {
         modulo: "Usuarios",
         titulo: "Aprobar o habilitar un usuario nuevo",
@@ -59,7 +57,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── PERMISOS EMPLEADO ─────────────────────────
     {
         modulo: "Permisos Empleado",
         titulo: "Dar un permiso puntual a un solo empleado (sin cambiarle el rol)",
@@ -81,7 +78,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── ROLES ─────────────────────────
     {
         modulo: "Roles",
         titulo: "Crear un rol nuevo con sus permisos",
@@ -108,7 +104,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── EMPRESAS ─────────────────────────
     {
         modulo: "Empresas",
         titulo: "Cargar una empresa cliente con su ubicación",
@@ -128,7 +123,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── HORARIOS ─────────────────────────
     {
         modulo: "Horarios",
         titulo: "Cómo se cargan y aprueban las horas trabajadas",
@@ -139,7 +133,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── INGRESO Y EGRESO ─────────────────────────
     {
         modulo: "Ingreso y Egreso",
         titulo: "Fichar entrada y salida de una visita a una empresa",
@@ -151,7 +144,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── INSUMOS ─────────────────────────
     {
         modulo: "Insumos",
         titulo: "Cargar un insumo nuevo al catálogo",
@@ -178,7 +170,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── VIÁTICOS ─────────────────────────
     {
         modulo: "Viáticos",
         titulo: "Cómo se calculan los kilómetros y quién puede cargarlos a mano",
@@ -206,7 +197,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── ASIGNACIÓN DE TAREAS ─────────────────────────
     {
         modulo: "Asignación de Tareas",
         titulo: "Asignar una tarea con checklist a un empleado",
@@ -225,7 +215,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── DOCUMENTOS ─────────────────────────
     {
         modulo: "Documentos",
         titulo: "Para qué se usa el módulo de Documentos",
@@ -244,7 +233,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── CRONOGRAMA ─────────────────────────
     {
         modulo: "Cronograma",
         titulo: "Para qué se usa el Cronograma y cómo cargar un evento",
@@ -256,7 +244,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── IPER ─────────────────────────
     {
         modulo: "IPER",
         titulo: "Cargar los catálogos base (tipos de riesgo, causas, etc.)",
@@ -274,7 +261,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── ATS ─────────────────────────
     {
         modulo: "ATS",
         titulo: "Completar un Análisis de Trabajo Seguro (ATS)",
@@ -285,7 +271,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── MAPA 2D ─────────────────────────
     {
         modulo: "Mapa 2D",
         titulo: "Ver la ubicación de empresas y empleados",
@@ -295,7 +280,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── MI PERFIL ─────────────────────────
     {
         modulo: "Mi Perfil",
         titulo: "Editar mis propios datos",
@@ -306,7 +290,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── ESTADO DEL SISTEMA ─────────────────────────
     {
         modulo: "Estado del Sistema",
         titulo: "Qué muestra esta pantalla",
@@ -315,7 +298,6 @@ export const articulosAyuda: ArticuloAyuda[] = [
         ]
     },
 
-    // ───────────────────────── USUARIOS CONECTADOS ─────────────────────────
     {
         modulo: "Usuarios Conectados",
         titulo: "Para qué sirve y qué límite real tiene",

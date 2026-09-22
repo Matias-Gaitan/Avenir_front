@@ -21,7 +21,6 @@ interface EmpresaOpcion {
 export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
   const [paso, setPaso] = useState(1);
 
-  // 🌟 SI NO LLEGA LA PROP, DETECTAMOS SI EL TEMA ES OSCURO DIRECTO DE LA CLASE O LOCALSTORAGE
   const isDark = darkMode ?? (
     document.documentElement.classList.contains("dark") ||
     document.body.classList.contains("dark") ||
@@ -116,7 +115,6 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
     }
   };
 
-  // 🌟 ESTILOS FORZADOS AL 100% PARA MODO OSCURO / CLARO
   const theme = {
     cardBg: isDark ? "#0b132b" : "#FFFFFF",
     cardText: isDark ? "#F8FAFC" : "#0F172A",
@@ -164,7 +162,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
           </h2>
         </div>
 
-        {/* PASO 1: DATOS GENERALES */}
+        {}
         {paso === 1 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div>
@@ -204,7 +202,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
           </div>
         )}
 
-        {/* PASO 2: IDENTIFICACIÓN DEL RIESGO */}
+        {}
         {paso === 2 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div>
@@ -239,7 +237,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
           </div>
         )}
 
-        {/* PASO 3: EVALUACIÓN */}
+        {}
         {paso === 3 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
@@ -289,7 +287,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
           </div>
         )}
 
-        {/* PASO 4: PLAN PREVENTIVO */}
+        {}
         {paso === 4 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div>
@@ -310,7 +308,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
           </div>
         )}
 
-        {/* PASO 5: CIERRE */}
+        {}
         {paso === 5 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div>
@@ -335,7 +333,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
           </div>
         )}
 
-        {/* PASO 6: ARCHIVO Y CIERRE */}
+        {}
         {paso === 6 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div>
@@ -350,7 +348,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
           </div>
         )}
 
-        {/* Botones */}
+        {}
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "25px" }}>
           {paso > 1 && (
             <button onClick={handlePrev} className="btn-interactive" style={{ padding: "10px 18px", backgroundColor: theme.btnPrevBg, color: "#FFF", border: "none", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontWeight: "bold" }}>

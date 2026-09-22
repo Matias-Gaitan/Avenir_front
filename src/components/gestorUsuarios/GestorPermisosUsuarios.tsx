@@ -84,8 +84,6 @@ const agruparPermisosPorModulo = (permisosDisponibles: Permiso[]): ModuloPermiso
 export const GestorPermisosUsuarios: React.FC<Props> = ({ darkMode = false }) => {
   const puedeEditar = tienePermiso("EDITAR_USUARIOS");
 
-  // Paleta local: en modo oscuro usamos los mismos tonos que el resto del sistema
-  // (theme.css), para que estas tarjetas internas no queden claras sobre fondo oscuro.
   const c = {
     bgSuave: darkMode ? "#0D1117" : "#F8FAFC",
     bgTarjeta: darkMode ? "#161B22" : "#FFFFFF",
@@ -103,11 +101,9 @@ export const GestorPermisosUsuarios: React.FC<Props> = ({ darkMode = false }) =>
   const [filtroRol, setFiltroRol] = useState<string>("TODOS");
   const [idUsuarioSel, setIdUsuarioSel] = useState<number | null>(null);
 
-  // Formulario de permisos individuales del usuario seleccionado
   const [personalizados, setPersonalizados] = useState(false);
   const [permisosSeleccionados, setPermisosSeleccionados] = useState<number[]>([]);
 
-  // Formulario de horario laboral del usuario seleccionado
   const [tieneHorario, setTieneHorario] = useState(false);
   const [horarioTexto, setHorarioTexto] = useState("");
 
@@ -162,7 +158,7 @@ export const GestorPermisosUsuarios: React.FC<Props> = ({ darkMode = false }) =>
       setHorarioTexto(usuarioSeleccionado.horarioLaboral || "");
       setError(""); setMensaje("");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [usuarioSeleccionado?.idUsuario]);
 
   const handleCheckboxChange = (idPermiso: number) => {
@@ -223,7 +219,7 @@ export const GestorPermisosUsuarios: React.FC<Props> = ({ darkMode = false }) =>
         aprobar viáticos), y si tiene un horario laboral fijo asignado.
       </p>
 
-      {/* FILTROS Y BUSQUEDA */}
+      {}
       <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap", backgroundColor: c.bgSuave, padding: "12px", borderRadius: "8px", border: `1px solid ${c.borde}` }}>
         <div style={{ flex: 1, minWidth: "220px", display: "flex", alignItems: "center", backgroundColor: c.bgTarjeta, borderRadius: "6px", padding: "0 10px", border: `1px solid ${c.borde}` }}>
           <Search size={16} color="#94A3B8" />
@@ -308,7 +304,7 @@ export const GestorPermisosUsuarios: React.FC<Props> = ({ darkMode = false }) =>
           {error && <p className="msg-error">{error}</p>}
           {mensaje && <p className="msg-exito">{mensaje}</p>}
 
-          {/* HORARIO LABORAL */}
+          {}
           <div style={{ backgroundColor: c.bgSuave, padding: "16px", borderRadius: "8px", border: `1px solid ${c.borde}`, marginBottom: "20px" }}>
             <h4 style={{ margin: "0 0 12px 0", color: c.texto, fontSize: "0.95rem", display: "flex", alignItems: "center", gap: "6px" }}>
               <Clock size={18} color="#059669" /> Horario Laboral Asignado
@@ -338,7 +334,7 @@ export const GestorPermisosUsuarios: React.FC<Props> = ({ darkMode = false }) =>
             )}
           </div>
 
-          {/* PERMISOS PERSONALIZADOS */}
+          {}
           <div style={{ backgroundColor: c.bgSuave, padding: "16px", borderRadius: "8px", border: `1px solid ${c.borde}` }}>
             <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: puedeEditar ? "pointer" : "default", fontSize: "0.9rem", fontWeight: "bold", color: c.texto, marginBottom: "12px" }}>
               <input type="checkbox" checked={personalizados} disabled={!puedeEditar} onChange={(e) => setPersonalizados(e.target.checked)} />

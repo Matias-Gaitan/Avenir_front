@@ -36,8 +36,6 @@ const AsignacionTareasComponent: React.FC<Props> = ({ darkMode = false }) => {
     const puedeEliminar = tienePermiso("ELIMINAR_TAREAS");
     const email = localStorage.getItem("email") || "";
 
-    // Paleta local para que las secciones internas (checklist, pastillas de insumos,
-    // tarjetas de tarea) no queden claras sobre fondo oscuro.
     const c = {
         bgSuave: darkMode ? "#0D1117" : "#F8FAFC",
         bgTarjeta: darkMode ? "#161B22" : "#FFFFFF",
@@ -55,7 +53,6 @@ const AsignacionTareasComponent: React.FC<Props> = ({ darkMode = false }) => {
     const [tareas, setTareas] = useState<TareaAsignada[]>([]);
     const [misTareas, setMisTareas] = useState<TareaAsignada[]>([]);
 
-    // Formulario de asignación
     const [idUsuario, setIdUsuario] = useState<number | "">("");
     const [idEmpresa, setIdEmpresa] = useState<number | "">("");
     const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
@@ -111,10 +108,9 @@ const AsignacionTareasComponent: React.FC<Props> = ({ darkMode = false }) => {
         cargarInsumos();
         if (puedeVer) cargarTareas();
         cargarMisTareas();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
-    // Autocompleta direccion/barrio desde la empresa elegida (igual que en ATS)
     useEffect(() => {
         if (!idEmpresa) return;
         const emp = empresas.find((e) => e.idEmpresa === idEmpresa);
@@ -122,7 +118,7 @@ const AsignacionTareasComponent: React.FC<Props> = ({ darkMode = false }) => {
             setDireccionExacta(emp.direccion || "");
             setBarrioZona(emp.barrio || "");
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, [idEmpresa, empresas]);
 
     const toggleInsumo = (nombre: string) => {

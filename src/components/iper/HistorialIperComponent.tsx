@@ -17,8 +17,6 @@ const badgeNivel = (nivel?: string) => {
     return { bg: "#f1f5f9", color: "#64748b" };
 };
 
-// US: Como tecnico quiero generar documentos de evaluacion de riesgo para reportar
-// resultados (UH-25) — historial de formularios IPER con descarga de reporte en PDF.
 const HistorialIperComponent: React.FC = () => {
     const [formularios, setFormularios] = useState<IPERFormulario[]>([]);
     const [busqueda, setBusqueda] = useState("");

@@ -14,7 +14,6 @@ const AyudaFlotante: React.FC<Props> = ({ moduloActual, darkMode = false, onVerT
     const [reporteAbierto, setReporteAbierto] = useState(false);
     const [expandido, setExpandido] = useState<Set<number>>(new Set());
 
-    // Al cambiar de módulo, arrancamos con el panel colapsado de nuevo
     useEffect(() => {
         setExpandido(new Set());
     }, [moduloActual]);
@@ -42,8 +41,7 @@ const AyudaFlotante: React.FC<Props> = ({ moduloActual, darkMode = false, onVerT
 
     return (
         <>
-            {/* Botón para reportar errores/sugerencias por WhatsApp: visible en toda pantalla,
-                lo use el cliente o cualquier empleado, para ir perfeccionando el sistema. */}
+            {}
             <button
                 type="button"
                 onClick={() => setReporteAbierto(true)}

@@ -50,9 +50,6 @@ const LoginComponent: React.FC = () => {
                     permisos: response.data.permisos || []
                 }));
 
-                // 📍 Punto de ingreso al sistema: sirve como origen para calcular
-                // automáticamente los km de viáticos cuando el empleado marca su
-                // ingreso a una empresa (ver módulo Ingreso y Egreso).
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         (pos) => {
@@ -139,7 +136,7 @@ const LoginComponent: React.FC = () => {
                         </button>
                     </div>
 
-                    {/* 🌟 MATRIZ GUÍA DE TIPEO POR PATRÓN DE CARÁCTER */}
+                    {}
                     {contrasena.length > 0 && (
                         <div style={{
                             marginTop: "8px",

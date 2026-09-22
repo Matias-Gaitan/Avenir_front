@@ -17,8 +17,6 @@ const obtenerHeaders = () => {
     return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 };
 
-// US: Como usuario quiero editar mis propios datos (mail, contraseña, telefono, direccion)
-// y visualizar el rol que tengo y los permisos asociados (UH-36)
 const MiPerfilComponent: React.FC = () => {
     const [usuarioSesion, setUsuarioSesion] = useState<UsuarioSesion>({});
     const emailActual = localStorage.getItem("email") || "";
@@ -46,7 +44,6 @@ const MiPerfilComponent: React.FC = () => {
             }
         }
 
-        // Traemos los datos completos y actualizados desde el backend (telefono, direccion, etc.)
         api.get("/usuarios", obtenerHeaders())
             .then((res) => {
                 const propio = Array.isArray(res.data) ? res.data.find((u: any) => u.email === emailActual) : null;
@@ -59,7 +56,7 @@ const MiPerfilComponent: React.FC = () => {
                 }
             })
             .catch((err) => console.error("Error al cargar mis datos", err));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     const esAdmin = (usuarioSesion.rol || "").toUpperCase() === "ADMINISTRADOR";
@@ -80,7 +77,6 @@ const MiPerfilComponent: React.FC = () => {
 
             await api.put("/usuarios/mi-perfil", payload, obtenerHeaders());
 
-            // Si cambio el email, hay que actualizar lo que usamos como identificador de sesion
             if (email && email !== emailActual) {
                 localStorage.setItem("email", email);
             }

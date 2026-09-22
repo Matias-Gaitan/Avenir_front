@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
 
-// El navegador no siempre expone un icono visible para instalar la PWA
-// (Brave lo esconde, y en Edge/Chrome puede no aparecer segun la version).
-// Escuchamos el evento nativo y lo disparamos nosotros desde un boton propio.
 interface EventoInstalacion extends Event {
     prompt: () => Promise<void>;
     userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;

@@ -7,7 +7,6 @@
     overflow-x: hidden;
 }
 
-/* Header Verde */
 .navbar-card {
     background-color: #064e3b;
     padding: 16px;
@@ -33,7 +32,6 @@
     font-weight: 700;
 }
 
-/* Carrusel de botones navegables en 1 sola fila */
 .nav-pills {
     display: flex !important;
     flex-direction: row !important;
@@ -46,7 +44,7 @@
 }
 
 .nav-pills::-webkit-scrollbar {
-    display: none; /* Oculta la barra en celulares */
+    display: none;
 }
 
 .nav-pill-btn {
@@ -58,8 +56,8 @@
     font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
-    white-space: nowrap !important; /* Evita que el texto se rompa en 2 líneas */
-    flex-shrink: 0; /* Evita que los botones se encojan */
+    white-space: nowrap !important;
+    flex-shrink: 0;
 }
 
 .nav-pill-btn.active {
@@ -78,7 +76,6 @@
     cursor: pointer;
 }
 
-/* ÁREA PRINCIPAL */
 .main-content {
     flex: 1;
     padding: 12px;

@@ -11,14 +11,12 @@ export const tienePermiso = (permisoBuscado: string): boolean => {
 
         const usuario: UsuarioSesion = JSON.parse(usuarioStorage);
 
-        // 🌟 EVALUACIÓN SUPREMA: Normalizamos a mayúsculas para evitar fallos por minúsculas
         const rolUsuario = usuario.rol ? usuario.rol.trim().toUpperCase() : "";
 
         if (rolUsuario === "ADMINISTRADOR") {
-            return true; // Acceso total habilitado
+            return true;
         }
 
-        // Para el resto de los roles, se evalúan los permisos otorgados
         const permisos: string[] = usuario.permisos || [];
         return permisos.includes(permisoBuscado);
     } catch (error) {

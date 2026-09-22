@@ -117,7 +117,7 @@ const EstadisticasComponent: React.FC = () => {
     useEffect(() => {
         if (!puedeVer) return;
         cargarDatos(pestania);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, [pestania]);
 
     if (!puedeVer) {

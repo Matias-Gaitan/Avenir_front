@@ -18,7 +18,6 @@ import {
   Navigation2
 } from "lucide-react";
 
-// Íconos de Leaflet 2D
 const iconoEmpresa = new L.Icon({
   iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
@@ -77,7 +76,6 @@ interface Props {
   puntoEnfocado?: PuntoEnfocado | null;
 }
 
-// 📐 Fórmula de Haversine para distancias en KM
 const calcularDistanciaKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -90,7 +88,6 @@ const calcularDistanciaKm = (lat1: number, lon1: number, lat2: number, lon2: num
   return Math.round(R * c * 10) / 10;
 };
 
-// 🎯 Controlador de animación para el Mapa 2D
 const MapController: React.FC<{ punto: PuntoEnfocado | null }> = ({ punto }) => {
   const map = useMap();
   useEffect(() => {
@@ -113,9 +110,8 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
   const [busqueda, setBusqueda] = useState<string>("");
   const [empresaSeleccionada, setEmpresaSeleccionada] = useState<ElementoMap | null>(null);
 
-  // 🚗 ESTADOS DE LA SIMULACIÓN DE VIAJE GPS EN TIEMPO REAL
   const [simulando, setSimulando] = useState<boolean>(false);
-  const [progresoViaje, setProgresoViaje] = useState<number>(0); // 0 a 100%
+  const [progresoViaje, setProgresoViaje] = useState<number>(0);
   const [posicionSimulada, setPosicionSimulada] = useState<[number, number] | null>(null);
   const [puntosRutaSimulada, setPuntosRutaSimulada] = useState<[number, number][]>([]);
   const [empleadoEnViaje, setEmpleadoEnViaje] = useState<ElementoMap | null>(null);
@@ -246,9 +242,8 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
     cargarDatosGeolocalizados();
   }, []);
 
-  // 🚗 LÓGICA DEL MOTOR DE SIMULACIÓN DE VIAJE PASO A PASO
   const iniciarSimulacionViaje = (empleado: ElementoMap) => {
-    // Buscar la empresa más cercana como destino
+
     const empresasList = elementos.filter((e) => e.tipo === "EMPRESA");
     if (empresasList.length === 0) {
       alert("No hay empresas cargadas para simular el destino.");
@@ -266,7 +261,6 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
       }
     });
 
-    // Crear 50 puntos intermedios en la ruta simulada
     const pasos = 50;
     const ruta: [number, number][] = [];
     for (let i = 0; i <= pasos; i++) {
@@ -283,7 +277,6 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
     setProgresoViaje(0);
     setSimulando(true);
 
-    // Hacer zoom sobre el inicio del trayecto
     setPuntoNavegacionManual({
       lat: empleado.latitud,
       lng: empleado.longitud,
@@ -292,7 +285,6 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
     });
   };
 
-  // Cronómetro de animación de movimiento GPS
   useEffect(() => {
     if (!simulando || puntosRutaSimulada.length === 0 || !destinoViaje) return;
 
@@ -313,7 +305,7 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
         setSimulando(false);
         alert(`🎉 ¡${empleadoEnViaje?.nombre} llegó exitosamente a la sede ${destinoViaje.nombre}!`);
       }
-    }, 250); // Mueve el vehículo cada 250ms
+    }, 250);
 
     return () => clearInterval(interval);
   }, [simulando, puntosRutaSimulada, destinoViaje, empleadoEnViaje]);
@@ -356,7 +348,7 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
 
   return (
     <div style={{ position: "relative", width: "100%", height: "calc(100vh - 120px)", borderRadius: "12px", overflow: "hidden", border: darkMode ? "1px solid #1E293B" : "1px solid #E2E8F0" }}>
-          {/* BARRA SUPERIOR DE CONTROLES */}
+          {}
           <div style={{ position: "absolute", top: "16px", left: "16px", right: sidebarAbierta ? "340px" : "60px", zIndex: 1000, display: "flex", gap: "10px", flexWrap: "wrap", pointerEvents: "none", transition: "all 0.3s ease" }}>
 
             <div style={{ pointerEvents: "auto", backgroundColor: darkMode ? "rgba(11, 19, 43, 0.92)" : "rgba(255, 255, 255, 0.95)", padding: "8px 14px", borderRadius: "8px", display: "flex", alignItems: "center", gap: "10px", border: "1px solid #10B981" }}>
@@ -401,7 +393,7 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
             </button>
           </div>
 
-          {/* 🚗 CARTEL DE PANEL FLOTANTE EN VIVO CUANDO LA SIMULACIÓN DE TRAYECTO ESTÁ ACTIVA */}
+          {}
           {simulando && (
             <div style={{
               position: "absolute",
@@ -449,7 +441,7 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
             </div>
           )}
 
-          {/* PANEL LATERAL DE BÚSQUEDA */}
+          {}
           <div style={{
             position: "absolute",
             top: "16px",
@@ -522,7 +514,7 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
                         {item.direccion}
                       </span>
 
-                      {/* 🚘 BOTÓN PARA DISPARAR LA SIMULACIÓN DE TRAYECTO SI ES EMPLEADO */}
+                      {}
                       {item.tipo === "EMPLEADO_CAMPO" && (
                         <button
                           onClick={() => iniciarSimulacionViaje(item)}
@@ -554,7 +546,7 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
             )}
           </div>
 
-          {/* MAPA LEAFLET 2D CON TRAYECTORIA Y VEHÍCULO SIMULADO EN VIVO */}
+          {}
           <MapContainer
             center={puntoCamaraActual && puntoCamaraActual.lat ? [puntoCamaraActual.lat, puntoCamaraActual.lng] : centroPorDefecto}
             zoom={puntoCamaraActual && puntoCamaraActual.zoom ? puntoCamaraActual.zoom : 11}
@@ -564,7 +556,7 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
 
             <MapController punto={puntoCamaraActual || null} />
 
-            {/* 🛣️ RENDERIZADO DE RUTA EN VIVO DEL VEHÍCULO EN TRAYECTO */}
+            {}
             {simulando && puntosRutaSimulada.length > 0 && (
               <>
                 <Polyline
@@ -584,7 +576,7 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
               </>
             )}
 
-            {/* RADIO Y MATRIZ DE PROXIMIDAD SI HAY EMPRESA SELECCIONADA */}
+            {}
             {empresaSeleccionada && (
               <>
                 <Circle

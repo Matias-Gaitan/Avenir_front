@@ -12,8 +12,6 @@ const obtenerHeaders = () => {
 
 const formatearHora = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-// US: Como administrador quiero visualizar qué técnicos están activos y qué documentación
-// está activa, para tener control del estado operativo y documental del sistema (UH-37)
 const EstadoSistemaComponent: React.FC = () => {
     const [activos, setActivos] = useState<RegistroAsistencia[]>([]);
     const [documentos, setDocumentos] = useState<Documento[]>([]);

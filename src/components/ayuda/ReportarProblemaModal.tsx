@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { X, Bug, Lightbulb, HelpCircle, MessageCircle } from "lucide-react";
 
-// Número de soporte de Avenir: 3541-204059 (Argentina), en formato internacional para WhatsApp.
 const NUMERO_WHATSAPP_SOPORTE = "5493541204059";
 
 interface Props {
@@ -32,7 +31,7 @@ const ReportarProblemaModal: React.FC<Props> = ({ abierto, onCerrar, moduloActua
         nombre = [usuario.nombre, usuario.apellido].filter(Boolean).join(" ");
         rol = usuario.rol || "";
     } catch {
-        // localStorage puede no tener el objeto "usuario" bien formado; seguimos sin nombre/rol
+
     }
 
     const etiquetaTipo = tipos.find((t) => t.valor === tipo)?.titulo || "";

@@ -12,7 +12,6 @@ const obtenerHeaders = () => {
     return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 };
 
-// Intenta obtener la geolocalización del navegador sin bloquear el fichaje si el usuario la rechaza
 const obtenerCoordenadas = (): Promise<{ latitud: number | null; longitud: number | null }> => {
     return new Promise((resolve) => {
         if (!navigator.geolocation) {
@@ -40,8 +39,6 @@ const calcularDuracion = (ingreso: string, egreso: string | null) => {
     return `${horas}h ${minutos}m`;
 };
 
-// US: cuanto tardo en subirse un fichaje hecho sin señal, para que quede trazable
-// que la hora registrada es la real del dispositivo y no la de la sincronización.
 const calcularDemoraSync = (horaReal: string, fechaSync: string | null | undefined) => {
     if (!fechaSync) return null;
     const ms = new Date(fechaSync).getTime() - new Date(horaReal).getTime();
@@ -76,8 +73,6 @@ const RegistroAsistenciaComponent: React.FC = () => {
         return () => clearInterval(intervalo);
     }, []);
 
-    // US: si el dispositivo se queda sin señal, el fichaje se guarda localmente en vez
-    // de perderse; apenas vuelve la conexión se sincroniza solo con el servidor.
     const sincronizarPendientes = useCallback(async () => {
         const cola = obtenerPendientes();
         if (cola.length === 0) return;
@@ -88,8 +83,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
                 await api.post(endpoint, item.payload, obtenerHeaders());
                 quitarPendiente(item.id);
             } catch (err) {
-                // Si todavía no hay señal (o el servidor no responde), dejamos el resto en
-                // la cola para el próximo intento y no seguimos golpeando el servidor.
+
                 break;
             }
         }
@@ -97,7 +91,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
         setSincronizando(false);
         await consultarEstado();
         if (tienePermiso("VER_ASISTENCIA")) buscarRegistrosDia(fechaFiltro);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     useEffect(() => {
@@ -110,7 +104,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
             window.removeEventListener("online", alConectar);
             window.removeEventListener("offline", alDesconectar);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     const cargarEmpresas = async () => {
@@ -137,7 +131,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
             const res = await api.get(`/asistencia/calendario?fecha=${fecha}`, obtenerHeaders());
             setRegistrosDia(res.data);
         } catch (err) {
-            // Si el usuario no tiene permiso de VER_ASISTENCIA el backend devuelve 403; no es un error de UI.
+
             setRegistrosDia([]);
         }
     };
@@ -148,7 +142,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
         if (tienePermiso("VER_ASISTENCIA")) {
             buscarRegistrosDia(fechaFiltro);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     const handleMarcarIngreso = async () => {
@@ -178,9 +172,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
             if (tienePermiso("VER_ASISTENCIA")) buscarRegistrosDia(fechaFiltro);
         } catch (err: any) {
             if (esErrorDeRed(err)) {
-                // La hora real del fichaje es AHORA (el momento del click), no la hora en la
-                // que esto termine sincronizando; se la mandamos al backend para que no
-                // registre la hora de sincronización como si fuera la hora del fichaje.
+
                 encolarFichaje("ingreso", { ...payload, horaRealDispositivo: formatearFechaLocalISO(new Date()) });
                 setPendientes(obtenerPendientes().length);
                 setEnLinea(false);

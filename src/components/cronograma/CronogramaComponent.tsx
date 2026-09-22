@@ -22,7 +22,7 @@ const aISO = (d: Date) => d.toISOString().split("T")[0];
 
 const construirGrilla = (mes: Date): Date[] => {
     const primerDiaMes = new Date(mes.getFullYear(), mes.getMonth(), 1);
-    const diaSemanaInicio = (primerDiaMes.getDay() + 6) % 7; // Lunes = 0
+    const diaSemanaInicio = (primerDiaMes.getDay() + 6) % 7;
     const inicioGrilla = new Date(primerDiaMes);
     inicioGrilla.setDate(inicioGrilla.getDate() - diaSemanaInicio);
 
@@ -77,7 +77,7 @@ const CronogramaComponent: React.FC = () => {
 
     useEffect(() => {
         cargarEventosDelMes();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, [mesActual]);
 
     useEffect(() => {

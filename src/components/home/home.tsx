@@ -88,10 +88,8 @@ const Home: React.FC = () => {
     const [horaActual, setHoraActual] = useState<string>("");
     const [horaInicioSesion, setHoraInicioSesion] = useState<string>("");
 
-    // 📍 Estado para transmitir la posición y hacer zoom automático en el mapa
     const [puntoEnfocadoMapa, setPuntoEnfocadoMapa] = useState<{ lat: number; lng: number; titulo?: string; timestamp?: number } | null>(null);
 
-    // Estado del Menú Lateral Colapsable
     const [sidebarAbierta, setSidebarAbierta] = useState<boolean>(() => window.innerWidth > 768);
     const [catAdministracion, setCatAdministracion] = useState<boolean>(true);
     const [catSeguridad, setCatSeguridad] = useState<boolean>(true);
@@ -239,7 +237,6 @@ const Home: React.FC = () => {
         window.location.href = "/login";
     };
 
-    // ⚡ Manejador para cambiar de vista y enfocar la entidad en el Mapa
     const handleIrAlMapaConZoom = (punto: { lat: number; lng: number; titulo?: string }) => {
         setPuntoEnfocadoMapa({ ...punto, timestamp: Date.now() });
         setVistaActiva("mapa");
@@ -248,7 +245,7 @@ const Home: React.FC = () => {
     return (
         <div style={{ display: "flex", minHeight: "100vh" }}>
 
-            {/* 🌟 BARRA LATERAL DESPLEGABLE / CATEGORIZADA */}
+            {}
             <aside style={{
                 width: sidebarAbierta ? "260px" : "70px",
                 minWidth: sidebarAbierta ? "260px" : "70px",
@@ -266,7 +263,7 @@ const Home: React.FC = () => {
                 height: "100vh",
                 overflowY: "auto"
             }}>
-                {/* Header Lateral */}
+                {}
                 <div style={{
                     padding: "16px",
                     display: "flex",
@@ -288,10 +285,10 @@ const Home: React.FC = () => {
                     </button>
                 </div>
 
-                {/* Categorías y Módulos */}
+                {}
                 <div style={{ flex: 1, padding: "10px", display: "flex", flexDirection: "column", gap: "6px" }}>
 
-                    {/* CATEGORÍA 1: ADMINISTRACIÓN */}
+                    {}
                     <div>
                         {sidebarAbierta ? (
                             <button
@@ -316,7 +313,7 @@ const Home: React.FC = () => {
                         )}
                     </div>
 
-                    {/* CATEGORÍA RECURSOS: INSUMOS Y VIÁTICOS */}
+                    {}
                     <div style={{ marginTop: "10px" }}>
                         {sidebarAbierta ? (
                             <button
@@ -339,7 +336,7 @@ const Home: React.FC = () => {
                         )}
                     </div>
 
-                    {/* CATEGORÍA DOCUMENTACIÓN: DOCUMENTOS Y CRONOGRAMA */}
+                    {}
                     <div style={{ marginTop: "10px" }}>
                         {sidebarAbierta ? (
                             <button
@@ -359,7 +356,7 @@ const Home: React.FC = () => {
                         )}
                     </div>
 
-                    {/* CATEGORÍA 2: SEGURIDAD E HIGIENE */}
+                    {}
                     <div style={{ marginTop: "10px" }}>
                         {sidebarAbierta ? (
                             <button
@@ -381,7 +378,7 @@ const Home: React.FC = () => {
                         )}
                     </div>
 
-                    {/* CATEGORÍA 3: CAMPO Y GEOLOCALIZACIÓN */}
+                    {}
                     <div style={{ marginTop: "10px" }}>
                         {sidebarAbierta ? (
                             <button
@@ -404,7 +401,7 @@ const Home: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Footer del Menú */}
+                {}
                 <div style={{ padding: "12px", borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", flexDirection: "column", gap: "8px" }}>
                     <button type="button" className="theme-toggle-btn btn-interactive" onClick={() => setMostrarBienvenida(true)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px", fontSize: "0.8rem", width: "100%", justifyContent: sidebarAbierta ? "flex-start" : "center" }}>
                         <Sparkles size={16} />
@@ -440,10 +437,10 @@ const Home: React.FC = () => {
                 </div>
             </aside>
 
-            {/* CONTENEDOR PRINCIPAL */}
+            {}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
 
-                {/* NAV INFORMATIVO SUPERIOR */}
+                {}
                 <nav style={{
                     backgroundColor: darkMode ? "#0B132B" : "#064E3B",
                     borderBottom: darkMode ? "1px solid #10B981" : "none",
@@ -544,7 +541,7 @@ const Home: React.FC = () => {
                     </div>
                 </nav>
 
-                {/* RENDIMIENTO DE LAS VISTAS */}
+                {}
                 <main style={{ padding: "20px", paddingBottom: "110px", flex: 1, minWidth: 0 }}>
                     {vistaActiva === "usuarios" && <GestorUsuarios onIrAlMapa={handleIrAlMapaConZoom} />}
                     {vistaActiva === "permisos-usuario" && <GestorPermisosUsuarios darkMode={darkMode} />}

@@ -1,4 +1,3 @@
-/* Reutiliza el lenguaje visual del módulo de Horarios para mantener consistencia */
 .asistencia-container {
     display: flex;
     flex-direction: column;
