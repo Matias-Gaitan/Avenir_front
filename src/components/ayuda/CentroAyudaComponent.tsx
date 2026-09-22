@@ -6,6 +6,14 @@ interface Props {
     darkMode?: boolean;
 }
 
+const CATEGORIAS: { nombre: string; modulos: string[] }[] = [
+    { nombre: "Administración", modulos: ["Usuarios", "Permisos Empleado", "Roles", "Empresas", "Horarios", "Ingreso y Egreso", "Mi Perfil"] },
+    { nombre: "Recursos", modulos: ["Insumos", "Viáticos", "Relevamientos", "Estadísticas", "Asignación de Tareas"] },
+    { nombre: "Documentación", modulos: ["Documentos", "Cronograma"] },
+    { nombre: "Seguridad e Higiene", modulos: ["IPER", "ATS"] },
+    { nombre: "Monitoreo Campo", modulos: ["Mapa 2D", "Estado del Sistema", "Usuarios Conectados"] },
+];
+
 const CentroAyudaComponent: React.FC<Props> = ({ darkMode = false }) => {
     const [busqueda, setBusqueda] = useState("");
     const [moduloAbierto, setModuloAbierto] = useState<string | null>(null);
@@ -37,6 +45,12 @@ const CentroAyudaComponent: React.FC<Props> = ({ darkMode = false }) => {
         return orden;
     }, [articulosFiltrados]);
 
+    const categorias = useMemo(() => {
+        return CATEGORIAS
+            .map((cat) => ({ nombre: cat.nombre, modulos: cat.modulos.filter((m) => modulos.includes(m)) }))
+            .filter((cat) => cat.modulos.length > 0);
+    }, [modulos]);
+
     const toggleArticulo = (idx: number) => {
         setExpandido((prev) => {
             const next = new Set(prev);
@@ -46,7 +60,7 @@ const CentroAyudaComponent: React.FC<Props> = ({ darkMode = false }) => {
     };
 
     return (
-        <div className="roles-card">
+        <div className="roles-card" style={{ paddingBottom: "60px" }}>
             <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <LifeBuoy size={22} color="#059669" /> Centro de Ayuda
             </h2>
@@ -70,50 +84,57 @@ const CentroAyudaComponent: React.FC<Props> = ({ darkMode = false }) => {
                 <p style={{ color: c.textoSecundario, fontSize: "0.9rem" }}>No encontramos nada para "{busqueda}". Probá con otra palabra.</p>
             )}
 
-            {modulos.map((modulo) => {
-                const items = articulosFiltrados.filter((a) => a.modulo === modulo);
-                const estaAbierto = busqueda.trim() !== "" || moduloAbierto === modulo;
-                return (
-                    <div key={modulo} style={{ marginBottom: "10px", border: `1px solid ${c.borde}`, borderRadius: "10px", overflow: "hidden" }}>
-                        <button
-                            type="button"
-                            onClick={() => setModuloAbierto((m) => (m === modulo ? null : modulo))}
-                            style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: c.bgSuave, border: "none", cursor: "pointer", color: c.texto, fontWeight: 700, fontSize: "0.9rem" }}
-                        >
-                            {modulo} <span style={{ fontWeight: 400, color: c.textoSecundario, fontSize: "0.78rem" }}>({items.length})</span>
-                            {estaAbierto ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </button>
+            {categorias.map((categoria) => (
+                <div key={categoria.nombre} style={{ marginBottom: "18px" }}>
+                    <h3 style={{ fontSize: "0.72rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: c.textoSecundario, margin: "0 0 8px 2px" }}>
+                        {categoria.nombre}
+                    </h3>
+                    {categoria.modulos.map((modulo) => {
+                        const items = articulosFiltrados.filter((a) => a.modulo === modulo);
+                        const estaAbierto = busqueda.trim() !== "" || moduloAbierto === modulo;
+                        return (
+                            <div key={modulo} style={{ marginBottom: "10px", border: `1px solid ${c.borde}`, borderRadius: "10px", overflow: "hidden" }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setModuloAbierto((m) => (m === modulo ? null : modulo))}
+                                    style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: c.bgSuave, border: "none", cursor: "pointer", color: c.texto, fontWeight: 700, fontSize: "0.9rem" }}
+                                >
+                                    {modulo} <span style={{ fontWeight: 400, color: c.textoSecundario, fontSize: "0.78rem" }}>({items.length})</span>
+                                    {estaAbierto ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                </button>
 
-                        {estaAbierto && (
-                            <div style={{ padding: "10px 16px 16px" }}>
-                                {items.map((a, i) => {
-                                    const idx = articulosAyuda.indexOf(a);
-                                    const abierto = expandido.has(idx);
-                                    return (
-                                        <div key={idx} style={{ marginTop: i === 0 ? 0 : "10px", backgroundColor: c.bgTarjeta, border: `1px solid ${c.borde}`, borderRadius: "8px", padding: "12px 14px" }}>
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleArticulo(idx)}
-                                                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "none", cursor: "pointer", color: c.texto, fontWeight: 600, fontSize: "0.87rem", textAlign: "left" }}
-                                            >
-                                                {a.titulo}
-                                                {abierto ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                                            </button>
-                                            {abierto && (
-                                                <ol style={{ margin: "10px 0 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                                                    {a.pasos.map((paso, pIdx) => (
-                                                        <li key={pIdx} style={{ fontSize: "0.85rem", color: c.textoSecundario, lineHeight: 1.5 }}>{paso}</li>
-                                                    ))}
-                                                </ol>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                {estaAbierto && (
+                                    <div style={{ padding: "10px 16px 16px" }}>
+                                        {items.map((a, i) => {
+                                            const idx = articulosAyuda.indexOf(a);
+                                            const abierto = expandido.has(idx);
+                                            return (
+                                                <div key={idx} style={{ marginTop: i === 0 ? 0 : "10px", backgroundColor: c.bgTarjeta, border: `1px solid ${c.borde}`, borderRadius: "8px", padding: "12px 14px" }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleArticulo(idx)}
+                                                        style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "none", cursor: "pointer", color: c.texto, fontWeight: 600, fontSize: "0.87rem", textAlign: "left" }}
+                                                    >
+                                                        {a.titulo}
+                                                        {abierto ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                                    </button>
+                                                    {abierto && (
+                                                        <ol style={{ margin: "10px 0 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                                                            {a.pasos.map((paso, pIdx) => (
+                                                                <li key={pIdx} style={{ fontSize: "0.85rem", color: c.textoSecundario, lineHeight: 1.5 }}>{paso}</li>
+                                                            ))}
+                                                        </ol>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                );
-            })}
+                        );
+                    })}
+                </div>
+            ))}
         </div>
     );
 };

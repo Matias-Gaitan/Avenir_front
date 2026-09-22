@@ -30,7 +30,7 @@ export const AdminCatalogosPage: React.FC<Props> = ({ darkMode = false }) => {
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '10px' }}>
+    <div style={{ maxWidth: '1500px', margin: '0 auto', padding: '10px' }}>
       {}
       <div style={{ textAlign: 'center', marginBottom: '25px' }}>
         <h2 style={{

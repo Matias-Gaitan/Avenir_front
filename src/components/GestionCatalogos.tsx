@@ -175,7 +175,7 @@ export const GestionCatalogos: React.FC<Props> = ({ modulo, titulo, darkMode = f
       color: darkMode ? '#F8FAFC' : '#0F172A',
       borderRadius: '10px',
       padding: '24px',
-      maxWidth: '900px',
+      maxWidth: '1400px',
       margin: '0 auto',
       boxShadow: darkMode ? '0 4px 20px rgba(0, 0, 0, 0.4)' : '0 2px 10px rgba(0,0,0,0.05)',
       border: darkMode ? '1px solid #1E293B' : '1px solid #E2E8F0',

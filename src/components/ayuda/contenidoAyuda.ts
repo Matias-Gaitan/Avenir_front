@@ -23,7 +23,9 @@ export const vistaAModulo: Record<string, string> = {
     "mapa": "Mapa 2D",
     "mi-perfil": "Mi Perfil",
     "estado-sistema": "Estado del Sistema",
-    "presencia": "Usuarios Conectados"
+    "presencia": "Usuarios Conectados",
+    "estadisticas": "Estadísticas",
+    "relevamientos": "Relevamientos"
 };
 
 export const articulosAyuda: ArticuloAyuda[] = [
@@ -305,6 +307,35 @@ export const articulosAyuda: ArticuloAyuda[] = [
             "Muestra quién tiene la app abierta ahora mismo (celular o PC), avisando cada tanto \"sigo acá\" en segundo plano.",
             "Cuando alguien deja de avisar por más de 40 segundos, se lo marca como desconectado y aparece un aviso arriba.",
             "Importante: mientras un dispositivo esté realmente sin señal, no hay forma de saber en vivo qué está haciendo. Esto solo puede notar la AUSENCIA de aviso, no ver a alguien offline en tiempo real; recién se actualiza cuando ese dispositivo recupera conexión."
+        ]
+    },
+
+    {
+        modulo: "Estadísticas",
+        titulo: "Qué muestra el panel de Estadísticas",
+        pasos: [
+            "Resume en gráficos los datos ya cargados en el sistema: horas trabajadas, viáticos, insumos entregados y tareas, según el rango de fechas elegido.",
+            "Sirve para tener una foto rápida de la actividad del equipo sin tener que revisar módulo por módulo.",
+            "Los números se recalculan solos a partir de los registros existentes; no hay nada para cargar manualmente en esta pantalla."
+        ]
+    },
+
+    {
+        modulo: "Relevamientos",
+        titulo: "Cargar un relevamiento fotográfico con hallazgos",
+        pasos: [
+            "Andá a Relevamientos, elegí la empresa y la fecha de la visita.",
+            "Agregá cada hallazgo detectado (descripción, tipo de riesgo, foto si corresponde) y guardá el relevamiento.",
+            "Cada hallazgo queda con estado propio (por ejemplo, pendiente o resuelto) para poder hacerle seguimiento por separado."
+        ]
+    },
+    {
+        modulo: "Relevamientos",
+        titulo: "Hacer seguimiento y cerrar un relevamiento",
+        pasos: [
+            "Entrá a \"Ver Detalle\" de un relevamiento para ver todos sus hallazgos y marcar cuáles ya se resolvieron.",
+            "Cuando todos los hallazgos importantes estén atendidos, quien tiene permiso puede cerrar el relevamiento desde el listado.",
+            "Un relevamiento cerrado conserva todo su historial de hallazgos y fotos para futuras auditorías."
         ]
     }
 ];

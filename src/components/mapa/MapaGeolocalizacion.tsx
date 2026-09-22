@@ -348,7 +348,7 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
   return (
     <div style={{ position: "relative", width: "100%", height: "calc(100vh - 120px)", borderRadius: "12px", overflow: "hidden", border: darkMode ? "1px solid #1E293B" : "1px solid #E2E8F0" }}>
           {}
-          <div style={{ position: "absolute", top: "16px", left: "16px", right: sidebarAbierta ? "340px" : "60px", zIndex: 1000, display: "flex", gap: "10px", flexWrap: "wrap", pointerEvents: "none", transition: "all 0.3s ease" }}>
+          <div style={{ position: "absolute", top: "16px", left: "16px", right: sidebarAbierta ? "min(340px, 43%)" : "60px", zIndex: 1000, display: "flex", gap: "10px", flexWrap: "wrap", pointerEvents: "none", transition: "all 0.3s ease" }}>
 
             <div style={{ pointerEvents: "auto", backgroundColor: darkMode ? "rgba(11, 19, 43, 0.92)" : "rgba(255, 255, 255, 0.95)", padding: "8px 14px", borderRadius: "8px", display: "flex", alignItems: "center", gap: "10px", border: "1px solid #10B981" }}>
               <Building2 size={18} color="#34D399" />
@@ -465,8 +465,9 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
             top: "16px",
             right: "16px",
             bottom: "16px",
-            width: sidebarAbierta ? "310px" : "44px",
-            backgroundColor: darkMode ? "rgba(11, 19, 43, 0.95)" : "rgba(255, 255, 255, 0.95)",
+            width: sidebarAbierta ? "min(310px, 40%)" : "44px",
+            maxHeight: "calc(100% - 32px)",
+            backgroundColor: darkMode ? "rgba(11, 19, 43, 0.92)" : "rgba(255, 255, 255, 0.92)",
             backdropFilter: "blur(12px)",
             zIndex: 1000,
             borderRadius: "12px",

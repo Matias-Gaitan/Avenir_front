@@ -152,7 +152,7 @@ export const GestionAtsComponent: React.FC<Props> = ({ darkMode }) => {
   };
 
   return (
-    <div style={{ maxWidth: "1100px", margin: "20px auto", padding: "0 15px" }}>
+    <div style={{ maxWidth: "1600px", margin: "20px auto", padding: "0 15px" }}>
       <div style={{
         backgroundColor: theme.cardBg,
         borderRadius: "12px",
