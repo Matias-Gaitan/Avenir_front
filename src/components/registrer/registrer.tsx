@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import api from "../../service/api";
 import { useNavigate } from "react-router-dom";
-import { UserPlus, LogIn, Eye, EyeOff } from "lucide-react";
+import { UserPlus, LogIn, Eye, EyeOff, Loader2 } from "lucide-react";
 import "./registrer.css";
 import { PasswordMatrix } from "../PasswordMatrix";
 import Fondo3D from "../common/Fondo3D";
@@ -15,6 +15,8 @@ const Register: React.FC = () => {
     const [claveAcceso, setClaveAcceso] = useState("");
     const [mostrarPassword, setMostrarPassword] = useState(false);
     const [error, setError] = useState("");
+    const [cargando, setCargando] = useState(false);
+    const [mensajeCarga, setMensajeCarga] = useState("Registrando...");
     const navigate = useNavigate();
 
     const validarEmail = (email: string) => {
@@ -46,11 +48,18 @@ const Register: React.FC = () => {
             contrasena
         };
 
+        setCargando(true);
+        setMensajeCarga("Registrando...");
+        const avisoServidorDormido = setTimeout(() => {
+            setMensajeCarga("El servidor estaba inactivo y se está reactivando, puede tardar hasta 1 minuto...");
+        }, 4000);
+
         try {
             const response = await api.post("/usuarios", {
                 usuario: nuevoUsuario,
                 claveAcceso: claveAcceso.trim()
             });
+            clearTimeout(avisoServidorDormido);
 
             const { token, permisos } = response.data || {};
             const esClaveAdmin = claveAcceso.trim() === "000010001";
@@ -75,6 +84,7 @@ const Register: React.FC = () => {
             }
 
         } catch (err: any) {
+            clearTimeout(avisoServidorDormido);
             console.error("Error recibido del backend:", err.response?.data);
 
             const mensajeError =
@@ -83,6 +93,8 @@ const Register: React.FC = () => {
                     : err.response?.data?.mensaje || err.response?.data?.message || "Verifique los datos ingresados";
 
             setError("Error al registrarse: " + mensajeError);
+        } finally {
+            setCargando(false);
         }
     };
 
@@ -195,8 +207,14 @@ const Register: React.FC = () => {
                     />
                 </div>
 
-                <button type="submit" className="form-button btn-interactive" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "15px" }}>
-                    <UserPlus size={18} /> REGISTRARSE
+                <button
+                    type="submit"
+                    className="form-button btn-interactive"
+                    disabled={cargando}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "15px", opacity: cargando ? 0.75 : 1, cursor: cargando ? "not-allowed" : "pointer" }}
+                >
+                    {cargando ? <Loader2 size={18} className="spin-icon" /> : <UserPlus size={18} />}
+                    {cargando ? mensajeCarga : "REGISTRARSE"}
                 </button>
 
                 {error && <p style={{ color: "#dc2626", marginTop: "10px", textAlign: "center", fontSize: "0.875rem" }}>{error}</p>}

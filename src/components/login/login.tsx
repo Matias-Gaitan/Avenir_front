@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import api from "../../service/api";
 import { useNavigate } from "react-router-dom";
-import { LogIn, UserPlus, Eye, EyeOff, Hash, Type } from "lucide-react";
+import { LogIn, UserPlus, Eye, EyeOff, Hash, Type, Loader2 } from "lucide-react";
 import "./login.css";
 import type { Login } from "../../interfaces/Login";
 import Fondo3D from "../common/Fondo3D";
@@ -12,6 +12,8 @@ const LoginComponent: React.FC = () => {
     const [contrasena, setContrasena] = useState("");
     const [mostrarPassword, setMostrarPassword] = useState(false);
     const [error, setError] = useState("");
+    const [cargando, setCargando] = useState(false);
+    const [mensajeCarga, setMensajeCarga] = useState("Ingresando...");
     const navigate = useNavigate();
 
     const validarEmail = (email: string) => {
@@ -30,10 +32,17 @@ const LoginComponent: React.FC = () => {
 
         const loginData: Login = { email, contrasena };
 
+        setCargando(true);
+        setMensajeCarga("Ingresando...");
+        const avisoServidorDormido = setTimeout(() => {
+            setMensajeCarga("El servidor estaba inactivo y se está reactivando, puede tardar hasta 1 minuto...");
+        }, 4000);
+
         try {
             localStorage.clear();
 
             const response = await api.post("/usuarios/login", loginData);
+            clearTimeout(avisoServidorDormido);
 
             if (response.status === 200 && response.data.token) {
                 const token = response.data.token;
@@ -68,9 +77,12 @@ const LoginComponent: React.FC = () => {
                 setError("Credenciales inválidas o cuenta no aprobada.");
             }
         } catch (err: any) {
+            clearTimeout(avisoServidorDormido);
             console.error("Error en login:", err.response);
             const msgError = err.response?.data?.mensaje || err.response?.data || "Verifique sus credenciales o estado de cuenta.";
             setError("Error al iniciar sesión: " + msgError);
+        } finally {
+            setCargando(false);
         }
     };
 
@@ -186,8 +198,14 @@ const LoginComponent: React.FC = () => {
                     )}
                 </div>
 
-                <button type="submit" className="form-button btn-interactive" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "15px" }}>
-                    <LogIn size={18} /> INGRESAR
+                <button
+                    type="submit"
+                    className="form-button btn-interactive"
+                    disabled={cargando}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "15px", opacity: cargando ? 0.75 : 1, cursor: cargando ? "not-allowed" : "pointer" }}
+                >
+                    {cargando ? <Loader2 size={18} className="spin-icon" /> : <LogIn size={18} />}
+                    {cargando ? mensajeCarga : "INGRESAR"}
                 </button>
 
                 {error && <p style={{ color: "#dc2626", marginTop: "10px", textAlign: "center", fontSize: "0.875rem" }}>{error}</p>}

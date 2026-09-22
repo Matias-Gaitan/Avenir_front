@@ -2,6 +2,13 @@ body{
     font-family: sans-serif;
     color: #4B5563;
 }
+.spin-icon{
+    animation: girar-spinner 0.8s linear infinite;
+}
+@keyframes girar-spinner{
+    from{ transform: rotate(0deg); }
+    to{ transform: rotate(360deg); }
+}
 *{
     box-sizing: border-box;
 }
