@@ -5,6 +5,8 @@ import { tienePermiso } from "../../service/authHelper";
 import "./horarios.css";
 import type { Empresa } from "../../interfaces/Empresa";
 import type { RegistroHora } from "../../interfaces/RegistroHora";
+import { usePaginacion } from "../common/usePaginacion";
+import { Paginador } from "../common/Paginador";
 
 interface RegistroHoraConEstado extends RegistroHora {
     id?: number;
@@ -137,6 +139,7 @@ const RegistroHorarioComponent: React.FC = () => {
     };
 
     const puedeCargarManual = tienePermiso("APROBAR_HORARIOS");
+    const { itemsPagina: registrosPagina, pagina, totalPaginas, setPagina, totalItems, porPagina } = usePaginacion(registros, 8);
 
     return (
         <div className="horario-container">
@@ -257,7 +260,7 @@ const RegistroHorarioComponent: React.FC = () => {
                         </thead>
                         <tbody>
                             {registros.length > 0 ? (
-                                registros.map((reg, index) => {
+                                registrosPagina.map((reg, index) => {
                                     const estadoActual = (reg.estado || "PENDIENTE").toUpperCase();
                                     const idKey = reg.idRegistro || reg.id || index;
 
@@ -333,6 +336,7 @@ const RegistroHorarioComponent: React.FC = () => {
                             )}
                         </tbody>
                     </table>
+                    <Paginador pagina={pagina} totalPaginas={totalPaginas} totalItems={totalItems} porPagina={porPagina} onCambiarPagina={setPagina} />
                 </div>
             </div>
         </div>

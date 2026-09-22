@@ -3,6 +3,8 @@ import { ClipboardCheck, FileDown, Search } from "lucide-react";
 import api from "../../service/api";
 import type { IPERFormulario } from "../../types/iper";
 import "../documentos/documentos.css";
+import { usePaginacion } from "../common/usePaginacion";
+import { Paginador } from "../common/Paginador";
 
 const obtenerHeaders = () => {
     const token = localStorage.getItem("token");
@@ -55,6 +57,8 @@ const HistorialIperComponent: React.FC = () => {
         (f.tipoRiesgo || "").toLowerCase().includes(busqueda.toLowerCase())
     );
 
+    const { itemsPagina: filtradosPagina, pagina, totalPaginas, setPagina, totalItems, porPagina } = usePaginacion(filtrados, 8);
+
     return (
         <div className="documentos-container">
             <div className="documentos-card">
@@ -85,7 +89,7 @@ const HistorialIperComponent: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filtrados.length > 0 ? filtrados.map((f) => {
+                            {filtradosPagina.length > 0 ? filtradosPagina.map((f) => {
                                 const badge = badgeNivel(f.nivelRiesgo);
                                 return (
                                     <tr key={f.id}>
@@ -111,6 +115,7 @@ const HistorialIperComponent: React.FC = () => {
                             )}
                         </tbody>
                     </table>
+                    <Paginador pagina={pagina} totalPaginas={totalPaginas} totalItems={totalItems} porPagina={porPagina} onCambiarPagina={setPagina} />
                 </div>
             </div>
         </div>

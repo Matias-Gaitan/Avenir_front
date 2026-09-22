@@ -3,6 +3,8 @@ import { Building2, Plus, Edit2, ShieldAlert, CheckCircle2, XCircle, MapPin } fr
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import { AddressAutocomplete, type UbicacionSeleccionada } from "../common/AddressAutocomplete";
+import { usePaginacion } from "../common/usePaginacion";
+import { Paginador } from "../common/Paginador";
 import "./empresa.css";
 
 interface Empresa {
@@ -174,6 +176,8 @@ const EmpresaComponent: React.FC<Props> = ({ onIrAlMapa }) => {
         return true;
     });
 
+    const { itemsPagina: empresasPagina, pagina, totalPaginas, setPagina, totalItems, porPagina } = usePaginacion(empresasFiltradas, 8);
+
     return (
         <div className="empresa-card">
             {((!modoEdicion && tienePermiso("CREAR_EMPRESAS")) || (modoEdicion && tienePermiso("EDITAR_EMPRESAS"))) && (
@@ -252,7 +256,7 @@ const EmpresaComponent: React.FC<Props> = ({ onIrAlMapa }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {empresasFiltradas.map((emp) => {
+                                {empresasPagina.map((emp) => {
                                     const esActivo = obtenerEstadoBoolean(emp);
                                     return (
                                         <tr key={emp.idEmpresa || emp.id} style={{ borderBottom: "1px solid #F1F5F9", fontSize: "0.9rem", color: "#334155" }}>
@@ -300,6 +304,7 @@ const EmpresaComponent: React.FC<Props> = ({ onIrAlMapa }) => {
                             </tbody>
                         </table>
                     </div>
+                    <Paginador pagina={pagina} totalPaginas={totalPaginas} totalItems={totalItems} porPagina={porPagina} onCambiarPagina={setPagina} />
                 </>
             ) : (
                 <p style={{ color: "#ef4444", textAlign: "center", padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>

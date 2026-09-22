@@ -5,6 +5,8 @@ import { tienePermiso } from "../../service/authHelper";
 import "../insumos/insumos.css";
 import type { Empresa } from "../../interfaces/Empresa";
 import type { Relevamiento, TipoRiesgo } from "../../interfaces/Relevamiento";
+import { usePaginacion } from "../common/usePaginacion";
+import { Paginador } from "../common/Paginador";
 
 const obtenerHeaders = () => {
     const token = localStorage.getItem("token");
@@ -169,6 +171,8 @@ const RelevamientosComponent: React.FC = () => {
         );
     }
 
+    const { itemsPagina: relevamientosPagina, pagina, totalPaginas, setPagina, totalItems, porPagina } = usePaginacion(relevamientos, 8);
+
     return (
         <div className="insumos-container">
             {puedeCrear && (
@@ -218,7 +222,7 @@ const RelevamientosComponent: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {relevamientos.length > 0 ? relevamientos.map((r) => {
+                            {relevamientosPagina.length > 0 ? relevamientosPagina.map((r) => {
                                 const resueltos = r.hallazgos.filter((h) => h.estado === "RESUELTO").length;
                                 return (
                                     <tr key={r.idRelevamiento}>
@@ -242,6 +246,7 @@ const RelevamientosComponent: React.FC = () => {
                             )}
                         </tbody>
                     </table>
+                    <Paginador pagina={pagina} totalPaginas={totalPaginas} totalItems={totalItems} porPagina={porPagina} onCambiarPagina={setPagina} />
                 </div>
             </div>
 

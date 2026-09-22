@@ -5,6 +5,8 @@ import { tienePermiso } from "../../service/authHelper";
 import "./insumos.css";
 import type { RegistroViatico } from "../../interfaces/RegistroViatico";
 import type { Empresa } from "../../interfaces/Empresa";
+import { usePaginacion } from "../common/usePaginacion";
+import { Paginador } from "../common/Paginador";
 
 interface UsuarioOpcion {
     idUsuario: number;
@@ -168,6 +170,8 @@ const ViaticosComponent: React.FC = () => {
         }
     };
 
+    const { itemsPagina: registrosPagina, pagina, totalPaginas, setPagina, totalItems, porPagina } = usePaginacion(registros, 8);
+
     return (
         <div className="insumos-container">
             {puedeAdministrarTarifas && (
@@ -276,7 +280,7 @@ const ViaticosComponent: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {registros.length > 0 ? registros.map((r) => (
+                            {registrosPagina.length > 0 ? registrosPagina.map((r) => (
                                 <tr key={r.idViatico} style={{ opacity: r.activo === false ? 0.6 : 1 }}>
                                     <td>{r.usuario?.nombre} {r.usuario?.apellido}</td>
                                     <td>{r.empresa?.nombre || "-"}</td>
@@ -301,6 +305,7 @@ const ViaticosComponent: React.FC = () => {
                             )}
                         </tbody>
                     </table>
+                    <Paginador pagina={pagina} totalPaginas={totalPaginas} totalItems={totalItems} porPagina={porPagina} onCambiarPagina={setPagina} />
                 </div>
             </div>
         </div>

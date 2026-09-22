@@ -15,6 +15,8 @@ import {
   getProbabilidadesActivas
 } from '../service/IperService';
 import api from '../service/api';
+import { usePaginacion } from './common/usePaginacion';
+import { Paginador } from './common/Paginador';
 
 interface ItemCat {
   id?: number;
@@ -259,6 +261,8 @@ export const GestionCatalogos: React.FC<Props> = ({ modulo, titulo, darkMode = f
     }
   };
 
+  const { itemsPagina, pagina, totalPaginas, setPagina, totalItems, porPagina } = usePaginacion(items, 8);
+
   return (
     <div style={estilos.card}>
       <h3 style={estilos.titulo}>
@@ -325,7 +329,7 @@ export const GestionCatalogos: React.FC<Props> = ({ modulo, titulo, darkMode = f
               </tr>
             </thead>
             <tbody>
-              {items.map((item) => (
+              {itemsPagina.map((item) => (
                 <tr key={item.id}>
                   <td style={{ ...estilos.td, fontWeight: 'bold' }}>#{item.id}</td>
                   <td style={{ ...estilos.td, fontWeight: '500' }}>{item.nombre}</td>
@@ -399,6 +403,7 @@ export const GestionCatalogos: React.FC<Props> = ({ modulo, titulo, darkMode = f
               )}
             </tbody>
           </table>
+          <Paginador pagina={pagina} totalPaginas={totalPaginas} totalItems={totalItems} porPagina={porPagina} onCambiarPagina={setPagina} darkMode={darkMode} />
         </div>
       )}
     </div>

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Key, ShieldCheck, Users, Building2, Clock, ShieldAlert, Settings, FileCheck, Timer, Package, Fuel, FileText, Calendar, ClipboardList, Radio } from "lucide-react";
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
+import { usePaginacion } from "../common/usePaginacion";
+import { Paginador } from "../common/Paginador";
 import "./gestorRoles.css";
 
 interface Permiso {
@@ -228,6 +230,7 @@ const GestorRoles: React.FC = () => {
 
     const todosSeleccionados = permisosDisponibles.length > 0 && permisosSeleccionados.length === permisosDisponibles.length;
     const modulosAgrupados = agruparPermisosPorModulo();
+    const { itemsPagina: rolesPagina, pagina, totalPaginas, setPagina, totalItems, porPagina } = usePaginacion(roles, 8);
 
     return (
         <div className="roles-card">
@@ -392,7 +395,7 @@ const GestorRoles: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {roles.map((rol) => {
+                            {rolesPagina.map((rol) => {
                                 const totalPermisosRol = rol.permisos ? rol.permisos.length : 0;
                                 const esTotal = totalPermisosRol > 0 && totalPermisosRol >= (permisosDisponibles.length || 15);
 
@@ -452,6 +455,7 @@ const GestorRoles: React.FC = () => {
                             })}
                         </tbody>
                     </table>
+                    <Paginador pagina={pagina} totalPaginas={totalPaginas} totalItems={totalItems} porPagina={porPagina} onCambiarPagina={setPagina} />
                 </div>
             ) : (
                 <p style={{ color: "#ef4444", textAlign: "center", padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>

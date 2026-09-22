@@ -3,6 +3,8 @@ import { Users, UserPlus, CheckCircle2, XCircle, Clock, ShieldAlert, UserCheck, 
 import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import { AddressAutocomplete, type UbicacionSeleccionada } from "../common/AddressAutocomplete";
+import { usePaginacion } from "../common/usePaginacion";
+import { Paginador } from "../common/Paginador";
 import "./gestorUsuarios.css";
 
 interface Rol {
@@ -231,6 +233,8 @@ const GestorUsuarios: React.FC<Props> = ({ onIrAlMapa }) => {
         return true;
     });
 
+    const { itemsPagina: usuariosPagina, pagina, totalPaginas, setPagina, totalItems, porPagina } = usePaginacion(usuariosFiltrados, 8);
+
     return (
         <div className="gestor-card">
             {((!modoEdicion && tienePermiso("CREAR_USUARIOS")) || (modoEdicion && tienePermiso("EDITAR_USUARIOS"))) && (
@@ -310,7 +314,7 @@ const GestorUsuarios: React.FC<Props> = ({ onIrAlMapa }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {usuariosFiltrados.map((u) => {
+                                {usuariosPagina.map((u) => {
                                     const esActivo = obtenerEstadoBoolean(u);
                                     const esPendiente = esUsuarioPendiente(u);
 
@@ -372,6 +376,7 @@ const GestorUsuarios: React.FC<Props> = ({ onIrAlMapa }) => {
                             </tbody>
                         </table>
                     </div>
+                    <Paginador pagina={pagina} totalPaginas={totalPaginas} totalItems={totalItems} porPagina={porPagina} onCambiarPagina={setPagina} />
                 </>
             ) : (
                 <p style={{ color: "#ef4444", textAlign: "center", padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>

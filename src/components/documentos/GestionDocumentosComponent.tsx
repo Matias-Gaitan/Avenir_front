@@ -5,6 +5,8 @@ import { tienePermiso } from "../../service/authHelper";
 import "./documentos.css";
 import type { Documento, DocumentoVersion } from "../../interfaces/Documento";
 import type { Empresa } from "../../interfaces/Empresa";
+import { usePaginacion } from "../common/usePaginacion";
+import { Paginador } from "../common/Paginador";
 
 interface UsuarioOpcion {
     idUsuario: number;
@@ -166,6 +168,8 @@ const GestionDocumentosComponent: React.FC = () => {
         }
     };
 
+    const { itemsPagina: documentosPagina, pagina, totalPaginas, setPagina, totalItems, porPagina } = usePaginacion(documentos, 8);
+
     return (
         <div className="documentos-container">
             <div className="documentos-card">
@@ -229,7 +233,7 @@ const GestionDocumentosComponent: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {documentos.length > 0 ? documentos.map((doc) => {
+                            {documentosPagina.length > 0 ? documentosPagina.map((doc) => {
                                 const badge = formatearBadge(doc.estadoVencimiento);
                                 return (
                                     <React.Fragment key={doc.idDocumento}>
@@ -286,6 +290,7 @@ const GestionDocumentosComponent: React.FC = () => {
                             )}
                         </tbody>
                     </table>
+                    <Paginador pagina={pagina} totalPaginas={totalPaginas} totalItems={totalItems} porPagina={porPagina} onCambiarPagina={setPagina} />
                 </div>
             </div>
         </div>

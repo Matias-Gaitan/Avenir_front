@@ -6,6 +6,8 @@ import "./asistencia.css";
 import type { RegistroAsistencia } from "../../interfaces/RegistroAsistencia";
 import type { Empresa } from "../../interfaces/Empresa";
 import { encolarFichaje, obtenerPendientes, quitarPendiente, esErrorDeRed, formatearFechaLocalISO } from "../../service/offlineQueue";
+import { usePaginacion } from "../common/usePaginacion";
+import { Paginador } from "../common/Paginador";
 
 const obtenerHeaders = () => {
     const token = localStorage.getItem("token");
@@ -225,6 +227,8 @@ const RegistroAsistenciaComponent: React.FC = () => {
         }
     };
 
+    const { itemsPagina: registrosDiaPagina, pagina, totalPaginas, setPagina, totalItems, porPagina } = usePaginacion(registrosDia, 8);
+
     return (
         <div className="asistencia-container">
             <div className="asistencia-card">
@@ -331,8 +335,8 @@ const RegistroAsistenciaComponent: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {registrosDia.length > 0 ? (
-                                    registrosDia.map((reg) => (
+                                {registrosDiaPagina.length > 0 ? (
+                                    registrosDiaPagina.map((reg) => (
                                         <tr key={reg.idAsistencia}>
                                             <td className="txt-bold">{reg.usuario?.nombre} {reg.usuario?.apellido}</td>
                                             <td>{reg.empresa?.nombre || "-"}</td>
@@ -362,6 +366,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
                                 )}
                             </tbody>
                         </table>
+                        <Paginador pagina={pagina} totalPaginas={totalPaginas} totalItems={totalItems} porPagina={porPagina} onCambiarPagina={setPagina} />
                     </div>
                 </div>
             )}

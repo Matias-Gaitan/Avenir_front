@@ -4,6 +4,8 @@ import api from "../../service/api";
 import { tienePermiso } from "../../service/authHelper";
 import "./insumos.css";
 import type { Insumo, EntregaInsumo } from "../../interfaces/Insumo";
+import { usePaginacion } from "../common/usePaginacion";
+import { Paginador } from "../common/Paginador";
 
 interface UsuarioOpcion {
     idUsuario: number;
@@ -211,6 +213,9 @@ const GestionInsumosComponent: React.FC = () => {
         return true;
     });
 
+    const { itemsPagina: insumosPagina, pagina: paginaInsumos, totalPaginas: totalPaginasInsumos, setPagina: setPaginaInsumos, totalItems: totalItemsInsumos, porPagina: porPaginaInsumos } = usePaginacion(insumosFiltrados, 8);
+    const { itemsPagina: entregasPagina, pagina: paginaEntregas, totalPaginas: totalPaginasEntregas, setPagina: setPaginaEntregas, totalItems: totalItemsEntregas, porPagina: porPaginaEntregas } = usePaginacion(entregas, 8);
+
     return (
         <div className="insumos-container">
             <div className="insumos-card">
@@ -325,7 +330,7 @@ const GestionInsumosComponent: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {insumosFiltrados.length > 0 ? insumosFiltrados.map((ins) => (
+                                    {insumosPagina.length > 0 ? insumosPagina.map((ins) => (
                                         <tr key={ins.idInsumo} style={{ opacity: ins.activo === false ? 0.6 : 1 }}>
                                             <td>{ins.nombre}</td>
                                             <td><span className={`badge-categoria ${ins.categoria}`}>{ins.categoria}</span></td>
@@ -357,6 +362,7 @@ const GestionInsumosComponent: React.FC = () => {
                                 </tbody>
                             </table>
                         </div>
+                        <Paginador pagina={paginaInsumos} totalPaginas={totalPaginasInsumos} totalItems={totalItemsInsumos} porPagina={porPaginaInsumos} onCambiarPagina={setPaginaInsumos} />
                     </>
                 )}
 
@@ -407,7 +413,7 @@ const GestionInsumosComponent: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {entregas.length > 0 ? entregas.map((e) => (
+                                    {entregasPagina.length > 0 ? entregasPagina.map((e) => (
                                         <tr key={e.idEntrega}>
                                             <td>{e.fechaEntrega}</td>
                                             <td>{e.usuario?.nombre} {e.usuario?.apellido}</td>
@@ -421,6 +427,7 @@ const GestionInsumosComponent: React.FC = () => {
                                 </tbody>
                             </table>
                         </div>
+                        <Paginador pagina={paginaEntregas} totalPaginas={totalPaginasEntregas} totalItems={totalItemsEntregas} porPagina={porPaginaEntregas} onCambiarPagina={setPaginaEntregas} />
                     </>
                 )}
             </div>
