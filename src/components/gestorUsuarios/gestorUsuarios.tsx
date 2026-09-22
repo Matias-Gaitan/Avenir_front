@@ -301,7 +301,7 @@ const GestorUsuarios: React.FC<Props> = ({ onIrAlMapa }) => {
                     </div>
 
                     <div className="tabla-simetrica-wrapper">
-                        <table className="tabla-usuarios-simetrica">
+                        <table className="tabla-usuarios-simetrica tabla-tarjetas-movil">
                             <thead>
                                 <tr>
                                     <th style={{ width: "15%", textAlign: "left" }}>Nombre</th>
@@ -320,16 +320,16 @@ const GestorUsuarios: React.FC<Props> = ({ onIrAlMapa }) => {
 
                                     return (
                                         <tr key={u.idUsuario || u.id}>
-                                            <td className="txt-bold" style={{ textAlign: "left" }}>{u.nombre}</td>
-                                            <td style={{ textAlign: "left" }}>{u.apellido}</td>
-                                            <td style={{ textAlign: "left" }}>{u.email}</td>
-                                            <td style={{ textAlign: "left", fontSize: "0.8rem" }}>{u.direccion || "Sin registrar"}</td>
-                                            <td style={{ textAlign: "center" }}>
+                                            <td className="txt-bold" data-label="Nombre" style={{ textAlign: "left" }}>{u.nombre}</td>
+                                            <td data-label="Apellido" style={{ textAlign: "left" }}>{u.apellido}</td>
+                                            <td data-label="Email" style={{ textAlign: "left" }}>{u.email}</td>
+                                            <td data-label="Dirección" style={{ textAlign: "left", fontSize: "0.8rem" }}>{u.direccion || "Sin registrar"}</td>
+                                            <td data-label="Rol" style={{ textAlign: "center" }}>
                                                 <span className={esPendiente ? "badge-pendiente-texto" : ""}>
                                                     {u.tipoPersona?.nombre || "Sin Rol"}
                                                 </span>
                                             </td>
-                                            <td style={{ textAlign: "center" }}>
+                                            <td data-label="Estado" style={{ textAlign: "center" }}>
                                                 {esPendiente ? (
                                                     <span className="badge badge-inactivo" style={{ backgroundColor: "#d97706", display: "inline-flex", alignItems: "center", gap: "4px" }}>
                                                         <Clock size={12} /> Pendiente
@@ -341,7 +341,7 @@ const GestorUsuarios: React.FC<Props> = ({ onIrAlMapa }) => {
                                                     </span>
                                                 )}
                                             </td>
-                                            <td style={{ textAlign: "center" }}>
+                                            <td data-label="Acciones" style={{ textAlign: "center" }}>
                                                 <div className="acciones-group" style={{ justifyContent: "center", gap: "4px" }}>
                                                     <button
                                                         type="button"

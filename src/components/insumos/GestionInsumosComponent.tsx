@@ -317,7 +317,7 @@ const GestionInsumosComponent: React.FC = () => {
                         </div>
 
                         <div className="tabla-simetrica-wrapper" style={{ marginTop: "12px" }}>
-                            <table className="tabla-insumos">
+                            <table className="tabla-insumos tabla-tarjetas-movil">
                                 <thead>
                                     <tr>
                                         <th>Nombre</th>
@@ -332,16 +332,16 @@ const GestionInsumosComponent: React.FC = () => {
                                 <tbody>
                                     {insumosPagina.length > 0 ? insumosPagina.map((ins) => (
                                         <tr key={ins.idInsumo} style={{ opacity: ins.activo === false ? 0.6 : 1 }}>
-                                            <td>{ins.nombre}</td>
-                                            <td><span className={`badge-categoria ${ins.categoria}`}>{ins.categoria}</span></td>
-                                            <td>{ins.unidadMedida}</td>
-                                            <td style={{ textAlign: "center" }} className={ins.stockActual <= ins.stockMinimo ? "stock-bajo" : ""}>
+                                            <td data-label="Nombre">{ins.nombre}</td>
+                                            <td data-label="Categoría"><span className={`badge-categoria ${ins.categoria}`}>{ins.categoria}</span></td>
+                                            <td data-label="Unidad">{ins.unidadMedida}</td>
+                                            <td data-label="Stock" style={{ textAlign: "center" }} className={ins.stockActual <= ins.stockMinimo ? "stock-bajo" : ""}>
                                                 {ins.stockActual} {ins.stockActual <= ins.stockMinimo && <AlertTriangle size={13} style={{ verticalAlign: "middle", marginLeft: "4px" }} />}
                                             </td>
-                                            <td style={{ textAlign: "center" }}>{ins.stockMinimo}</td>
-                                            <td style={{ textAlign: "right" }}>${ins.costoUnitario.toLocaleString()}</td>
+                                            <td data-label="Stock Mín." style={{ textAlign: "center" }}>{ins.stockMinimo}</td>
+                                            <td data-label="Costo Unit." style={{ textAlign: "right" }}>${ins.costoUnitario.toLocaleString()}</td>
                                             {(puedeEditar || puedeEliminar) && (
-                                                <td>
+                                                <td data-label="Acciones">
                                                     <div className="acciones-doc">
                                                         {puedeEditar && (
                                                             <button type="button" className="btn-doc-accion subir" onClick={() => handleEditarClick(ins)}><Edit2 size={12} /> Editar</button>
@@ -402,7 +402,7 @@ const GestionInsumosComponent: React.FC = () => {
                         {mensaje && <p className="msg-exito">{mensaje}</p>}
 
                         <div className="tabla-simetrica-wrapper" style={{ marginTop: "18px" }}>
-                            <table className="tabla-insumos">
+                            <table className="tabla-insumos tabla-tarjetas-movil">
                                 <thead>
                                     <tr>
                                         <th>Fecha</th>
@@ -415,11 +415,11 @@ const GestionInsumosComponent: React.FC = () => {
                                 <tbody>
                                     {entregasPagina.length > 0 ? entregasPagina.map((e) => (
                                         <tr key={e.idEntrega}>
-                                            <td>{e.fechaEntrega}</td>
-                                            <td>{e.usuario?.nombre} {e.usuario?.apellido}</td>
-                                            <td>{e.insumo?.nombre}</td>
-                                            <td style={{ textAlign: "center" }}>{e.cantidad}</td>
-                                            <td>{e.observaciones || "-"}</td>
+                                            <td data-label="Fecha">{e.fechaEntrega}</td>
+                                            <td data-label="Empleado">{e.usuario?.nombre} {e.usuario?.apellido}</td>
+                                            <td data-label="Insumo">{e.insumo?.nombre}</td>
+                                            <td data-label="Cantidad" style={{ textAlign: "center" }}>{e.cantidad}</td>
+                                            <td data-label="Observaciones">{e.observaciones || "-"}</td>
                                         </tr>
                                     )) : (
                                         <tr><td colSpan={5} className="txt-vacio">No hay entregas registradas todavía.</td></tr>

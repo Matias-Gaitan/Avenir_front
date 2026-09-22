@@ -32,40 +32,109 @@ html, body {
         min-width: 0;
     }
 
-    /* Red de seguridad global: TODA tabla de la app, tenga o no una clase
-       propia con overflow-x, se vuelve scrolleable horizontalmente en vez
-       de romper el layout o quedar cortada. Cambiar el <table> a
-       display:block no rompe su renderizado interno: thead/tbody/tr/td
-       conservan su display de tabla por defecto. */
+    /* Tablet (601-768px): la tabla entra casi entera, alcanza con scroll
+       horizontal suave sin necesidad de reventarla en tarjetas. */
+    table {
+        border-radius: 8px;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
     table {
         display: block !important;
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch;
         max-width: 100%;
-        border-radius: 8px;
     }
-
-    table thead,
-    table tbody,
-    table tr {
+    table thead, table tbody, table tr {
         display: table;
         width: 100%;
         table-layout: auto;
     }
-
-    table th,
-    table td {
+    table th, table td {
         padding: 8px 6px !important;
         font-size: 0.82rem;
         white-space: nowrap;
     }
 }
 
+/* Celular real (<=480px): las tablas anchas de varias columnas no
+   funcionan scrolleadas -- nadie sabe que hay que deslizar y queda
+   todo cortado. Cada fila pasa a ser una tarjeta apilada: la etiqueta
+   de la columna (tomada de un data-label puesto en cada <td>) al lado
+   del valor. Las tablas que YA son angostas (2-3 columnas) simplemente
+   se ven igual, apiladas, sin perder nada. */
 @media (max-width: 480px) {
-    table th,
-    table td {
-        padding: 6px 5px !important;
-        font-size: 0.78rem;
+    table.tabla-tarjetas-movil {
+        display: block;
+        width: 100%;
+        border: none;
+        border-collapse: collapse;
+    }
+    table.tabla-tarjetas-movil thead {
+        display: none;
+    }
+    table.tabla-tarjetas-movil tbody {
+        display: block;
+        width: 100%;
+    }
+    table.tabla-tarjetas-movil tr {
+        display: block;
+        width: 100%;
+        margin-bottom: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 10px 12px;
+        background-color: var(--bg-card);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        box-sizing: border-box;
+    }
+    table.tabla-tarjetas-movil td {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        text-align: right;
+        padding: 6px 0 !important;
+        border: none !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        white-space: normal !important;
+        font-size: 0.85rem !important;
+    }
+    table.tabla-tarjetas-movil td:last-child {
+        border-bottom: none !important;
+    }
+    table.tabla-tarjetas-movil td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        text-align: left;
+        color: var(--txt-secundario);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        flex-shrink: 0;
+        padding-top: 2px;
+    }
+    table.tabla-tarjetas-movil td:not([data-label]) {
+        display: block !important;
+        text-align: left;
+    }
+    /* Para celdas con contenido largo (listas de badges, parrafos): la
+       etiqueta arriba y el valor abajo, en vez de lado a lado. */
+    table.tabla-tarjetas-movil td.td-columna-movil {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+    }
+    table.tabla-tarjetas-movil td.td-columna-movil::before {
+        margin-bottom: 4px;
+    }
+    body.dark-mode table.tabla-tarjetas-movil tr {
+        background-color: #161B22 !important;
+        border-color: #30363D !important;
+    }
+    body.dark-mode table.tabla-tarjetas-movil td {
+        border-color: #30363D !important;
     }
 }
 

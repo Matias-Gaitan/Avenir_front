@@ -385,7 +385,7 @@ const GestorRoles: React.FC = () => {
 
             {tienePermiso("VER_ROLES") ? (
                 <div className="table-responsive">
-                    <table className="gestor-table">
+                    <table className="gestor-table tabla-tarjetas-movil">
                         <thead>
                             <tr>
                                 <th style={{ width: "60px" }}>ID</th>
@@ -401,9 +401,9 @@ const GestorRoles: React.FC = () => {
 
                                 return (
                                     <tr key={rol.idTipoPersona}>
-                                        <td>#{rol.idTipoPersona}</td>
-                                        <td><strong>{rol.nombre}</strong></td>
-                                        <td>
+                                        <td data-label="ID">#{rol.idTipoPersona}</td>
+                                        <td data-label="Nombre del Rol"><strong>{rol.nombre}</strong></td>
+                                        <td data-label="Permisos Asignados" className="td-columna-movil">
                                             {esTotal ? (
                                                 <span style={{
                                                     backgroundColor: "#DCFCE7",
@@ -440,7 +440,7 @@ const GestorRoles: React.FC = () => {
                                                 </span>
                                             )}
                                         </td>
-                                        <td>
+                                        <td data-label="Acciones">
                                             <div className="acciones-group">
                                                 {tienePermiso("EDITAR_ROLES") && (
                                                     <button type="button" className="btn-editar btn-interactive" onClick={() => handleEditarClick(rol)}>Editar</button>
