@@ -27,6 +27,8 @@ export const AddressAutocomplete: React.FC<Props> = ({
   const [query, setQuery] = useState(value);
   const [sugerencias, setSugerencias] = useState<any[]>([]);
   const [cargando, setCargando] = useState(false);
+  const [ubicando, setUbicando] = useState(false);
+  const [errorUbicacion, setErrorUbicacion] = useState("");
   const [mostrarDropdown, setMostrarDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -91,6 +93,64 @@ export const AddressAutocomplete: React.FC<Props> = ({
     onSelectAddress(datosFormateados);
   };
 
+  const usarUbicacionActual = () => {
+    setErrorUbicacion("");
+
+    if (!navigator.geolocation) {
+      setErrorUbicacion("Tu navegador no soporta geolocalización.");
+      return;
+    }
+
+    setUbicando(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1&zoom=18`,
+            { headers: { "Accept-Language": "es" } }
+          );
+          const item = await response.json();
+
+          if (!item || item.error) {
+            setErrorUbicacion("No se pudo determinar la dirección de tu ubicación actual.");
+            return;
+          }
+
+          const addr = item.address || {};
+          const datosFormateados: UbicacionSeleccionada = {
+            direccionCompleta: item.display_name,
+            pais: addr.country || "Argentina",
+            provincia: addr.state || addr.region || "",
+            ciudad: addr.city || addr.town || addr.village || addr.municipality || "",
+            barrio: addr.suburb || addr.neighbourhood || addr.quarter || "",
+            calle: addr.road || addr.street || "",
+            numero: addr.house_number || "",
+            latitud: latitude,
+            longitud: longitude
+          };
+
+          setQuery(item.display_name);
+          setMostrarDropdown(false);
+          onSelectAddress(datosFormateados);
+        } catch {
+          setErrorUbicacion("Error al obtener la dirección de tu ubicación actual.");
+        } finally {
+          setUbicando(false);
+        }
+      },
+      (err) => {
+        setUbicando(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setErrorUbicacion("Permiso de ubicación denegado. Habilitalo en el navegador para usar esta opción.");
+        } else {
+          setErrorUbicacion("No se pudo obtener tu ubicación actual.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
   return (
     <div ref={dropdownRef} style={{ position: "relative", width: "100%" }}>
       <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
@@ -113,10 +173,31 @@ export const AddressAutocomplete: React.FC<Props> = ({
             outline: "none"
           }}
         />
-        <div style={{ position: "absolute", right: "12px", color: "#38BDF8", display: "flex", alignItems: "center" }}>
-          {cargando ? <Loader2 size={18} className="icon-spin-hover" /> : <MapPin size={18} />}
-        </div>
+        <button
+          type="button"
+          onClick={usarUbicacionActual}
+          disabled={ubicando}
+          title="Usar mi ubicación actual (GPS)"
+          style={{
+            position: "absolute",
+            right: "8px",
+            color: ubicando ? "#38BDF8" : "#94A3B8",
+            display: "flex",
+            alignItems: "center",
+            background: "transparent",
+            border: "none",
+            padding: "4px",
+            cursor: ubicando ? "wait" : "pointer",
+            borderRadius: "4px"
+          }}
+        >
+          {cargando || ubicando ? <Loader2 size={18} className="icon-spin-hover" style={{ animation: ubicando ? "spin 1s linear infinite" : undefined }} /> : <MapPin size={18} />}
+        </button>
       </div>
+
+      {errorUbicacion && (
+        <p style={{ color: "#F87171", fontSize: "0.75rem", margin: "4px 0 0 0" }}>{errorUbicacion}</p>
+      )}
 
       {mostrarDropdown && sugerencias.length > 0 && (
         <ul
