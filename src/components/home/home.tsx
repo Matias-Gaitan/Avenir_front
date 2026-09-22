@@ -52,6 +52,7 @@ import ViaticosComponent from "../insumos/ViaticosComponent";
 import AsignacionTareasComponent from "../tareas/AsignacionTareasComponent";
 import CentroAyudaComponent from "../ayuda/CentroAyudaComponent";
 import BienvenidaModal from "../ayuda/BienvenidaModal";
+import IngresoObligatorioGate from "./IngresoObligatorioGate";
 import AyudaFlotante from "../ayuda/AyudaFlotante";
 import ConectividadIndicador from "./ConectividadIndicador";
 import InstalarAppBoton from "../pwa/InstalarAppBoton";
@@ -606,6 +607,8 @@ const Home: React.FC = () => {
                 onCerrar={() => setMostrarBienvenida(false)}
                 darkMode={darkMode}
             />
+
+            <IngresoObligatorioGate darkMode={darkMode} />
 
             <AyudaFlotante
                 moduloActual={vistaActiva !== "ayuda" ? (vistaAModulo[vistaActiva] || null) : null}

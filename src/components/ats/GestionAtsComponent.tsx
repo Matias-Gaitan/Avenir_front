@@ -163,7 +163,7 @@ export const GestionAtsComponent: React.FC<Props> = ({ darkMode }) => {
       }}>
         <h2 style={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: "10px",
           color: theme.headerColor,
           fontSize: "1.4rem",

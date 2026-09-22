@@ -269,7 +269,7 @@ const GestionInsumosComponent: React.FC = () => {
                                         <span style={{ color: "#2563eb", fontWeight: 700, fontSize: "0.85rem" }}>✏️ Editando insumo #{idEditando}</span>
                                     </div>
                                 )}
-                                <div className="form-section" style={{ gridColumn: "span 2" }}>
+                                <div className="form-section campo-ancho">
                                     <label>Nombre del insumo</label>
                                     <input className="form-input" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Casco de seguridad" required />
                                 </div>
@@ -388,7 +388,7 @@ const GestionInsumosComponent: React.FC = () => {
                                     <label>Cantidad</label>
                                     <input type="number" min={1} className="form-input" value={cantidadEntrega} onChange={(e) => setCantidadEntrega(e.target.value as unknown as number)} required />
                                 </div>
-                                <div className="form-section" style={{ gridColumn: "span 2" }}>
+                                <div className="form-section campo-ancho">
                                     <label>Observaciones</label>
                                     <input className="form-input" value={observacionesEntrega} onChange={(e) => setObservacionesEntrega(e.target.value)} placeholder="Opcional" />
                                 </div>

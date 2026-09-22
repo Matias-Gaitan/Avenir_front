@@ -179,7 +179,7 @@ const GestionDocumentosComponent: React.FC = () => {
 
                 {puedeCrear && (
                     <form onSubmit={handleSubir} className="documentos-form-grid">
-                        <div className="form-section" style={{ gridColumn: "span 2" }}>
+                        <div className="form-section campo-ancho">
                             <label>Nombre del documento</label>
                             <input className="form-input" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Apto Médico - Juan Pérez" required />
                         </div>

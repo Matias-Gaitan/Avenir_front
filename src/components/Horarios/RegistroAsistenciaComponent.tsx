@@ -8,24 +8,11 @@ import type { Empresa } from "../../interfaces/Empresa";
 import { encolarFichaje, obtenerPendientes, quitarPendiente, esErrorDeRed, formatearFechaLocalISO } from "../../service/offlineQueue";
 import { usePaginacion } from "../common/usePaginacion";
 import { Paginador } from "../common/Paginador";
+import { obtenerUbicacionValidada } from "../../service/geolocalizacion";
 
 const obtenerHeaders = () => {
     const token = localStorage.getItem("token");
     return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-};
-
-const obtenerCoordenadas = (): Promise<{ latitud: number | null; longitud: number | null }> => {
-    return new Promise((resolve) => {
-        if (!navigator.geolocation) {
-            resolve({ latitud: null, longitud: null });
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(
-            (pos) => resolve({ latitud: pos.coords.latitude, longitud: pos.coords.longitude }),
-            () => resolve({ latitud: null, longitud: null }),
-            { timeout: 4000 }
-        );
-    });
 };
 
 const formatearHora = (iso: string | null) => {
@@ -69,6 +56,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
     const [enLinea, setEnLinea] = useState(navigator.onLine);
     const [pendientes, setPendientes] = useState(() => obtenerPendientes().length);
     const [sincronizando, setSincronizando] = useState(false);
+    const [obteniendoUbicacion, setObteniendoUbicacion] = useState(false);
 
     useEffect(() => {
         const intervalo = setInterval(() => setHoraActual(new Date()), 1000);
@@ -148,10 +136,23 @@ const RegistroAsistenciaComponent: React.FC = () => {
     }, []);
 
     const handleMarcarIngreso = async () => {
-        setCargando(true);
         setError("");
         setMensaje("");
-        const { latitud, longitud } = await obtenerCoordenadas();
+        setObteniendoUbicacion(true);
+
+        let latitud: number, longitud: number;
+        try {
+            const ubicacion = await obtenerUbicacionValidada();
+            latitud = ubicacion.latitud;
+            longitud = ubicacion.longitud;
+        } catch (err: any) {
+            setObteniendoUbicacion(false);
+            setError(err.message || "No se pudo obtener tu ubicación. Es obligatoria para marcar el ingreso.");
+            return;
+        }
+        setObteniendoUbicacion(false);
+
+        setCargando(true);
         const loginLatitud = localStorage.getItem("loginLat");
         const loginLongitud = localStorage.getItem("loginLng");
         const payload = {
@@ -199,10 +200,23 @@ const RegistroAsistenciaComponent: React.FC = () => {
     };
 
     const handleMarcarEgreso = async () => {
-        setCargando(true);
         setError("");
         setMensaje("");
-        const { latitud, longitud } = await obtenerCoordenadas();
+        setObteniendoUbicacion(true);
+
+        let latitud: number, longitud: number;
+        try {
+            const ubicacion = await obtenerUbicacionValidada();
+            latitud = ubicacion.latitud;
+            longitud = ubicacion.longitud;
+        } catch (err: any) {
+            setObteniendoUbicacion(false);
+            setError(err.message || "No se pudo obtener tu ubicación. Es obligatoria para marcar el egreso.");
+            return;
+        }
+        setObteniendoUbicacion(false);
+
+        setCargando(true);
         const payload = { emailUsuario: email, latitud, longitud };
 
         try {
@@ -279,12 +293,18 @@ const RegistroAsistenciaComponent: React.FC = () => {
                     </div>
                 )}
 
+                {obteniendoUbicacion && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "center", padding: "10px", marginBottom: "10px", backgroundColor: "#EFF6FF", border: "1px solid #93C5FD", borderRadius: "8px", color: "#1D4ED8", fontSize: "0.85rem", fontWeight: 600 }}>
+                        <RefreshCw size={16} className="icon-spin-hover" style={{ animation: "spin 1s linear infinite" }} /> Obteniendo tu ubicación GPS, un momento...
+                    </div>
+                )}
+
                 <div className="asistencia-botones">
                     <button
                         type="button"
                         className="btn-fichaje ingreso"
                         onClick={handleMarcarIngreso}
-                        disabled={cargando || !!registroAbierto}
+                        disabled={cargando || obteniendoUbicacion || !!registroAbierto}
                     >
                         <LogIn size={20} /> MARCAR INGRESO
                     </button>
@@ -292,7 +312,7 @@ const RegistroAsistenciaComponent: React.FC = () => {
                         type="button"
                         className="btn-fichaje egreso"
                         onClick={handleMarcarEgreso}
-                        disabled={cargando || !registroAbierto}
+                        disabled={cargando || obteniendoUbicacion || !registroAbierto}
                     >
                         <LogOut size={20} /> MARCAR EGRESO
                     </button>

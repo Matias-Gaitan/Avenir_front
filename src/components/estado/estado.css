@@ -115,6 +115,8 @@
     border-radius: 8px;
     margin-bottom: 8px;
     font-size: 0.85rem;
+    flex-wrap: wrap;
+    gap: 4px;
 }
 
 .txt-vacio {

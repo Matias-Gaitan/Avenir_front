@@ -246,11 +246,11 @@ const AsignacionTareasComponent: React.FC<Props> = ({ darkMode = false }) => {
                             <label>Fecha</label>
                             <input type="date" className="form-input" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
                         </div>
-                        <div className="form-section" style={{ gridColumn: "span 2" }}>
+                        <div className="form-section campo-ancho">
                             <label>Descripción de la tarea</label>
                             <input className="form-input" value={descripcionTarea} onChange={(e) => setDescripcionTarea(e.target.value)} placeholder="Ej. Inspección LOTO de Tablero" required />
                         </div>
-                        <div className="form-section" style={{ gridColumn: "span 2" }}>
+                        <div className="form-section campo-ancho">
                             <label><MapPin size={12} style={{ verticalAlign: "middle" }} /> Dirección (autocompletada)</label>
                             <input className="form-input" value={direccionExacta} onChange={(e) => setDireccionExacta(e.target.value)} placeholder="Se completa al elegir la empresa" />
                         </div>

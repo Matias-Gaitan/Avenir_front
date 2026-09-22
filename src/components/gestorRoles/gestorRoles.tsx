@@ -256,7 +256,7 @@ const GestorRoles: React.FC = () => {
                     </div>
 
                     <div className="permisos-section">
-                        <div style={{
+                        <div className="permisos-header-row" style={{
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",

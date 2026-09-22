@@ -72,6 +72,16 @@
     color: #1e293b;
 }
 
+.insumos-form-grid .campo-ancho {
+    grid-column: span 2;
+}
+
+@media (max-width: 480px) {
+    .insumos-form-grid .campo-ancho {
+        grid-column: 1;
+    }
+}
+
 .form-input {
     width: 100%;
     padding: 10px 12px;

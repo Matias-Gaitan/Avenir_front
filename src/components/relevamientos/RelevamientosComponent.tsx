@@ -192,7 +192,7 @@ const RelevamientosComponent: React.FC = () => {
                             <label>Fecha</label>
                             <input type="date" className="form-input" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
                         </div>
-                        <div className="form-section" style={{ gridColumn: "span 2" }}>
+                        <div className="form-section campo-ancho">
                             <label>Observaciones</label>
                             <input className="form-input" value={observaciones} onChange={(e) => setObservaciones(e.target.value)} placeholder="Opcional" />
                         </div>
@@ -263,7 +263,7 @@ const RelevamientosComponent: React.FC = () => {
                     <h2 style={{ fontSize: "1rem", color: "#064e3b" }}>Hallazgos</h2>
                     {puedeCrear && (
                         <form onSubmit={handleAgregarHallazgo} className="insumos-form-grid">
-                            <div className="form-section" style={{ gridColumn: "span 2" }}>
+                            <div className="form-section campo-ancho">
                                 <label>Descripción del hallazgo</label>
                                 <input className="form-input" value={descripcionHallazgo} onChange={(e) => setDescripcionHallazgo(e.target.value)} placeholder="Ej: Extintor vencido en sector depósito" required />
                             </div>
@@ -314,7 +314,7 @@ const RelevamientosComponent: React.FC = () => {
                     <h2 style={{ fontSize: "1rem", color: "#064e3b" }}>Documentación (fotos / PDFs)</h2>
                     {puedeCrear && (
                         <form onSubmit={handleSubirArchivo} className="insumos-form-grid">
-                            <div className="form-section" style={{ gridColumn: "span 2" }}>
+                            <div className="form-section campo-ancho">
                                 <label>Archivo</label>
                                 <input type="file" className="form-input" accept="image/*,.pdf"
                                     onChange={(e) => setArchivoSeleccionado(e.target.files?.[0] || null)} />

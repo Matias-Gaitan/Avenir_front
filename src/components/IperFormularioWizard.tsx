@@ -148,7 +148,17 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
 
   return (
     <div style={{ maxWidth: "850px", margin: "20px auto", padding: "0 15px" }}>
-      <div style={{
+      <style>{`
+        @media (max-width: 480px) {
+          .iper-wizard-2col {
+            grid-template-columns: 1fr !important;
+          }
+          .iper-wizard-card {
+            padding: 16px !important;
+          }
+        }
+      `}</style>
+      <div className="iper-wizard-card" style={{
         backgroundColor: theme.cardBg,
         borderRadius: "12px",
         padding: "28px",
@@ -170,7 +180,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
               <input type="text" value={formData.idResponsable} onChange={e => handleChange("idResponsable", e.target.value)} required style={inputStyle} placeholder="Nombre del responsable..." />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+            <div className="iper-wizard-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
               <div>
                 <label style={labelStyle}>Fecha de Reporte</label>
                 <input type="date" value={formData.fechaReporte} onChange={e => handleChange("fechaReporte", e.target.value)} required style={inputStyle} />
@@ -210,7 +220,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
               <textarea value={formData.descripcionRiesgo} onChange={e => handleChange("descripcionRiesgo", e.target.value)} style={{ ...inputStyle, minHeight: "80px" }} placeholder="Describa el riesgo detectado..." />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+            <div className="iper-wizard-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
               <div>
                 <label style={labelStyle}>Tipo de Riesgo</label>
                 <select value={formData.tipoRiesgo} onChange={e => handleChange("tipoRiesgo", e.target.value)} style={inputStyle}>
@@ -240,7 +250,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
         {}
         {paso === 3 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+            <div className="iper-wizard-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
               <div>
                 <label style={labelStyle}>Probabilidad de Ocurrencia</label>
                 <select value={formData.probabilidadOcurrencia} onChange={e => handleChange("probabilidadOcurrencia", e.target.value)} style={inputStyle}>
@@ -295,7 +305,7 @@ export const IperFormularioWizard: React.FC<Props> = ({ darkMode }) => {
               <textarea value={formData.accionesSugeridas} onChange={e => handleChange("accionesSugeridas", e.target.value)} style={{ ...inputStyle, minHeight: "80px" }} placeholder="Sugerencias de acción..." />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+            <div className="iper-wizard-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
               <div>
                 <label style={labelStyle}>Responsable de Implementación</label>
                 <input type="text" value={formData.responsableAcciones} onChange={e => handleChange("responsableAcciones", e.target.value)} style={inputStyle} placeholder="Nombre del encargado..." />

@@ -229,7 +229,7 @@ const ViaticosComponent: React.FC = () => {
                         <label>Kilómetros recorridos</label>
                         <input type="number" step="0.1" min={0.1} className="form-input" value={kilometros} onChange={(e) => setKilometros(e.target.value as unknown as number)} required />
                     </div>
-                    <div className="form-section" style={{ gridColumn: "span 2" }}>
+                    <div className="form-section campo-ancho">
                         <label>Observaciones</label>
                         <input className="form-input" value={observaciones} onChange={(e) => setObservaciones(e.target.value)} placeholder="Opcional" />
                     </div>

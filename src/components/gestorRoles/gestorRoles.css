@@ -183,3 +183,28 @@
 .btn-mini:hover {
     background-color: #2563eb;
 }
+
+@media (max-width: 768px) {
+    .roles-card {
+        padding: 14px;
+    }
+
+    .permisos-header-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .form-row-top {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions {
+        justify-content: stretch !important;
+    }
+
+    .form-actions button {
+        flex: 1;
+    }
+}

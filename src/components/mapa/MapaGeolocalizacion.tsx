@@ -14,9 +14,9 @@ import {
   ChevronLeft,
   Navigation,
   MapPin,
-  Play,
-  Square,
-  Navigation2
+  Navigation2,
+  Send,
+  XCircle
 } from "lucide-react";
 
 const iconoEmpresa = new L.Icon({
@@ -34,15 +34,6 @@ const iconoEmpleado = new L.Icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-const iconoVehiculoSimulado = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-  iconSize: [30, 48],
-  iconAnchor: [15, 48],
-  popupAnchor: [1, -38],
   shadowSize: [41, 41]
 });
 
@@ -136,13 +127,9 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
   const [busqueda, setBusqueda] = useState<string>("");
   const [empresaSeleccionada, setEmpresaSeleccionada] = useState<ElementoMap | null>(null);
 
-  const [simulando, setSimulando] = useState<boolean>(false);
-  const [progresoViaje, setProgresoViaje] = useState<number>(0);
-  const [posicionSimulada, setPosicionSimulada] = useState<[number, number] | null>(null);
-  const [puntosRutaSimulada, setPuntosRutaSimulada] = useState<[number, number][]>([]);
-  const [empleadoEnViaje, setEmpleadoEnViaje] = useState<ElementoMap | null>(null);
-  const [destinoViaje, setDestinoViaje] = useState<ElementoMap | null>(null);
-  const [distanciaRestanteKm, setDistanciaRestanteKm] = useState<number>(0);
+  const [idEmpleadoSolicitud, setIdEmpleadoSolicitud] = useState<number | "">("");
+  const [idEmpresaSolicitud, setIdEmpresaSolicitud] = useState<number | "">("");
+  const [viajeSolicitado, setViajeSolicitado] = useState<{ idEmpleado: number; idEmpresa: number } | null>(null);
 
   const [puntoNavegacionManual, setPuntoNavegacionManual] = useState<PuntoEnfocado | null>(null);
   const [posicionesEnVivo, setPosicionesEnVivo] = useState<PosicionEnVivo[]>([]);
@@ -304,81 +291,31 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
     cargarDatosGeolocalizados();
   }, []);
 
-  const iniciarSimulacionViaje = (empleado: ElementoMap) => {
-
-    const empresasList = elementos.filter((e) => e.tipo === "EMPRESA");
-    if (empresasList.length === 0) {
-      alert("No hay empresas cargadas para simular el destino.");
+  const handleSolicitarViaje = () => {
+    if (!idEmpleadoSolicitud || !idEmpresaSolicitud) {
+      alert("Elegí un empleado y una empresa destino.");
       return;
     }
+    setViajeSolicitado({ idEmpleado: Number(idEmpleadoSolicitud), idEmpresa: Number(idEmpresaSolicitud) });
 
-    let empresaDestino = empresasList[0];
-    let menorDistancia = Infinity;
-
-    empresasList.forEach((emp) => {
-      const d = calcularDistanciaKm(empleado.latitud, empleado.longitud, emp.latitud, emp.longitud);
-      if (d < menorDistancia) {
-        menorDistancia = d;
-        empresaDestino = emp;
-      }
-    });
-
-    const pasos = 50;
-    const ruta: [number, number][] = [];
-    for (let i = 0; i <= pasos; i++) {
-      const ratio = i / pasos;
-      const latIntermedia = empleado.latitud + (empresaDestino.latitud - empleado.latitud) * ratio;
-      const lngIntermedia = empleado.longitud + (empresaDestino.longitud - empleado.longitud) * ratio;
-      ruta.push([latIntermedia, lngIntermedia]);
+    const empresaDestino = elementos.find((e) => e.tipo === "EMPRESA" && e.id === Number(idEmpresaSolicitud));
+    if (empresaDestino) {
+      setPuntoNavegacionManual({ lat: empresaDestino.latitud, lng: empresaDestino.longitud, zoom: 12, timestamp: Date.now() });
     }
-
-    setEmpleadoEnViaje(empleado);
-    setDestinoViaje(empresaDestino);
-    setPuntosRutaSimulada(ruta);
-    setPosicionSimulada(ruta[0]);
-    setProgresoViaje(0);
-    setSimulando(true);
-
-    setPuntoNavegacionManual({
-      lat: empleado.latitud,
-      lng: empleado.longitud,
-      zoom: 14,
-      timestamp: Date.now()
-    });
   };
 
-  useEffect(() => {
-    if (!simulando || puntosRutaSimulada.length === 0 || !destinoViaje) return;
-
-    let indexActual = 0;
-    const totalPasos = puntosRutaSimulada.length;
-
-    const interval = setInterval(() => {
-      indexActual++;
-      if (indexActual < totalPasos) {
-        const nuevaPos = puntosRutaSimulada[indexActual];
-        setPosicionSimulada(nuevaPos);
-        setProgresoViaje(Math.round((indexActual / (totalPasos - 1)) * 100));
-
-        const distRestante = calcularDistanciaKm(nuevaPos[0], nuevaPos[1], destinoViaje.latitud, destinoViaje.longitud);
-        setDistanciaRestanteKm(distRestante);
-      } else {
-        clearInterval(interval);
-        setSimulando(false);
-        alert(`🎉 ¡${empleadoEnViaje?.nombre} llegó exitosamente a la sede ${destinoViaje.nombre}!`);
-      }
-    }, 250);
-
-    return () => clearInterval(interval);
-  }, [simulando, puntosRutaSimulada, destinoViaje, empleadoEnViaje]);
-
-  const detenerSimulacion = () => {
-    setSimulando(false);
-    setPosicionSimulada(null);
-    setPuntosRutaSimulada([]);
-    setEmpleadoEnViaje(null);
-    setDestinoViaje(null);
+  const cancelarViajeSolicitado = () => {
+    setViajeSolicitado(null);
+    setIdEmpleadoSolicitud("");
+    setIdEmpresaSolicitud("");
   };
+
+  const empleadoEnViaje = viajeSolicitado ? elementos.find((e) => e.tipo === "EMPLEADO_CAMPO" && e.id === viajeSolicitado.idEmpleado) || null : null;
+  const empresaDelViaje = viajeSolicitado ? elementos.find((e) => e.tipo === "EMPRESA" && e.id === viajeSolicitado.idEmpresa) || null : null;
+  const posicionEnVivoDelViaje = viajeSolicitado ? posicionesEnVivo.find((p) => p.idUsuario === viajeSolicitado.idEmpleado) || null : null;
+  const distanciaRealRestanteKm = posicionEnVivoDelViaje && empresaDelViaje
+    ? calcularDistanciaKm(posicionEnVivoDelViaje.lat, posicionEnVivoDelViaje.lng, empresaDelViaje.latitud, empresaDelViaje.longitud)
+    : null;
 
   const enfocarElemento = (item: ElementoMap) => {
     setPuntoNavegacionManual({
@@ -466,14 +403,16 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
           </div>
 
           {}
-          {simulando && (
+          {viajeSolicitado && (
             <div style={{
               position: "absolute",
               bottom: "20px",
               left: "20px",
+              right: "20px",
+              maxWidth: "460px",
               zIndex: 1000,
               backgroundColor: "rgba(15, 23, 42, 0.95)",
-              border: "1px solid #EF4444",
+              border: `1px solid ${posicionEnVivoDelViaje ? "#22C55E" : "#F59E0B"}`,
               borderRadius: "12px",
               padding: "12px 18px",
               color: "#FFF",
@@ -481,19 +420,25 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
               display: "flex",
               alignItems: "center",
               gap: "16px",
-              boxShadow: "0 10px 25px rgba(239, 68, 68, 0.3)"
+              boxShadow: "0 10px 25px rgba(0,0,0,0.35)"
             }}>
-              <Navigation2 size={24} color="#EF4444" className="icon-pulse" />
-              <div>
-                <strong style={{ fontSize: "0.88rem", display: "block", color: "#F8FAFC" }}>
-                  🚘 En Viaje: {empleadoEnViaje?.nombre} ➔ {destinoViaje?.nombre}
+              <Navigation2 size={24} color={posicionEnVivoDelViaje ? "#22C55E" : "#F59E0B"} className="icon-pulse" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <strong style={{ fontSize: "0.85rem", display: "block", color: "#F8FAFC" }}>
+                  Viaje solicitado: {empleadoEnViaje?.nombre || "Empleado"} ➔ {empresaDelViaje?.nombre || "Empresa"}
                 </strong>
-                <span style={{ fontSize: "0.75rem", color: "#94A3B8" }}>
-                  Progreso: <strong style={{ color: "#38BDF8" }}>{progresoViaje}%</strong> | Falta: <strong style={{ color: "#EF4444" }}>{distanciaRestanteKm} KM</strong>
-                </span>
+                {posicionEnVivoDelViaje && distanciaRealRestanteKm !== null ? (
+                  <span style={{ fontSize: "0.75rem", color: "#94A3B8" }}>
+                    Ubicación real hace {formatearTranscurrido(posicionEnVivoDelViaje.segundosDesdeUltimoDato)} | Distancia real: <strong style={{ color: "#22C55E" }}>{distanciaRealRestanteKm} KM</strong>
+                  </span>
+                ) : (
+                  <span style={{ fontSize: "0.75rem", color: "#F59E0B" }}>
+                    Esperando la ubicación en vivo de {empleadoEnViaje?.nombre || "este empleado"}... (necesita tener la app abierta con el permiso de ubicación aceptado)
+                  </span>
+                )}
               </div>
               <button
-                onClick={detenerSimulacion}
+                onClick={cancelarViajeSolicitado}
                 style={{
                   backgroundColor: "#EF4444",
                   color: "#FFF",
@@ -505,10 +450,11 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
                   fontSize: "0.75rem",
                   display: "flex",
                   alignItems: "center",
-                  gap: "4px"
+                  gap: "4px",
+                  flexShrink: 0
                 }}
               >
-                <Square size={12} /> Detener
+                <XCircle size={12} /> Cancelar
               </button>
             </div>
           )}
@@ -547,6 +493,52 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
 
             {sidebarAbierta && (
               <div style={{ padding: "12px", flex: 1, display: "flex", flexDirection: "column", gap: "10px", overflow: "hidden" }}>
+                <div style={{
+                  backgroundColor: darkMode ? "#0F172A" : "#EFF6FF",
+                  border: darkMode ? "1px solid #2563EB" : "1px solid #93C5FD",
+                  borderRadius: "8px",
+                  padding: "10px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px"
+                }}>
+                  <span style={{ fontSize: "0.72rem", fontWeight: "bold", color: darkMode ? "#60A5FA" : "#1D4ED8", display: "flex", alignItems: "center", gap: "5px" }}>
+                    <Send size={13} /> SOLICITAR VIAJE
+                  </span>
+                  <select
+                    value={idEmpleadoSolicitud}
+                    onChange={(e) => setIdEmpleadoSolicitud(e.target.value ? Number(e.target.value) : "")}
+                    style={{ width: "100%", padding: "6px", borderRadius: "5px", border: darkMode ? "1px solid #334155" : "1px solid #CBD5E1", backgroundColor: darkMode ? "#1E293B" : "#FFF", color: darkMode ? "#FFF" : "#0F172A", fontSize: "0.75rem" }}
+                  >
+                    <option value="">Elegí un empleado...</option>
+                    {empleadosCampo.map((emp) => (
+                      <option key={emp.id} value={emp.id}>{emp.nombre}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={idEmpresaSolicitud}
+                    onChange={(e) => setIdEmpresaSolicitud(e.target.value ? Number(e.target.value) : "")}
+                    style={{ width: "100%", padding: "6px", borderRadius: "5px", border: darkMode ? "1px solid #334155" : "1px solid #CBD5E1", backgroundColor: darkMode ? "#1E293B" : "#FFF", color: darkMode ? "#FFF" : "#0F172A", fontSize: "0.75rem" }}
+                  >
+                    <option value="">Elegí una empresa destino...</option>
+                    {elementos.filter((e) => e.tipo === "EMPRESA").map((emp) => (
+                      <option key={emp.id} value={emp.id}>{emp.nombre}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={handleSolicitarViaje}
+                    disabled={!idEmpleadoSolicitud || !idEmpresaSolicitud}
+                    style={{
+                      width: "100%", backgroundColor: (!idEmpleadoSolicitud || !idEmpresaSolicitud) ? "#64748B" : "#059669",
+                      color: "#FFF", border: "none", borderRadius: "5px", padding: "7px", fontSize: "0.75rem", fontWeight: "bold",
+                      cursor: (!idEmpleadoSolicitud || !idEmpresaSolicitud) ? "not-allowed" : "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: "5px"
+                    }}
+                  >
+                    <Send size={12} /> Solicitar y Seguir en Vivo
+                  </button>
+                </div>
+
                 <div style={{ display: "flex", alignItems: "center", backgroundColor: darkMode ? "#0F172A" : "#F1F5F9", borderRadius: "6px", padding: "0 8px", border: darkMode ? "1px solid #334155" : "1px solid #CBD5E1" }}>
                   <Search size={15} color="#94A3B8" />
                   <input
@@ -589,12 +581,11 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
                       {}
                       {item.tipo === "EMPLEADO_CAMPO" && (
                         <button
-                          onClick={() => iniciarSimulacionViaje(item)}
-                          disabled={simulando}
+                          onClick={() => setIdEmpleadoSolicitud(item.id)}
                           style={{
                             marginTop: "6px",
                             width: "100%",
-                            backgroundColor: "#2563EB",
+                            backgroundColor: idEmpleadoSolicitud === item.id ? "#059669" : "#2563EB",
                             color: "#FFF",
                             border: "none",
                             padding: "4px 8px",
@@ -608,7 +599,7 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
                             gap: "4px"
                           }}
                         >
-                          <Play size={12} /> Simular Viaje a Sede
+                          <Send size={12} /> {idEmpleadoSolicitud === item.id ? "Seleccionado para viaje" : "Elegir para Solicitar Viaje"}
                         </button>
                       )}
                     </div>
@@ -629,23 +620,11 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
             <MapController punto={puntoCamaraActual || null} />
 
             {}
-            {simulando && puntosRutaSimulada.length > 0 && (
-              <>
-                <Polyline
-                  positions={puntosRutaSimulada}
-                  pathOptions={{ color: "#EF4444", weight: 4, opacity: 0.8, dashArray: "6, 8" }}
-                />
-                {posicionSimulada && (
-                  <Marker position={posicionSimulada} icon={iconoVehiculoSimulado}>
-                    <Popup>
-                      <div style={{ padding: "4px", fontWeight: "bold" }}>
-                        🚘 {empleadoEnViaje?.nombre} (En camino)<br />
-                        <small style={{ color: "#EF4444" }}>Falta: {distanciaRestanteKm} KM</small>
-                      </div>
-                    </Popup>
-                  </Marker>
-                )}
-              </>
+            {viajeSolicitado && posicionEnVivoDelViaje && empresaDelViaje && (
+              <Polyline
+                positions={[[posicionEnVivoDelViaje.lat, posicionEnVivoDelViaje.lng], [empresaDelViaje.latitud, empresaDelViaje.longitud]]}
+                pathOptions={{ color: "#22C55E", weight: 4, opacity: 0.85, dashArray: "8, 8" }}
+              />
             )}
 
             {}
