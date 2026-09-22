@@ -31,6 +31,42 @@ html, body {
     main textarea {
         min-width: 0;
     }
+
+    /* Red de seguridad global: TODA tabla de la app, tenga o no una clase
+       propia con overflow-x, se vuelve scrolleable horizontalmente en vez
+       de romper el layout o quedar cortada. Cambiar el <table> a
+       display:block no rompe su renderizado interno: thead/tbody/tr/td
+       conservan su display de tabla por defecto. */
+    table {
+        display: block !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+        border-radius: 8px;
+    }
+
+    table thead,
+    table tbody,
+    table tr {
+        display: table;
+        width: 100%;
+        table-layout: auto;
+    }
+
+    table th,
+    table td {
+        padding: 8px 6px !important;
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 480px) {
+    table th,
+    table td {
+        padding: 6px 5px !important;
+        font-size: 0.78rem;
+    }
 }
 
 body.dark-mode {

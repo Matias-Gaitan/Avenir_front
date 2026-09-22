@@ -91,6 +91,19 @@ const Home: React.FC = () => {
     const [puntoEnfocadoMapa, setPuntoEnfocadoMapa] = useState<{ lat: number; lng: number; titulo?: string; timestamp?: number } | null>(null);
 
     const [sidebarAbierta, setSidebarAbierta] = useState<boolean>(() => window.innerWidth > 768);
+    const esMobileRef = React.useRef<boolean>(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const alRedimensionar = () => {
+            const esMobileAhora = window.innerWidth <= 768;
+            if (esMobileAhora !== esMobileRef.current) {
+                esMobileRef.current = esMobileAhora;
+                setSidebarAbierta(!esMobileAhora);
+            }
+        };
+        window.addEventListener("resize", alRedimensionar);
+        return () => window.removeEventListener("resize", alRedimensionar);
+    }, []);
     const [catAdministracion, setCatAdministracion] = useState<boolean>(true);
     const [catSeguridad, setCatSeguridad] = useState<boolean>(true);
     const [catCampo, setCatCampo] = useState<boolean>(true);
