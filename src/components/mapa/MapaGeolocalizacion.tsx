@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polyline } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "./MapaFix.css";
 import api from "../../service/api";
 import {
   Building2,
@@ -71,10 +72,35 @@ interface RegionDinamica {
   cantidad: number;
 }
 
+interface PosicionEnVivo {
+  idUsuario: number;
+  nombre: string;
+  online: boolean;
+  lat: number;
+  lng: number;
+  direccionAproximada: string | null;
+  segundosDesdeUltimoDato: number;
+}
+
+const crearIconoEnVivo = (online: boolean) => L.divIcon({
+  className: "",
+  html: `<div class="marcador-en-vivo ${online ? "" : "desconectado"}"></div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9]
+});
+
 interface Props {
   darkMode?: boolean;
   puntoEnfocado?: PuntoEnfocado | null;
 }
+
+const formatearTranscurrido = (segundos: number): string => {
+  if (segundos < 60) return `hace ${segundos}s`;
+  const minutos = Math.floor(segundos / 60);
+  if (minutos < 60) return `hace ${minutos} min`;
+  const horas = Math.floor(minutos / 60);
+  return `hace ${horas}h`;
+};
 
 const calcularDistanciaKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 6371;
@@ -119,8 +145,44 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
   const [distanciaRestanteKm, setDistanciaRestanteKm] = useState<number>(0);
 
   const [puntoNavegacionManual, setPuntoNavegacionManual] = useState<PuntoEnfocado | null>(null);
+  const [posicionesEnVivo, setPosicionesEnVivo] = useState<PosicionEnVivo[]>([]);
   const markerRefs = useRef<{ [key: string]: L.Marker | null }>({});
   const centroPorDefecto: [number, number] = [-31.4167, -64.1833];
+
+  const obtenerHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+  };
+
+  const cargarPosicionesEnVivo = async () => {
+    try {
+      const res = await api.get("/presencia", obtenerHeaders());
+      const datos = Array.isArray(res.data) ? res.data : [];
+      const procesadas: PosicionEnVivo[] = datos
+        .filter((p: any) => p.latitud != null && p.longitud != null)
+        .map((p: any) => {
+          const segundos = Math.floor((Date.now() - new Date(p.ultimoHeartbeat).getTime()) / 1000);
+          return {
+            idUsuario: p.idUsuario,
+            nombre: `${p.usuario?.nombre || ""} ${p.usuario?.apellido || ""}`.trim() || "Técnico",
+            online: segundos <= 40,
+            lat: p.latitud,
+            lng: p.longitud,
+            direccionAproximada: p.direccionAproximada || null,
+            segundosDesdeUltimoDato: segundos
+          };
+        });
+      setPosicionesEnVivo(procesadas);
+    } catch {
+      /* Sin permiso VER_PRESENCIA o sin datos aun: simplemente no se muestra la capa en vivo */
+    }
+  };
+
+  useEffect(() => {
+    cargarPosicionesEnVivo();
+    const intervalo = setInterval(cargarPosicionesEnVivo, 10000);
+    return () => clearInterval(intervalo);
+  }, []);
 
   const resolverCoordenadasDireccion = async (direccionText: string): Promise<[number, number] | null> => {
     try {
@@ -364,6 +426,16 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
               <div>
                 <span style={{ fontSize: "0.68rem", color: "#94A3B8", fontWeight: "bold" }}>EN CAMPO</span>
                 <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#3B82F6", fontWeight: "bold" }}>{totalEmpleadosCampo}</h3>
+              </div>
+            </div>
+
+            <div style={{ pointerEvents: "auto", backgroundColor: darkMode ? "rgba(11, 19, 43, 0.92)" : "rgba(255, 255, 255, 0.95)", padding: "8px 14px", borderRadius: "8px", display: "flex", alignItems: "center", gap: "10px", border: "1px solid #22C55E" }}>
+              <div className="marcador-en-vivo" style={{ position: "relative", top: 0 }} />
+              <div>
+                <span style={{ fontSize: "0.68rem", color: "#94A3B8", fontWeight: "bold" }}>EN VIVO</span>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#22C55E", fontWeight: "bold" }}>
+                  {posicionesEnVivo.filter(p => p.online).length}
+                </h3>
               </div>
             </div>
 
@@ -633,6 +705,30 @@ export const MapaGeolocalizacion: React.FC<Props> = ({ darkMode = true, puntoEnf
                 </Marker>
               );
             })}
+
+            {}
+            {posicionesEnVivo.map((pos) => (
+              <Marker
+                key={`en-vivo-${pos.idUsuario}`}
+                position={[pos.lat, pos.lng]}
+                icon={crearIconoEnVivo(pos.online)}
+                zIndexOffset={1000}
+              >
+                <Popup>
+                  <div style={{ padding: "4px", minWidth: "180px" }}>
+                    <strong style={{ color: pos.online ? "#16A34A" : "#64748B", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.9rem" }}>
+                      {pos.online ? "🟢 En vivo" : "⚪ Última posición"} — {pos.nombre}
+                    </strong>
+                    <p style={{ margin: "4px 0 0 0", fontSize: "0.78rem", color: "#334155" }}>
+                      {pos.direccionAproximada || `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}`}
+                    </p>
+                    <small style={{ color: "#94A3B8" }}>
+                      {pos.online ? "Actualizado" : "Visto"} {formatearTranscurrido(pos.segundosDesdeUltimoDato)}
+                    </small>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
           </MapContainer>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Wifi, WifiOff, Monitor, Smartphone, AlertTriangle, Users } from "lucide-react";
+import { Wifi, WifiOff, Monitor, Smartphone, AlertTriangle, Users, MapPin } from "lucide-react";
 import api from "../../service/api";
 
 const obtenerHeaders = () => {
@@ -12,6 +12,10 @@ interface Presencia {
     usuario: { nombre: string; apellido: string; email: string };
     ultimoHeartbeat: string;
     plataforma?: string;
+    latitud?: number;
+    longitud?: number;
+    direccionAproximada?: string;
+    ubicacionActualizadaEn?: string;
 }
 
 const SEGUNDOS_EN_LINEA = 40;
@@ -124,6 +128,17 @@ const PanelPresenciaComponent: React.FC<Props> = ({ darkMode = false }) => {
                                 <span style={{ fontSize: "0.75rem", color: c.textoSecundario, display: "flex", alignItems: "center", gap: "4px" }}>
                                     {iconoPlataforma(p.plataforma)} {online ? "En línea" : `Desconectado ${formatearTranscurrido(segundosDesde(p.ultimoHeartbeat))}`}
                                 </span>
+                                {!online && p.direccionAproximada && (
+                                    <span style={{ fontSize: "0.72rem", color: "#DC2626", display: "flex", alignItems: "flex-start", gap: "4px", marginTop: "3px" }}>
+                                        <MapPin size={12} style={{ flexShrink: 0, marginTop: "2px" }} />
+                                        <span>
+                                            Última ubicación: {p.direccionAproximada}
+                                            {p.latitud && p.longitud && (
+                                                <span style={{ color: c.textoSecundario }}> ({p.latitud.toFixed(5)}, {p.longitud.toFixed(5)})</span>
+                                            )}
+                                        </span>
+                                    </span>
+                                )}
                             </div>
                         </div>
                     );
